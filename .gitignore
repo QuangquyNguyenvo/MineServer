@@ -1,0 +1,37 @@
+# Minecraft Server GitIgnore
+# Logs
+logs/
+*.log.gz
+debug/
+
+# Server files
+cache/
+libraries/
+versions/
+bundler/
+*.jar
+!plugins/Skript/scripts/*.sk
+
+# World files
+world/
+world_nether/
+world_the_end/
+
+# Config files (Optional: keep them if you want to track changes)
+# server.properties
+# bukkit.yml
+# spigot.yml
+# paper-global.yml
+# paper-world-defaults.yml
+
+# Specific plugin data
+plugins/*/
+!plugins/Skript/scripts/
+
+# User data
+usercache.json
+whitelist.json
+ops.json
+banned-ips.json
+banned-players.json
+eula.txt
