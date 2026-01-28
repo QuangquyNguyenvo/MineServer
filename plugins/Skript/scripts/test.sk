@@ -1,0 +1,7 @@
+command /test:
+    trigger:
+        send "&aHello from Skript! Server is working properly." to player
+        broadcast "&e[Skript] &fChecking script system status..."
+
+on join:
+    send "&bChào mừng bạn đến với server test Skript!" to player
