@@ -1,41 +1,63 @@
-# Minecraft Server GitIgnore
-# Logs
+# Minecraft Server GitIgnore - Homieee Mine / Raumania Land
+
+# ===== RESOURCE PACK =====
+server-resourcepack.zip
+resourcepack-sha1.txt
+
+# ===== LOGS & DEBUG =====
 logs/
+*.log
 *.log.gz
 debug/
 
-# Server files
+# ===== RUNTIME FILES (generated when server runs) =====
 cache/
 libraries/
 versions/
 bundler/
+
+# ===== JAR FILES (download separately) =====
 *.jar
 
-# World files (uncomment to keep them, but usually they are big)
-# world/
-# world_nether/
-# world_the_end/
+# ===== WORLD FILES (too large for git) =====
+world/
+world_nether/
+world_the_end/
 
-# Config files (keep them for test server)
-# server.properties
-# bukkit.yml
-# spigot.yml
-# paper-global.yml
-# paper-world-defaults.yml
-
-# Plugins
-plugins/*
-!plugins/Skript/
-plugins/Skript/*
-!plugins/Skript/scripts/
-plugins/Skript/scripts/*
-
-# User data
+# ===== USER DATA =====
 usercache.json
 whitelist.json
 ops.json
 banned-ips.json
 banned-players.json
-# eula.txt (un-ignored to make it easy for the user)
-!eula.txt
+
+# ===== PLUGINS =====
+# Ignore everything in plugins except what we explicitly keep
+plugins/*
+
+# Keep list of plugins to install
+!plugins/.gitkeep
+
+# Keep Skript scripts
+!plugins/Skript/
+plugins/Skript/*
+!plugins/Skript/scripts/
+
+# Keep plugin configs (these folders are tracked)
+!plugins/MiniMOTD/
+!plugins/TAB/
+!plugins/SimpleTPA/
+!plugins/SkinsRestorer/
+!plugins/voicechat/
+
+# Ignore runtime data inside tracked plugin folders
+plugins/**/bStats/
+plugins/**/.paper-remapped/
+plugins/**/logs/
+plugins/**/data/
+plugins/**/playerdata/
+plugins/**/locales/repository/
+
+# SkinsRestorer - only keep config, not locale downloads
+plugins/SkinsRestorer/locales/
 

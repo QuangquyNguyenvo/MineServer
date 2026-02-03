@@ -1,0 +1,91 @@
+header-footer:
+  enabled: true
+  designs:
+    default:
+      header:
+      - ''
+      - '%animation:RaumaniaTyping%'
+      - ''
+      - '<gradient:#56ab2f:#a8e063>⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯</gradient>'
+      - ''
+      footer:
+      - ''
+      - '<gradient:#11998e:#38ef7d>⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯</gradient>'
+      - ''
+      - '<white>Ping: <yellow>%ping%ms</yellow>  <dark_gray>|</dark_gray>  Online: <aqua>%online%/%server_max_players%</aqua></white>'
+      - ''
+      - '<click:open_url:https://discord.gg/jYbRZpd7R8><hover:show_text:"<green>Click to join!</green>">Click to join: %animation:DiscordPulse%</hover></click>'
+      - ''
+playerlist-objective:
+  enabled: true
+  value: '%ping%'
+  disable-condition: ''
+  fancy-value: '&7Ping: %ping%'
+  title: TAB
+  render-type: INTEGER
+tablist-name-formatting:
+  enabled: true
+  disable-condition: ''
+scoreboard-teams:
+  enabled: true
+  enable-collision: true
+  invisible-nametags: false
+  can-see-friendly-invisibles: false
+  case-sensitive-sorting: true
+  sorting-types:
+  - GROUPS:Owner,Admin,Helper,default,none
+  disable-condition: ''
+belowname-objective:
+  enabled: false
+  fancy-value-default: NPC
+  fancy-value: '&c%health%'
+bossbar:
+  enabled: false
+scoreboard:
+  enabled: false
+layout:
+  enabled: false
+placeholders:
+  date-format: dd/MM/yyyy
+  time-format: HH:mm:ss
+  time-offset: 7
+  register-tab-expansion: false
+groups:
+  _DEFAULT_:
+    tablist-name: '<gradient:#56ab2f:#a8e063>%player%</gradient>'
+    tagprefix: <gray>
+    tagsuffix: </gray>
+prevent-spectator-effect:
+  enabled: false
+debug: false
+use-online-uuid-in-tablist: true
+permission-refresh-interval: 1000
+proxy-support:
+  enabled: true
+  type: PLUGIN
+  plugin:
+    name: RedisBungee
+compensate-for-packetevents-bug: false
+assign-groups-by-permissions: false
+primary-group-finding-list:
+- Owner
+- Admin
+- Helper
+- default
+global-playerlist:
+  update-latency: false
+  enabled: false
+placeholder-refresh-intervals:
+  default-refresh-interval: 500
+  '%server_tps_1%': 1000
+  '%server_ram_used%': 2000
+config-version: 2
+components:
+  minimessage-support: true
+  disable-shadow-for-heads: true
+mysql:
+  enabled: false
+per-world-playerlist:
+  enabled: false
+ping-spoof:
+  enabled: false

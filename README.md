@@ -1,20 +1,68 @@
-# Minecraft Server (Local Test)
+# ★ Homieee Mine Server ★
 
-Dự án này là môi trường local để test plugin và viết Skript.
+> 🎮 **Tết 2026 - 1 Tháng Quẩy Cùng AE**
 
-## Yêu cầu
-- **Java 21**: Cần thiết để chạy phiên bản Minecraft 1.21.1.
-- Tải Java 21 tại: [Adoptium](https://adoptium.net/temurin/releases/?version=21)
+Server Minecraft Survival chill cho nhóm bạn chơi chung dịp Tết.
 
-## Cách chạy Server
-1. Chạy file `start.bat`.
-2. Đợi server load lần đầu.
-3. Vào game Minecraft phiên bản 1.21.1, địa chỉ server là `localhost`.
+## 📋 Yêu cầu
 
-## Cấu trúc thư mục quan trọng
-- `plugins/`: Nơi chứa file plugin `.jar`.
-- `plugins/Skript/scripts/`: Nơi bạn viết code Skript (`.sk`).
-- `server.properties`: Cấu hình server (đã được bỏ qua trong git để tránh xung đột).
+- **Java 21+**: [Tải tại Adoptium](https://adoptium.net/temurin/releases/?version=21)
+- **Minecraft 1.21.11** (hoặc 1.21.x)
 
-## Skript Sample
-Đã có sẵn file `plugins/Skript/scripts/test.sk`. Bạn có thể dùng lệnh `/test` trong game để kiểm tra.
+## 🚀 Cách chạy Server
+
+```bash
+# Chạy file start.bat
+# Chọn chế độ:
+#   [1] Port 25565 (mặc định)
+#   [2] Port 25566 (test, tránh đè port)
+#   [3] Port tùy chọn
+```
+
+## 📦 Plugins đã cài
+
+| Plugin | Chức năng | Lệnh chính |
+|--------|-----------|------------|
+| **MiniMOTD** | MOTD đẹp với RGB gradient | `/minimotd reload` |
+| **TAB** | Tablist hiện TPS, RAM, Ping | `/tab reload` |
+| **SkinsRestorer** | Đổi skin (offline mode) | `/skin <tên>` |
+| **SimpleTPA** | Teleport request | `/tpa <player>` |
+| **SimpleVoiceChat** | Voice chat proximity | Nhấn `V` ingame |
+| **Skript** | Custom scripts | `/sk reload all` |
+
+## 🎤 Voice Chat Setup
+
+**Server:** Cần mở port **24454 UDP** (ngoài port game 25565 TCP)
+
+**Client:** Người chơi cần cài mod:
+- [Simple Voice Chat (Fabric)](https://modrinth.com/mod/simple-voice-chat/versions?l=fabric)
+- [Simple Voice Chat (Forge)](https://modrinth.com/mod/simple-voice-chat/versions?l=forge)
+
+## 📁 Cấu trúc thư mục
+
+```
+MinecraftServer/
+├── plugins/
+│   ├── MiniMOTD/          # Config MOTD (tracked)
+│   ├── TAB/               # Config Tablist (tracked)
+│   ├── SimpleTPA/         # Config TPA việt hóa (tracked)
+│   ├── SimpleVoiceChat/   # Config voice chat (tracked)
+│   ├── Skript/scripts/    # Custom scripts (tracked)
+│   └── *.jar              # Plugin files (ignored)
+├── world/                 # World data (ignored)
+├── start.bat              # Launcher với chọn port
+└── server.properties      # Config server
+```
+
+## 🔧 Sau khi clone repo
+
+1. Tải các plugin JAR (xem `plugins/.gitkeep`)
+2. Chạy `start.bat`
+3. Chọn port phù hợp
+4. Enjoy! 🎉
+
+## 🌐 Kết nối
+
+- **Local:** `localhost` hoặc `localhost:PORT`
+- **LAN:** IP nội bộ (hiện khi chạy start.bat)
+- **Internet:** Cần port forward router + IP public

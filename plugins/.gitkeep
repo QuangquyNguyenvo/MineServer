@@ -1,0 +1,20 @@
+# This file keeps the plugins folder in git
+# Plugin JAR files are ignored, only configs are tracked
+# 
+# ===== ĐÃ CÀI SẴN =====
+# - MiniMOTD.jar
+# - TAB.jar
+# - SkinsRestorer.jar
+# - SimpleTPA.jar
+# - SimpleVoiceChat.jar
+# - GSit.jar
+# - Skript.jar
+#
+# ===== TẢI THỦ CÔNG (Tùy chọn - Furniture) =====
+# Xem chi tiết: PLUGINS_DOWNLOAD.md
+#
+# - SCore.jar (Thư viện)
+# - ExecutableItems.jar (Free version)
+# - MyFurniture.jar (Furniture plugin - MIỄN PHÍ)
+#
+# Tải từ: https://www.spigotmc.org/resources
