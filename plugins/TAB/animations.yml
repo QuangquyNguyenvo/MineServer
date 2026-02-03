@@ -1,117 +1,47 @@
-MyAnimation1:
-  change-interval: 100
-  texts:
-    - '&d-&3--------------'
-    - '&3-&d-&3-------------'
-    - '&3--&d-&3------------'
-    - '&3---&d-&3-----------'
-    - '&3----&d-&3----------'
-    - '&3-----&d-&3---------'
-    - '&3------&d-&3--------'
-    - '&3-------&d-&3-------'
-    - '&3--------&d-&3------'
-    - '&3---------&d-&3-----'
-    - '&3----------&d-&3----'
-    - '&3-----------&d-&3---'
-    - '&3------------&d-&3--'
-    - '&3-------------&d-&3-'
-    - '&3--------------&d-'
-    - '&3-------------&d-&3-'
-    - '&3------------&d-&3--'
-    - '&3-----------&d-&3---'
-    - '&3----------&d-&3----'
-    - '&3---------&d-&3-----'
-    - '&3--------&d-&3------'
-    - '&3-------&d-&3-------'
-    - '&3------&d-&3--------'
-    - '&3-----&d-&3---------'
-    - '&3----&d-&3----------'
-    - '&3---&d-&3-----------'
-    - '&3--&d-&3------------'
-    - '&3-&d-&3-------------'
-    - '&d-&3--------------'
-ServerName:
-  change-interval: 300
-  texts:
-  - '&c&lServerName'
-  - '&c&n&lServerName'
-  - '&b&lServerName'
-  - '&b&l&nServerName'
-  - '&e&lServerName'
-  - '&e&n&lServerName'
-
-vote:
+RaumaniaLogo:
   change-interval: 1000
   texts:
-  - '&avote.domain.com'
-  - '&a&nvote.domain.com'
-  - '&5vote.domain.com'
-  - '&5&nvote.domain.com'
-Welcome:
-  change-interval: 400
-  texts:
-  - '&7&lW_'
-  - '&7&lW_'
-  - '&7&lWe_'
-  - '&7&lWel_'
-  - '&7&lWelc_'
-  - '&7&lWelco_'
-  - '&7&lWelcom_'
-  - '&7&lWelcome_'
-  - '&7&lWelcome_'
-  - '&7&lWelcome_'
-  - '&7&lWelcome_'
-  - '&7&lWelcom_'
-  - '&7&lWelco_'
-  - '&7&lWelc_'
-  - '&7&lWel_'
-  - '&7&lWe_'
-  - '&7&lW_'
-  - '&7&lW_'
-time:
-  change-interval: 3000
-  texts:
-    - '&7Time &b%time%'
-    - '&7Date &b%date%'
-barcolors:
-  change-interval:   change-interval: 150
-  texts:
-    - '&aR_'
-    - '&aRA_'
-    - '&aRAU_'
-    - '&aRAUM_'
-    - '&aRAUMA_'
-    - '&aRAUMAN_'
-    - '&aRAUMANI_'
-    - '&aRAUMANIA_'
-    - '&aRAUMANIA &2L_'
-    - '&aRAUMANIA &2LA_'
-    - '&aRAUMANIA &2LAN_'
-    - '&aRAUMANIA &2LAND_'
-    - '&a&lRAUMANIA &2&lLAND'
-    - '&a&lRAUMANIA &2&lLAND'
-    - '&a&lRAUMANIA &2&lLAND'
-    - '&a&lRAUMANIA &2&lLAND'
-    - '&a&lRAUMANIA &2&lLAND'
-    - '&a&lRAUMANIA &2&lLAND'
-    - '&aRAUMANIA &2LAND_'
-    - '&aRAUMANIA &2LAN_'
-    - '&aRAUMANIA &2LA_'
-    - '&aRAUMANIA &2L_'
-    - '&aRAUMANIA_'
-    - '&aRAUMANI_'
-    - '&aRAUMAN_'
-    - '&aRAUMA_'
-    - '&aRAUM_'
-    - '&aRAU_'
+    - '\uE001'
 
-    - '<gradient:#56ab2f:#a8e063>RAUMANIA_</gradient>'
-    - '<gradient:#56ab2f:#a8e063>RAUMANIA_</gradient>'
-DiscordPuls    - '&9discord.gg/jYbRZpd7R8'
-    - '&bdiscord.gg/jYbRZpd7R8'
-    - '&fdiscord.gg/jYbRZpd7R8'
-    - '&bdiscord.gg/jYbRZpd7R8'
-aqua>discord.gg/jYbRZpd7R8</aqua>'
+RaumaniaTyping:
+  change-interval: 150
+  texts:
+    - '<gradient:#56ab2f:#a8e063>R_</gradient>'
+    - '<gradient:#56ab2f:#a8e063>Ra_</gradient>'
+    - '<gradient:#56ab2f:#a8e063>Rau_</gradient>'
+    - '<gradient:#56ab2f:#a8e063>Raum_</gradient>'
+    - '<gradient:#56ab2f:#a8e063>Rauma_</gradient>'
+    - '<gradient:#56ab2f:#a8e063>Rauman_</gradient>'
+    - '<gradient:#56ab2f:#a8e063>Raumani_</gradient>'
+    - '<gradient:#56ab2f:#a8e063>Raumania_</gradient>'
+    - '<gradient:#56ab2f:#a8e063>Raumania _</gradient>'
+    - '<gradient:#56ab2f:#a8e063>Raumania L_</gradient>'
+    - '<gradient:#56ab2f:#a8e063>Raumania La_</gradient>'
+    - '<gradient:#56ab2f:#a8e063>Raumania Lan_</gradient>'
+    - '<gradient:#56ab2f:#a8e063>Raumania Land_</gradient>'
+    - '<bold><gradient:#56ab2f:#a8e063>RAUMANIA LAND</gradient></bold>'
+    - '<bold><gradient:#56ab2f:#a8e063>RAUMANIA LAND</gradient></bold>'
+    - '<bold><gradient:#56ab2f:#a8e063>RAUMANIA LAND</gradient></bold>'
+    - '<bold><gradient:#56ab2f:#a8e063>RAUMANIA LAND</gradient></bold>'
+    - '<bold><gradient:#56ab2f:#a8e063>RAUMANIA LAND</gradient></bold>'
+    - '<bold><gradient:#56ab2f:#a8e063>RAUMANIA LAND</gradient></bold>'
+    - '<bold><gradient:#56ab2f:#a8e063>RAUMANIA LAND</gradient></bold>'
+    - '<gradient:#56ab2f:#a8e063>Raumania Land_</gradient>'
+    - '<gradient:#56ab2f:#a8e063>Raumania Lan_</gradient>'
+    - '<gradient:#56ab2f:#a8e063>Raumania La_</gradient>'
+    - '<gradient:#56ab2f:#a8e063>Raumania L_</gradient>'
+    - '<gradient:#56ab2f:#a8e063>Raumania _</gradient>'
+    - '<gradient:#56ab2f:#a8e063>Raumania_</gradient>'
+    - '<gradient:#56ab2f:#a8e063>Raumania_</gradient>'
+
+DiscordPulse:
+  change-interval: 200
+  texts:
+    - '<white>discord.gg/jYbRZpd7R8</white>'
+    - '<aqua>discord.gg/jYbRZpd7R8</aqua>'
+    - '<white>discord.gg/jYbRZpd7R8</white>'
+    - '<aqua>discord.gg/jYbRZpd7R8</aqua>'
+
 WelcomeRauMa:
   change-interval: 200
   texts:
