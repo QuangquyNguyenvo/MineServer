@@ -180,7 +180,7 @@ delay-back-command: 5
 delay-teleportation: 5
 #Cooldowns
 back-cooldown: 10
-tpa-cooldown: 10
+tpa-cooldown: 100
 tpahere-cooldown: 10
 tpahereall-cooldown: 10
 #To set a custom cooldown, you need to add a permission : simpletpa.cooldown.Y.X where Y is the command and  X are the seconds.
