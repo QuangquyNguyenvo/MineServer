@@ -17,7 +17,7 @@ versions/
 bundler/
 
 # ===== JAR FILES (download separately) =====
-*.jar
+# *.jar
 
 # ===== WORLD FILES (too large for git) =====
 world/
@@ -34,6 +34,7 @@ banned-players.json
 # ===== PLUGINS =====
 # Ignore everything in plugins except what we explicitly keep
 plugins/*
+!plugins/*.jar
 
 # Keep list of plugins to install
 !plugins/.gitkeep
