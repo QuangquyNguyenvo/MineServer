@@ -1,0 +1,113 @@
+# --- PHẦN 1: CẤU HÌNH DỮ LIỆU ---
+on load:
+    delete {biome_data::*}
+    
+    # Cài đặt thời gian hồi cooldown chung cho tất cả Biome (tính bằng giây)
+    # Nghĩa là nếu rời Plain và quay lại trong vòng 60s, bạn sẽ không nhận được hiệu ứng.
+    set {biome_cooldown_setting} to 60 seconds
+    
+    # -----------------------------------------------------------
+    # NHẬP DỮ LIỆU TỪ CONFIG CỦA BẠN
+    # Format: setBiomeData("BIOME", "Message", "EFFECT:SECONDS:LEVEL")
+    # -----------------------------------------------------------
+    
+    setBiomeData("PLAINS", "&aCánh đồng xanh tươi làm bạn cảm thấy khỏe khoắn.", "SPEED:10:1")
+    setBiomeData("DESERT", "&eThời tiết nóng bức làm bạn cảm thấy mệt mỏi.", "HUNGER:10:1")
+    setBiomeData("JUNGLE", "&2Bạn cảm thấy nhanh nhẹn giữa những cây rừng rậm.", "JUMP_BOOST:10:1")
+    setBiomeData("SNOWY_PLAINS", "&bSự lạnh lẽo làm bạn cảm thấy yếu ớt.", "WEAKNESS:10:1")
+    setBiomeData("SWAMP", "&2Đầm lầy làm bạn cảm thấy khó chịu", "POISON:5:1")
+    setBiomeData("FOREST", "&aKhông khí trong lành của rừng làm bạn cảm thấy khỏe mạnh.", "REGENERATION:10:1")
+    setBiomeData("DARK_FOREST", "&8Bóng tối bao quanh bạn.", "SLOWNESS:10:1")
+    setBiomeData("MOUNTAINS", "&7Áp suất cao làm bạn cảm thấy khó thở.", "SLOW_FALLING:15:1")
+    setBiomeData("TAIGA", "&2Bạn cảm thấy lạnh sóng lưng trong khu rừng taiga.", "SLOWNESS:10:1")
+    setBiomeData("SNOWY_TAIGA", "&bTuyết bao phủ dưới chân bạn.", "WEAKNESS:10:1")
+    setBiomeData("SAVANNA", "&6Mặt trời chiếu rực lên cỏ khô.", "HUNGER:10:1")
+    setBiomeData("BADLANDS", "&cLời nguyền của vùng đất khô cằn làm bạn cảm thấy yếu ớt.", "WEAKNESS:10:1")
+    setBiomeData("BEACH", "&eBãi cát ấm áp dưới chân bạn.", "SPEED:10:1")
+    setBiomeData("MANGROVE_SWAMP", "&2Những rễ cây đước làm bạn cảm thấy khó chịu.", "SLOWNESS:10:1")
+    setBiomeData("RIVER", "&bBạn bước qua dòng sông.", "WATER_BREATHING:10:1")
+    setBiomeData("OCEAN", "&3Biển cả rộng lớn chờ đợi bạn khám phá", "WATER_BREATHING:15:1")
+    setBiomeData("DEEP_OCEAN", "&1Biển sâu thẳm đầy bí ẩn.", "WATER_BREATHING:30:1")
+    setBiomeData("NETHER_WASTES", "&4Nơi hoang tàn của địa ngục.", "FIRE_RESISTANCE:20:1")
+    setBiomeData("SOUL_SAND_VALLEY", "&8Tiếng rên rỉ vang vọng khắp thung lũng.", "SLOWNESS:10:1")
+    setBiomeData("CRIMSON_FOREST", "&cRừng máu đỏ rực.", "RESISTANCE:10:1")
+    setBiomeData("WARPED_FOREST", "&bRừng méo mó kỳ lạ.", "SPEED:10:1")
+    setBiomeData("BASALT_DELTAS", "&8Lava nóng chảy quanh bạn.", "RESISTANCE:10:1")
+    setBiomeData("THE_END", "&5Vực thẳm vô tận của The End.", "SLOWNESS:10:1")
+    setBiomeData("END_MIDLANDS", "&5Bạn khám phá vùng đất giữa của The End.", "RESISTANCE:10:1")
+    setBiomeData("END_HIGHLANDS", "&5Tận cùng thế giới", "SPEED:10:1")
+    setBiomeData("END_BARRENS", "&5Vùng đất khô cằn của The End rất khắc nghiệt.", "SLOWNESS:10:1")
+
+    send "&a[BiomeSystem] Đã nạp dữ liệu Biome và Cooldown thành công!" to console
+
+function setBiomeData(biome: text, msg: text, effect: text):
+    set {biome_data::%{_biome}%::msg} to {_msg}
+    set {biome_data::%{_biome}%::effect} to {_effect}
+
+# --- PHẦN 2: LOGIC XỬ LÝ ---
+every 1 second:
+    loop all players:
+        set {_p} to loop-player
+        
+        # 1. Lấy tên Biome hiện tại
+        set {_raw_biome} to "%biome at location of {_p}%"
+        set {_biome_key} to {_raw_biome}
+        replace all " " with "_" in {_biome_key}
+        set {_biome_key} to {_biome_key} in upper case
+        
+        # 2. Phát hiện người chơi thay đổi vùng
+        if {current_biome::%uuid of {_p}%} is not {_biome_key}:
+            
+            # Cập nhật ngay lập tức vị trí mới (để tránh spam vòng lặp)
+            set {current_biome::%uuid of {_p}%} to {_biome_key}
+            
+            # 3. Kiểm tra xem Biome này có trong danh sách hiệu ứng không
+            if {biome_data::%{_biome_key}%::msg} is set:
+                
+                # --- [MỚI] KIỂM TRA COOLDOWN ---
+                set {_can_receive} to false
+                set {_last_time} to {biome_last_received::%uuid of {_p}%::%{_biome_key}%}
+                set {_cd_limit} to {biome_cooldown_setting}
+                
+                # Nếu chưa từng nhận (not set) HOẶC đã qua thời gian chờ
+                if {_last_time} is not set:
+                    set {_can_receive} to true
+                else if difference between {_last_time} and now > {_cd_limit}:
+                    set {_can_receive} to true
+                
+                # --- NẾU ĐƯỢC PHÉP NHẬN HIỆU ỨNG ---
+                if {_can_receive} is true:
+                    
+                    # Cập nhật thời gian nhận mới nhất là BÂY GIỜ
+                    set {biome_last_received::%uuid of {_p}%::%{_biome_key}%} to now
+                    
+                    # Gửi thông báo
+                    set {_msg} to {biome_data::%{_biome_key}%::msg}
+                    send action bar "%{_msg}%" to {_p}
+                    
+                    # Xử lý trao hiệu ứng
+                    set {_data} to {biome_data::%{_biome_key}%::effect}
+                    set {_split::*} to {_data} split at ":"
+                    set {_eff_name} to {_split::1}
+                    set {_seconds} to {_split::2}
+                    set {_level} to {_split::3} parsed as number
+                    
+                    # Chuyển đổi để chạy lệnh
+                    set {_mc_effect} to {_eff_name} in lower case
+                    set {_amplifier} to {_level} - 1
+                    if {_amplifier} < 0:
+                        set {_amplifier} to 0
+                    
+                    # Thực thi lệnh console (Cách ổn định nhất)
+                    execute console command "effect give %{_p}% minecraft:%{_mc_effect}% %{_seconds}% %{_amplifier}%"
+
+        # Xóa cache nếu đi vào vùng đất lạ không có trong config
+        else if {biome_data::%{_biome_key}%::msg} is not set:
+            delete {current_biome::%uuid of {_p}%}
+
+command /resetbiome:
+    permission: op
+    trigger:
+        delete {current_biome::%uuid of player%}
+        delete {biome_last_received::%uuid of player%::*}
+        send "&aĐã reset biome cache và cooldown của bạn!"
