@@ -27,7 +27,7 @@ settings:
     maxAbsorption:
       max: 2048.0
     maxHealth:
-      max: 1024.0
+      max: 100000000
     movementSpeed:
       max: 1024.0
     attackDamage:
@@ -158,6 +158,8 @@ world-settings:
       tile: 50
       entity: 50
     max-tnt-per-tick: 100
+    verbose: false
+  worldeditregentempworld:
     verbose: false
 advancements:
   disable-saving: false
