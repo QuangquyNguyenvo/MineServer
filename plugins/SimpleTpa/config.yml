@@ -30,66 +30,67 @@ prefix: "&c[&6SimpleTpa&c]"
 # TO DISABLE A MESSAGE - SET IT TO - NONE
 # EXAMPLE:
 # Console-Isnt-Player: "none"
-Console-Isnt-Player: "&6Console can't use &cSimpleTpa&6!"
-Disabled-World-Message: "&6You can't use &cSimpleTpa &6in this World!"
-Teleport-Message: "&6You will be teleported in &c%time% &6seconds!"
-Teleport-Message-TPAUTO: "&6You will be teleported in &c%time% &6seconds! Don't move!"
-Teleport-Message-Back-To-Player: "&6You &caccepted &6the teleport request!"
-Player-Is-Null: "&6The player is not &conline&6!"
-Player-Doesnt-Have-Back-Point: "&6The player doesn't have any back locations!"
-Player-Doesnt-Have-Back-Point-1: "&6You don't have any back locations!"
-Cooldown-Message: "&6You can't use that command for %time% seconds yet!"
-Death-Message: "&6To teleport to your death location use &c/back"
-Teleport-Message-Back-To-Sender-TPHEREALL: "&6Sending a teleport here request to &ceveryone&6!"
-No-Permission-Message: "&6You don't have permission for this command!"
-TpaToggle-Deactivated-Player-2: "&c%player% &6disabled the teleportation to you!"
-TpaToggle-Activated-Player-2: "&c%player% &6enabled the teleportation to you!"
-TpaToggle-Deactivated-Player: "&6You &cdisabled&6 the teleportation for &c%player%&6."
-TpaToggle-Activated-Player: "&6You &cenabled&6 the teleportation for &c%player%&6."
-TpaToggle-Deactivated: "&6You &cdisabled&6 the teleportation to you."
-TpaToggle-Activated: "&6You &cenabled&6 the teleportation to you."
-TpaToggled-Player-Message: "&6The player has &cdisabled &6the teleportation to him!"
-Player-Is-Player: "&6You can't teleport to &cyourself&6!"
-Player-Is-Player-tpignore: "&6You can't ignore &cyourself&6!"
-Player-Is-Ignored: "&6The player has been &cignored&6!"
-Player-Is-Already-Ignored: "&6The player was &cunblocked&6! If you want to block him, use the command again!"
-Already-A-TP-Request: "&6You already have &csent &6a teleport request! If you want to cancel it &c/tpcancel player "
-Tpa-Usage-Message: "&6Please use: &c/tpa (player)"
-TpaIgnore-Usage-Message: "&6Please use: &c/tpaignore (player)"
-Timed-Out-Message: "&6Your &cteleport request&6 has timed out!"
-Sending-Teleport-Request: "&6Sending a teleport request to &c%player%&6. If you want to cancel it &c/tpcancel player "
-Accept-Message: "&6To accept the teleport request, type &c/tpaccept"
-Deny-Message: "&6To deny the teleport request, type &c/tpdeny"
-Sent-Request-On-You: "&c%player% &6has sent you a teleport request!"
-Timed-Out-Here-Message: "&6Your teleport here request has &ctimed out!"
-Sending-Teleport-Here-Request: "&6Sending a teleport here request to &c%player%&6. If you want to cancel it &c/tpcancel player"
-Sent-Here-Request-On-You: "&c%player% &6has sent you a teleport here request!"
-Already-A-TPHere-Request: "&6You already have &csent &6a teleport here request! If you want to cancel it &c/tpcancel player"
-Tpa-Here-Usage-Message: "&6Please use: &c/tpahere (player)"
-No-Teleport-Requests: "&6You don't have any teleport requests!"
-Invalid-Player: "&6It seems the player who was teleporting to you has left the server!"
-Teleport-Message-Back-To-Sender: "&c%player% &6has accepted your teleportation request."
-Teleported-Message: "&6Teleported!"
+Console-Isnt-Player: "&6Console không thể sử dụng &cSimpleTpa&6!"
+Disabled-World-Message: "&6Bạn không thể sử dụng &cSimpleTpa &6tại Thế giới này!"
+Teleport-Message: "&6Bạn sẽ được dịch chuyển sau &c%time% &6giây!"
+Teleport-Message-TPAUTO: "&6Bạn sẽ được dịch chuyển sau &c%time% &6giây! Đừng di chuyển!"
+Teleport-Message-Back-To-Player: "&6Bạn đã &cchấp nhận &6yêu cầu dịch chuyển!"
+Player-Is-Null: "&6Người chơi hiện không &ctrực tuyến&6!"
+Player-Doesnt-Have-Back-Point: "&6Người chơi không có bất kỳ địa điểm quay lại nào!"
+Player-Doesnt-Have-Back-Point-1: "&6Bạn không có bất kỳ địa điểm quay lại nào!"
+Cooldown-Message: "&6Bạn chưa thể sử dụng lệnh này trong %time% giây nữa!"
+Death-Message: "&6Để dịch chuyển đến địa điểm tử nạn, hãy dùng &c/back"
+Teleport-Message-Back-To-Sender-TPHEREALL: "&6Đang gửi yêu cầu dịch chuyển tới đây cho &ctất cả mọi người&6!"
+No-Permission-Message: "&6Bạn không có quyền sử dụng lệnh này!"
+TpaToggle-Deactivated-Player-2: "&c%player% &6đã tắt tính năng dịch chuyển tới họ!"
+TpaToggle-Activated-Player-2: "&c%player% &6đã bật tính năng dịch chuyển tới họ!"
+TpaToggle-Deactivated-Player: "&6Bạn đã &ctắt&6 tính năng dịch chuyển đối với &c%player%&6."
+TpaToggle-Activated-Player: "&6Bạn đã &cbật&6 tính năng dịch chuyển đối với &c%player%&6."
+TpaToggle-Deactivated: "&6Bạn đã &ctắt&6 tính năng dịch chuyển tới bạn."
+TpaToggle-Activated: "&6Bạn đã &cbật&6 tính năng dịch chuyển tới bạn."
+TpaToggled-Player-Message: "&6Người chơi này đã &ctắt &6tính năng dịch chuyển tới họ!"
+Player-Is-Player: "&6Bạn không thể dịch chuyển tới &cchính mình&6!"
+Player-Is-Player-tpignore: "&6Bạn không thể chặn &cchính mình&6!"
+Player-Is-Ignored: "&6Người chơi đã bị &cchặn&6!"
+Player-Is-Already-Ignored: "&6Người chơi đã được &cbỏ chặn&6! Nếu muốn chặn lại, hãy dùng lệnh lần nữa!"
+Already-A-TP-Request: "&6Bạn đã &cgửi &6một yêu cầu dịch chuyển rồi! Nếu muốn hủy, dùng &c/tpcancel player "
+Tpa-Usage-Message: "&6Vui lòng dùng: &c/tpa (tên_người_chơi)"
+TpaIgnore-Usage-Message: "&6Vui lòng dùng: &c/tpaignore (tên_người_chơi)"
+Timed-Out-Message: "&6&cYêu cầu dịch chuyển&6 của bạn đã hết hạn!"
+Sending-Teleport-Request: "&6Đang gửi yêu cầu dịch chuyển tới &c%player%&6. Nếu muốn hủy, dùng &c/tpcancel player "
+Accept-Message: "&6Để chấp nhận yêu cầu, gõ &c/tpaccept"
+Deny-Message: "&6Để từ chối yêu cầu, gõ &c/tpdeny"
+Sent-Request-On-You: "&c%player% &6đã gửi cho bạn một yêu cầu dịch chuyển!"
+Timed-Out-Here-Message: "&6Yêu cầu dịch chuyển người khác tới đây đã &chết hạn!"
+Sending-Teleport-Here-Request: "&6Đang gửi yêu cầu dịch chuyển tới đây cho &c%player%&6. Nếu muốn hủy, dùng &c/tpcancel player"
+Sent-Here-Request-On-You: "&c%player% &6đã gửi yêu cầu dịch chuyển bạn tới chỗ họ!"
+Already-A-TPHere-Request: "&6Bạn đã &cgửi &6yêu cầu dịch chuyển người khác tới đây rồi! Nếu muốn hủy, dùng &c/tpcancel player"
+Tpa-Here-Usage-Message: "&6Vui lòng dùng: &c/tpahere (tên_người_chơi)"
+No-Teleport-Requests: "&6Bạn không có yêu cầu dịch chuyển nào!"
+Invalid-Player: "&6Có vẻ như người chơi đang dịch chuyển tới bạn đã thoát server!"
+Teleport-Message-Back-To-Sender: "&c%player% &6đã chấp nhận yêu cầu dịch chuyển của bạn."
+Teleported-Message: "&6Đã dịch chuyển!"
 #for Teleported-Message-TpAuto  %player% placeholder for player name
-Teleported-Message-TpAuto: "&c%player% &6has teleported to you! You have the /tpauto features turned on!"
-Move-Cancel-Message: "&6You have moved and the teleport request has been removed!"
-Rejected-Sender: "&6The player has rejected your &crequest&6!"
-Rejected-Message: "&6You have rejected the &crequest&6!"
-Player-Is-In-Disabled-World: "&6The player you wanted to teleport to is in &cdisabled world&6!"
-Tpcancel-Usage-Message: "&6Please use: &c/tpcancel (player)"
-Error-Cancelling-Request: "&6You can't cancel your own &crequest!"
-Request-Cancelled: "&6You successfully cancelled the &cteleportation request&6!"
-Death-Message-Coords: "&6Your death location is: &c%coords%&6!"
-Time-Left: "&6You have &c%seconds% &6seconds to accept or deny the request"
-Damaged-Cancel-Message: "&6You were damaged and the teleport request has been removed!"
-Player-In-Spectator: "&cYou cannot send teleport requests to %player% because they're in spectator mode!"
-Different-Gamemode: "&6You can't use any teleportation commands, because you are in &cSPECTATOR &6mode!"
-World-Doesnt-Exists-Or-Unloaded: "&6The world you're trying to teleport to is either unloaded or doesn't exist!"
-Enabled-TpAuto: "&6From now on you will &cautomatically accept &6all /tpa requests!"
-Disabled-TpAuto: "&6From now on you &cwon't automatically accept &6all /tpa requests!"
-Player-Has-Ignored-You: "&6The player has &cignored &6your teleportation requests!"
-Player-Not-Same-World: "&6The player you have been trying to &cteleport &6is not in the same &cworld&6!"
-No-Safe-Location: "&6There is not &csafe spot&6 to be teleported to!"
+Teleported-Message-TpAuto: "&c%player% &6đã dịch chuyển tới bạn! Bạn đang bật tính năng /tpauto!"
+Move-Cancel-Message: "&6Bạn đã di chuyển và yêu cầu dịch chuyển bị hủy bỏ!"
+Rejected-Sender: "&6Người chơi đã từ chối &cyêu cầu&6 của bạn!"
+Rejected-Message: "&6Bạn đã từ chối &cyêu cầu&6!"
+Player-Is-In-Disabled-World: "&6Người bạn muốn dịch chuyển tới đang ở &cthế giới bị vô hiệu hóa&6!"
+Tpcancel-Usage-Message: "&6Vui lòng dùng: &c/tpcancel (tên_người_chơi)"
+Error-Cancelling-Request: "&6Bạn không thể hủy &cyêu cầu &6của chính mình!"
+Request-Cancelled: "&6Bạn đã hủy thành công &cyêu cầu dịch chuyển&6!"
+Death-Message-Coords: "&6Vị trí tử nạn của bạn là: &c%coords%&6!"
+Time-Left: "&6Bạn có &c%seconds% &6giây để chấp nhận hoặc từ chối yêu cầu"
+Damaged-Cancel-Message: "&6Bạn bị nhận sát thương nên yêu cầu dịch chuyển đã bị hủy!"
+Player-In-Spectator: "&cBạn không thể gửi yêu cầu tới %player% vì họ đang ở chế độ khán giả!"
+Different-Gamemode: "&6Bạn không thể dùng lệnh dịch chuyển vì bạn đang ở chế độ &cKHÁN GIẢ&6!"
+World-Doesnt-Exists-Or-Unloaded: "&6Thế giới bạn đang cố dịch chuyển tới chưa được tải hoặc không tồn tại!"
+Enabled-TpAuto: "&6Từ giờ bạn sẽ &ctự động chấp nhận &6mọi yêu cầu /tpa!"
+Disabled-TpAuto: "&6Từ giờ bạn sẽ &ckhông tự động chấp nhận &6các yêu cầu /tpa nữa!"
+Player-Has-Ignored-You: "&6Người chơi đã &cchặn &6các yêu cầu dịch chuyển của bạn!"
+Player-Not-Same-World: "&6Người chơi bạn đang muốn &cdịch chuyển &6không ở cùng &cthế giới&6!"
+No-Safe-Location: "&6Không có &cđiểm an toàn&6 nào để dịch chuyển tới!"
+
 ## BUTTONS
 #Here you can find the colors https://hub.spigotmc.org/javadocs/bukkit/org/bukkit/ChatColor.html
 
@@ -174,15 +175,15 @@ safe-teleport:
 #Integers
 invincibility-seconds: 5
 #This will keep the teleport request alive for X seconds
-keep-alive: 60
+keep-alive: 20
 #This will delay the teleportation for X seconds
-delay-back-command: 5
-delay-teleportation: 5
+delay-back-command: 3
+delay-teleportation: 3
 #Cooldowns
-back-cooldown: 10
+back-cooldown: 100
 tpa-cooldown: 100
-tpahere-cooldown: 10
-tpahereall-cooldown: 10
+tpahere-cooldown: 100
+tpahereall-cooldown: 100
 #To set a custom cooldown, you need to add a permission : simpletpa.cooldown.Y.X where Y is the command and  X are the seconds.
 #The options for commands are: tpa | tpahere | back | tpahereall
 #Example: simpletpa.cooldown.tpa.300 | simpletpa.cooldown.tpahere.300 | simpletpa.cooldown.tpahereall.300 | simpletpa.cooldown.back.300
