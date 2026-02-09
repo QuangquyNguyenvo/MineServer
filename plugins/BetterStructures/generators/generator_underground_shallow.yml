@@ -1,0 +1,7 @@
+isEnabled: true
+structureType:
+- UNDERGROUND_SHALLOW
+validWorldEnvironments:
+- NORMAL
+- CUSTOM
+treasureFilename: treasure_overworld_underground.yml

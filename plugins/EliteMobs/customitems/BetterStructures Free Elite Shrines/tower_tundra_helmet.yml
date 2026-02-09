@@ -1,0 +1,15 @@
+name: "&9Frosted Helmet"
+material: CHAINMAIL_HELMET
+lore:
+- "Seems like it can feeze and get"
+- "stuck easily..."
+enchantments:
+- PROTECTION_ENVIRONMENTAL,4
+- DURABILITY,3
+- WATER_WORKER,1
+- BINDING_CURSE,1
+- OXYGEN,3
+
+scalability: scalable
+itemType: unique
+# Generated with https://magmaguy.com/webapp/webapp.html !

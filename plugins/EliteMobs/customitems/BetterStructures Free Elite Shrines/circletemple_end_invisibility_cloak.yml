@@ -1,0 +1,13 @@
+name: "&5Invisibility Cloak"
+material: IRON_CHESTPLATE
+lore:
+- "Makes you one with your"
+- "surroundings"
+enchantments:
+- PROTECTION_ENVIRONMENTAL,4
+- DURABILITY,3
+potionEffects:
+- INVISIBILITY,2,self,onHit
+scalability: scalable
+itemType: unique
+# Generated with https://magmaguy.com/webapp/webapp.html !

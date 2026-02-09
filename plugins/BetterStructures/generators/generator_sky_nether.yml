@@ -1,0 +1,6 @@
+isEnabled: true
+structureType:
+- SKY
+validWorldEnvironments:
+- NETHER
+treasureFilename: treasure_nether.yml

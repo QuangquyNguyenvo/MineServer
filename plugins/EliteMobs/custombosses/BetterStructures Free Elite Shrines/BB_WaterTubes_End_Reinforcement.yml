@@ -1,0 +1,18 @@
+entityType: ZOMBIE
+name: "Worm"
+level: dynamic
+healthMultiplier: 0.3
+damageMultiplier: 0.4
+powers:
+- attack_push.yml
+- attack_blinding.yml
+- attack_weakness.yml
+normalizedCombat: true
+dropsEliteMobsLoot: false
+dropsVanillaLoot: false
+dropsRandomLoot: false
+disguise: "ENDERMITE"
+trails: ASH
+leashRadius: 15
+movementSpeedAttribute: 0.3
+# Generated with https://magmaguy.com/webapp/webapp.html !

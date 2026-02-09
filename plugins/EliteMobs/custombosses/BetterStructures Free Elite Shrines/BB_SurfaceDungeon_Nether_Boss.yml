@@ -1,0 +1,23 @@
+entityType: WITHER_SKELETON
+name: "$minibossLevel &4Ziburini"
+level: dynamic
+healthMultiplier: 3
+damageMultiplier: 1
+mainHand: STONE_SWORD
+powers:
+- BB_SurfaceDungeon_Nether_SoulBound.yml
+- invulnerability_fire.yml
+- flame_pyre.yml
+- flamethrower.yml
+normalizedCombat: true
+dropsEliteMobsLoot: true
+dropsVanillaLoot: false
+dropsRandomLoot: false
+trails: FLAME
+isRegionalBoss: true
+leashRadius: 20
+removeAfterDeath: true
+uniqueLootList:
+- filename: surfacedungeon_nether_flame_blade.yml
+  chance: 1
+# Generated with https://magmaguy.com/webapp/webapp.html !

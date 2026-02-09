@@ -1,0 +1,33 @@
+entityType: STRAY
+name: "$minibossLevel &9Chamber Guardian"
+level: dynamic
+healthMultiplier: 3
+damageMultiplier: 2
+isBaby: false
+helmet: CHAINMAIL_HELMET
+chestplate: CHAINMAIL_CHESTPLATE
+leggings: CHAINMAIL_LEGGINGS
+boots: CHAINMAIL_BOOTS
+mainHand: BOW
+powers:
+- lightning_bolts.yml
+- arrow_fireworks.yml
+- BB_HiddenChamber_Tundra_DreamTeam.yml
+normalizedCombat: true
+dropsEliteMobsLoot: true
+dropsVanillaLoot: false
+dropsRandomLoot: false
+trails: SNOWFLAKE
+isRegionalBoss: true
+leashRadius: 20
+removeAfterDeath: true
+uniqueLootList:
+- filename: hiddenchamber_tundra_guardian_helmet.yml
+  chance: 0.25
+- filename: hiddenchamber_tundra_guardian_leggings.yml
+  chance: 0.25
+- filename: hiddenchamber_tundra_guardian_boots.yml
+  chance: 0.25
+- filename: hiddenchamber_tundra_guardian_chestplate.yml
+  chance: 0.25
+# Generated with https://magmaguy.com/webapp/webapp.html !

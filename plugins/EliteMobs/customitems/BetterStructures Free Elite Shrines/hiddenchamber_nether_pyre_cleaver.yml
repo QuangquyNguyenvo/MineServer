@@ -1,0 +1,13 @@
+name: "&4Pyre's Cleaver"
+material: GOLDEN_AXE
+lore:
+- "Awarded to those who free the hidden chamber"
+- "from its monster "
+enchantments:
+- DAMAGE_ALL,5
+- DURABILITY,3
+- FIRE_ASPECT,2
+
+scalability: scalable
+itemType: unique
+# Generated with https://magmaguy.com/webapp/webapp.html !

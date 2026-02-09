@@ -1,0 +1,23 @@
+entityType: HUSK
+name: "$minibossLevel &2Earth Summoner"
+level: dynamic
+healthMultiplier: 4
+damageMultiplier: 2
+isBaby: false
+powers:
+- shield_wall.yml
+- attack_push.yml
+- BB_ThroneRoom_Barren_EarthQuake.yml
+- attack_lightning.yml
+normalizedCombat: true
+dropsEliteMobsLoot: true
+dropsVanillaLoot: false
+dropsRandomLoot: false
+trails: ASH
+isRegionalBoss: true
+leashRadius: 20
+removeAfterDeath: true
+uniqueLootList:
+- filename: throneroom_barren_Gravity_boots.yml
+  chance: 1
+# Generated with https://magmaguy.com/webapp/webapp.html !

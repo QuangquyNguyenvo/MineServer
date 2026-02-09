@@ -1,0 +1,18 @@
+name: "&5Void Launcher"
+material: IRON_SWORD
+lore:
+- "Rewarded to those who slay"
+- "the Voider"
+enchantments:
+- DAMAGE_ALL,4
+- DURABILITY,3
+- FIRE_ASPECT,2
+- KNOCKBACK,2
+- VANISHING_CURSE,1
+potionEffects:
+- LEVITATION,1,target,onHit
+- WEAKNESS,1,self,onHit
+- SLOW,1,self,onHit
+scalability: scalable
+itemType: unique
+# Generated with https://magmaguy.com/webapp/webapp.html !

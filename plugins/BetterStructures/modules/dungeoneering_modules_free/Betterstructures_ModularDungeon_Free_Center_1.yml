@@ -1,0 +1,27 @@
+isEnabled: true
+minY: -4
+maxY: 20
+enforceVerticalRotation: false
+noRepeat: false
+weight: 10.0
+repetitionPenalty: 0.0
+enforceHorizontalRotation: false
+biome: default
+minecraftBiome: 'null'
+cloneConfig: ''
+isAutomaticallyPlaced: false
+borders:
+  north:
+  - path
+  south:
+  - path
+  east:
+  - path
+  west:
+  - path
+  up:
+  - nothing
+  - floor
+  down:
+  - nothing
+  - floor

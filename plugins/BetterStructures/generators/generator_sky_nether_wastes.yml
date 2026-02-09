@@ -1,0 +1,8 @@
+isEnabled: true
+structureType:
+- SKY
+treasureFilename: treasure_nether.yml
+validBiomesV2:
+- minecraft:nether_wastes
+- minecraft:custom
+- terra:origen/origen/inferno_isle

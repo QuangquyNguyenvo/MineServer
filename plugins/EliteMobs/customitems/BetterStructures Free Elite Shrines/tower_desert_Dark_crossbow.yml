@@ -1,0 +1,13 @@
+name: "&6Chimera"
+material: CROSSBOW
+lore:
+- "Maybe you shouldn't keep your"
+- "enemies closer after all."
+enchantments:
+- PIERCING,4
+- MULTISHOT,1
+- DURABILITY,3
+
+scalability: scalable
+itemType: unique
+# Generated with https://magmaguy.com/webapp/webapp.html !

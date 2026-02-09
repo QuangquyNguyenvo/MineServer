@@ -1,0 +1,15 @@
+name: "&6Villager's Cloak"
+material: LEATHER_CHESTPLATE
+lore:
+- "Once owned by an almighty villager!"
+- "Sadly it seems to have been corrupted..."
+enchantments:
+- PROTECTION_ENVIRONMENTAL,5
+- DURABILITY,3
+- VANISHING_CURSE,1
+potionEffects:
+- HUNGER,2,self,continuous
+- WEAKNESS,1,self,continuous
+scalability: scalable
+itemType: unique
+# Generated with https://magmaguy.com/webapp/webapp.html !

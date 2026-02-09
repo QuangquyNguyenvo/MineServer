@@ -1,0 +1,61 @@
+powerType: UNIQUE
+eliteScript:
+  TriggerManager:
+    Events:
+    - EliteMobDamagedByPlayerEvent
+    Actions:
+    - action: SET_MOB_AI
+      bValue: false
+      duration: 700
+      Target:
+        targetType: SELF
+    - action: MAKE_INVULNERABLE
+      invulnerable: true
+      duration: 700
+      Target:
+        targetType: SELF
+    - action: TELEPORT
+      FinalTarget:
+        targetType: SELF_SPAWN
+        offset: 0,7,0
+      Target:
+        targetType: SELF
+      wait: 10
+    - action: MESSAGE
+      sValue: "&5[BOSS]:&fMy helpers, you are summoned!"
+      Target:
+        targetType: NEARBY_PLAYERS
+        range: 20
+      wait: 40
+    - action: MESSAGE
+      sValue: "&5[BOSS]:&fCome and help me with this dispicable being!"
+      Target:
+        targetType: NEARBY_PLAYERS
+        range: 20
+      wait: 60
+    - action: RUN_SCRIPT
+      wait: 80
+      repeatEvery: 100
+      times: 5
+      scripts:
+      - "Reinforcement"
+    Cooldowns:
+      local: 99900
+      global: 500
+      
+      
+  Reinforcement:
+    Zone:
+      shape: CYLINDER
+      radius: 7
+      height: 1
+      Target:
+        targetType: SELF_SPAWN
+        offset: 0,13,0
+    Actions:
+    - action: SUMMON_REINFORCEMENT
+      sValue: "BB_HiddenChamber_Tundra_Reinforcement.yml"
+      Target:
+        targetType: ZONE_FULL
+        coverage: 0.011
+# Generated with https://magmaguy.com/webapp/webapp.html !

@@ -1,0 +1,23 @@
+entityType: CAVE_SPIDER
+name: "$minibossLevel &dSilk Queen"
+level: dynamic
+healthMultiplier: 3
+damageMultiplier: 1
+isBaby: false
+powers:
+- BB_ThroneRoom_Grasslands_Sting.yml
+- invulnerability_fire.yml
+- moonwalk.yml
+- attack_vacuum.yml
+normalizedCombat: true
+dropsEliteMobsLoot: true
+dropsVanillaLoot: false
+dropsRandomLoot: false
+trails: STRING
+isRegionalBoss: true
+leashRadius: 30
+removeAfterDeath: true
+uniqueLootList:
+- filename: throneroom_grassland_talisman.yml
+  chance: 1
+# Generated with https://magmaguy.com/webapp/webapp.html !

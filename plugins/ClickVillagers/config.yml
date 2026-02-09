@@ -1,0 +1,117 @@
+# ---------------------------------------------------------
+# ClickVillagers Config
+# NOTE: RELOAD/RESTART SERVER FOR CHANGES TO TAKE EFFECT
+# ---------------------------------------------------------
+
+_version: 7
+
+# Language of the plugin.
+# Available languages: en_US, de_DE, ru_RU, vi_VN
+language: en_US
+
+# Whether to check for updates on server start.
+# Recommended!
+check_updates: true
+
+# Whether claimed villagers can take damage.
+claimed_damage: false
+
+# Whether claimed villagers are immune to the /kill command.
+# Won't do anything if "claimed-villagers-take-damage" is enabled.
+claimed_immune_kill_command: true
+
+# Whether players can reset trades of villagers inside
+# the trading menu.
+allow_resetting_trades: false
+
+# ---------------------------------------------------------
+# Hopper Settings
+# ---------------------------------------------------------
+
+# Whether hoppers should tick.
+tick_hoppers: true
+
+# The rate at which villager hoppers should tick. (in ticks)
+# You can increase this value to reduce lag, but it will also reduce
+# the speed at which villagers are picked up.
+hopper_tick_rate: 20
+
+# The maximum amount of villager hoppers a chunk can hold.
+# You can use this to prevent lag/spam.
+# -1 will disable the limit.
+hopper_limit_per_chunk: -1
+
+# Whether baby villagers should be ignored by villager hoppers.
+ignore_baby_villagers: true
+
+# Whether claimed villagers should be ignored by villager hoppers.
+ignore_claimed_villagers: true
+
+# Whether to register the villager hopper recipe.
+# If this is disabled, players won't be able to craft villager hoppers regularly.
+hopper_recipe: true
+
+# Weather to display the emerald frame on villager hoppers.
+# WARNING: It might be hard to distinguish villager hoppers from regular
+# hoppers when this setting is disabled.
+hopper_block_display: true
+
+# The range at which the emerald frame should be displayed..
+hopper_block_display_view_range: 1.0
+
+# ---------------------------------------------------------
+# Partner Settings
+# ---------------------------------------------------------
+
+# Maximum number of partners per player.
+partner_limit_per_player: 10
+
+# Whether to validate partner names.
+# If this is enabled, players can only add players that played on the
+# server before as trading partners.
+# If this is disabled, players can add any name as a trading partner,
+# even if that player doesn't exist.
+validate_partner_names: true
+
+# ---------------------------------------------------------
+# Trade Settings
+# ---------------------------------------------------------
+
+# Whether to show the trades of villagers when they are picked up.
+# Only relevant trades are shown.
+show_trades: true
+
+# Format relevant trades on picked up villagers.
+# This will hide trades that are most likely not useful,
+# and highlight important trades
+# with custom formatting and emojis.
+format_trades: true
+
+# ---------------------------------------------------------
+# Other
+# ---------------------------------------------------------
+
+# Cooldown for picking up and claiming villagers in seconds.
+# This is useful to prevent players from collecting villagers very quickly.
+# Claimed villagers will not be affected by the cooldown.
+cooldown: 0
+
+# Whether to allow zombie villagers to be picked up.
+# If this is disabled, zombie villagers will not be picked up by villager hoppers.
+allow_zombie_villagers: true
+
+# Whether picking up claimed villagers should bypass permissions.
+# If this is enabled, players can pick up villagers they claimed
+# even if they don't have the "clickvillagers.pickup" permission.
+claimed_villagers_bypass_permissions: false
+
+# Whether dispensers can dispense picked up villagers.
+enable_dispensers: true
+
+# Set a custom model data for the picked up villagers based on professions.
+# This is useful for resource packs that want to change the model/texture of picked up villagers.
+# Value 0 will not change the model.
+custom_model_datas:
+  baby: 0
+  zombie: 0
+  librarian: 0

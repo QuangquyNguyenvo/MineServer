@@ -1,0 +1,33 @@
+permissions:
+  insufficient: '&cYou don''t have enough permissions to perform this action!'
+  console-cannot-exec: '&cOnly players can execute this command.'
+command:
+  wrong-arg-length: '&cToo many or too little arguments provided!'
+  unknown: '&cUnknown subcommand.'
+  help:
+    postive-pages: '&cThe page specified must be a positive number!'
+    desc: Displays a list of commands for this plugin.
+  locate:
+    novanilla: '&c&lFor terraformgenerator worlds, use &e&l/terra locate &c&linstead!'
+    structure:
+      not:
+        enabled: '&cThe specified structure was not enabled!'
+    locate:
+      coords: '&aLocated at X: %x% Z: %z%'
+    searching: '&bSearching for structure asynchronously. Please wait...'
+    list:
+      header: '&e-==[&bStructure Handlers&e]==-'
+      entry: '&e - &b%entry%'
+    completed:
+      task: '&aCompleted Locate task (%time%ms)'
+    desc: Locates nearest TerraformGenerator structures. Do /terra locate for all
+      searchable structures.
+  locatebiome:
+    invalidbiome: '&cInvalid Biome. Valid Biomes:'
+    not:
+      in:
+        '5000': '&cCould not find this biome within 5000 blocks.'
+    disabled: '&cThis biome is disabled.'
+    desc: Tries to locate a certain biome
+  fixercacheflush:
+    desc: Flushes the chunk fixer cache.

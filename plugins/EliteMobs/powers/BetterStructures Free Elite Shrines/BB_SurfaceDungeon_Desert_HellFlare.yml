@@ -1,0 +1,48 @@
+powerType: UNIQUE
+eliteScript:
+  TriggerManager:
+    Events:
+    - EliteMobDamagedByPlayerEvent
+    Zone:
+      shape: STATIC_RAY
+      Target2:
+        targetType: DIRECT_TARGET
+      Target:
+        targetType: SELF
+    Actions:
+    - action: SPAWN_PARTICLE
+      particles:
+      - particle: FLAME
+      Target:
+        targetType: ZONE_FULL
+      repeatEvery: 4
+      times: 5
+    - action: SPAWN_FIREWORKS
+      vValue: 0,-0.3,0
+      power: 0
+      flicker: true
+      fireworkEffects:
+      - [ORANGE]
+      Target:
+        targetType: DIRECT_TARGET
+      wait: 20
+    - action: DAMAGE
+      multiplier: 0.5
+      Target:
+        targetType: DIRECT_TARGET
+      wait: 25
+    - action: PUSH
+      vValue: 0.7,0.7,0.7
+      Target:
+        targetType: DIRECT_TARGET
+      wait: 25
+    - action: SPAWN_PARTICLE
+      particles:
+      - particle: EXPLOSION_LARGE
+      Target:
+        targetType: DIRECT_TARGET
+      wait: 25
+    Cooldowns:
+      local: 400
+      global: 200
+# Generated with https://magmaguy.com/webapp/webapp.html !

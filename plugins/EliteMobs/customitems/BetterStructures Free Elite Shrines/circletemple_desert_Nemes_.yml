@@ -1,0 +1,13 @@
+name: "&6Nemes"
+material: GOLDEN_HELMET
+lore:
+- "Said to hold great power"
+enchantments:
+- PROTECTION_ENVIRONMENTAL,4
+- THORNS,3
+- DURABILITY,3
+potionEffects:
+- FIRE_RESISTANCE,1,self,continuous
+scalability: scalable
+itemType: unique
+# Generated with https://magmaguy.com/webapp/webapp.html !

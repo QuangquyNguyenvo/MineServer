@@ -1,0 +1,11 @@
+name: "&dCaster's Charm"
+material: EMERALD
+lore:
+- "Used by the caster to get "
+- "into unreachable places"
+
+potionEffects:
+- LEVITATION,2,self,onHit
+scalability: scalable
+itemType: unique
+# Generated with https://magmaguy.com/webapp/webapp.html !

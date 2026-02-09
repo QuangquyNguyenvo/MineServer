@@ -1,0 +1,6 @@
+isEnabled: true
+structureType:
+- SURFACE
+validWorldEnvironments:
+- THE_END
+treasureFilename: treasure_end.yml

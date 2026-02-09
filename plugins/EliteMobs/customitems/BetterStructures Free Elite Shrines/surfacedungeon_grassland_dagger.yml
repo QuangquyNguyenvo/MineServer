@@ -1,0 +1,13 @@
+name: "&dMaster's Dagger"
+material: IRON_AXE
+lore:
+- "Rewarded to the biggest champions!"
+enchantments:
+- VANISHING_CURSE,1
+- DAMAGE_ALL,4
+- DURABILITY,3
+- SWEEPING_EDGE,3
+
+scalability: scalable
+itemType: unique
+# Generated with https://magmaguy.com/webapp/webapp.html !

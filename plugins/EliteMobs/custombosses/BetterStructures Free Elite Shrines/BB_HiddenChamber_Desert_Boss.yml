@@ -1,0 +1,38 @@
+entityType: MAGMA_CUBE
+name: "$minibossLevel &6Firecore"
+level: dynamic
+healthMultiplier: 3
+damageMultiplier: 0.1
+powers:
+- invulnerability_fire.yml
+- attack_vacuum.yml
+- tracking_fireball.yml
+- BB_HiddenChamber_Desert_MagmaFloor.yml
+normalizedCombat: true
+dropsEliteMobsLoot: true
+dropsVanillaLoot: false
+dropsRandomLoot: false
+trails: FLAME
+isRegionalBoss: true
+leashRadius: 20
+slimeSize: 4
+removeAfterDeath: true
+uniqueLootList:
+- filename: hiddenchamber_desert_fire_charm.yml
+  chance: 1
+eliteScript:
+  NerfDamage:
+    Events:
+    - ZoneEnterEvent
+    - ZoneLeaveEvent
+    Zone:
+      shape: SPHERE
+      radius: 1
+      Target:
+        targetType: SELF
+    Actions:
+    - action: SET_MOB_AI
+      Target:
+        targetType: SELF
+      bValue: false
+      duration: 10

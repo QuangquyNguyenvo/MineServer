@@ -1,0 +1,6 @@
+isEnabled: true
+name: '&2Caves and Lost Civilizations Free'
+description:
+- '&fA pack of 49 underground lost landmarks!'
+folderNameV2: caves_and_lost_civilizations_free
+version: 2 # fixed spawn signs calling a non-existent elite boss

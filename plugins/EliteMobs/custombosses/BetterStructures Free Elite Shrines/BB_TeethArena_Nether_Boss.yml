@@ -1,0 +1,22 @@
+entityType: BLAZE
+name: "$minibossLevel &4Energizer"
+level: dynamic
+healthMultiplier: 3
+damageMultiplier: 1
+powers:
+- BB_TeethArena_Nether_BallOfFire.yml
+- attack_vacuum.yml
+- shield_wall.yml
+- fireworks_barrage.yml
+normalizedCombat: true
+dropsEliteMobsLoot: true
+dropsVanillaLoot: false
+dropsRandomLoot: false
+trails: FLAME
+isRegionalBoss: true
+leashRadius: 20
+removeAfterDeath: true
+uniqueLootList:
+- filename: teetharena_nether_energy_beam.yml
+  chance: 1
+# Generated with https://magmaguy.com/webapp/webapp.html !

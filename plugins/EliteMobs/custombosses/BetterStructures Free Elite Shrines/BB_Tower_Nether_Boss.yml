@@ -1,0 +1,22 @@
+entityType: BLAZE
+name: "$minibossLevel &4OverLord"
+level: dynamic
+healthMultiplier: 3
+damageMultiplier: 1
+powers:
+- BB_Tower_Nether_FireFly.yml
+- attack_vacuum.yml
+- lightning_bolts.yml
+- fireworks_barrage.yml
+normalizedCombat: true
+dropsEliteMobsLoot: true
+dropsVanillaLoot: false
+dropsRandomLoot: false
+trails: FLAME
+isRegionalBoss: true
+leashRadius: 15
+removeAfterDeath: true
+uniqueLootList:
+- filename: tower_nether_flameshard.yml
+  chance: 1
+# Generated with https://magmaguy.com/webapp/webapp.html !

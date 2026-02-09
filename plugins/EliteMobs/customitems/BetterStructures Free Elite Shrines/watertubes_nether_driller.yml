@@ -1,0 +1,12 @@
+name: "&4Driller"
+material: NETHERITE_PICKAXE
+lore:
+- "Mining tool used by ancient prisoners"
+enchantments:
+- DIG_SPEED,4
+- DURABILITY,3
+- DRILLING,2
+
+scalability: scalable
+itemType: unique
+# Generated with https://magmaguy.com/webapp/webapp.html !

@@ -1,0 +1,13 @@
+powerType: UNIQUE
+eliteScript:
+  triggermanager:
+    Events:
+    - EliteMobSpawnEvent
+    Actions:
+    - action: POTION_EFFECT
+      potionEffectType: SLOW_FALLING
+      amplifier: 1
+      duration: 100
+      Target:
+        targetType: SELF
+# Generated with https://magmaguy.com/webapp/webapp.html !

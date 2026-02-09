@@ -1,0 +1,13 @@
+name: "&dGuard's Leggings"
+material: IRON_LEGGINGS
+lore:
+- "This Gear was specifically crafted"
+- "by one of the greatest blacksmiths"
+- "for the city's archers."
+enchantments:
+- PROTECTION_PROJECTILE,5
+- DURABILITY,3
+
+scalability: scalable
+itemType: unique
+# Generated with https://magmaguy.com/webapp/webapp.html !

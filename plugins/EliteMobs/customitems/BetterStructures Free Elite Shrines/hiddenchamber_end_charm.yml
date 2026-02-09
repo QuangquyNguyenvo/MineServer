@@ -1,0 +1,13 @@
+name: "&5End Charm"
+material: END_CRYSTAL
+lore:
+- "Power of the end has its strengths"
+- "and its weaknesses..."
+
+potionEffects:
+- SLOW_FALLING,1,self,continuous
+- DAMAGE_RESISTANCE,1,self,onHit
+- WEAKNESS,1,self,onHit
+scalability: scalable
+itemType: unique
+# Generated with https://magmaguy.com/webapp/webapp.html !

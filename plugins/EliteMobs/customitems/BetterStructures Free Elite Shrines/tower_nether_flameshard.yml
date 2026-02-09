@@ -1,0 +1,14 @@
+name: "&4Flame Shard"
+material: GOLDEN_SWORD
+lore:
+- "Are you ready to make a trade"
+- "with the devil?"
+enchantments:
+- DAMAGE_ALL,6
+- DURABILITY,3
+- FLAMETHROWER,1
+potionEffects:
+- WITHER,1,self,onHit
+scalability: scalable
+itemType: unique
+# Generated with https://magmaguy.com/webapp/webapp.html !

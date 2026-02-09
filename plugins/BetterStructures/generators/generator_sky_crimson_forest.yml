@@ -1,0 +1,8 @@
+isEnabled: true
+structureType:
+- SKY
+treasureFilename: treasure_nether.yml
+validBiomesV2:
+- minecraft:crimson_forest
+- minecraft:custom
+- terra:origen/origen/scarlet_sanctuary

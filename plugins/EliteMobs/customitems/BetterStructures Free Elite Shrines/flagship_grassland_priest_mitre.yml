@@ -1,0 +1,13 @@
+name: "&dMitre"
+material: LEATHER_HELMET
+lore:
+- "100% Silk!"
+enchantments:
+- PROTECTION_ENVIRONMENTAL,4
+- DURABILITY,3
+potionEffects:
+- SLOW,1,self,continuous
+- INCREASE_DAMAGE,1,self,continuous
+scalability: scalable
+itemType: unique
+# Generated with https://magmaguy.com/webapp/webapp.html !

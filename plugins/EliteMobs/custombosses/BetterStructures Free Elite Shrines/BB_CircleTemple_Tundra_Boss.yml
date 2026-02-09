@@ -1,0 +1,23 @@
+entityType: WOLF
+name: "$minibossLevel &9Fenrir"
+level: dynamic
+healthMultiplier: 2.5
+damageMultiplier: 1
+isBaby: false
+powers:
+- thunderstorm.yml
+- taze.yml
+- shield_wall.yml
+- BB_CircleTemple_Tundra_SnowBomb.yml
+normalizedCombat: true
+dropsEliteMobsLoot: true
+dropsVanillaLoot: false
+dropsRandomLoot: false
+trails: SNOWFLAKE
+isRegionalBoss: true
+leashRadius: 18
+removeAfterDeath: true
+uniqueLootList:
+- filename: circletemple_tundra_wolf_tooth.yml
+  chance: 1
+# Generated with https://magmaguy.com/webapp/webapp.html !

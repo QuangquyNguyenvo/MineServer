@@ -1,0 +1,28 @@
+entityType: HUSK
+name: "$minibossLevel &6Totemic Beast"
+level: dynamic
+healthMultiplier: 4
+damageMultiplier: 2
+helmet: GOLDEN_HORSE_ARMOR
+chestplate: GOLDEN_CHESTPLATE
+leggings: GOLDEN_LEGGINGS
+boots: GOLDEN_BOOTS
+mainHand: GOLDEN_AXE
+powers:
+- invulnerability_fire.yml
+- flamethrower.yml
+- fireworks_barrage.yml
+- BB_SurfaceDungeon_Desert_HellFlare.yml
+- ground_pound.yml
+normalizedCombat: true
+dropsEliteMobsLoot: true
+dropsVanillaLoot: false
+dropsRandomLoot: false
+trails: GOLD_NUGGET
+isRegionalBoss: true
+leashRadius: 20
+removeAfterDeath: true
+uniqueLootList:
+- filename: surfacedungeon_desert_beast_blade.yml
+  chance: 1
+# Generated with https://magmaguy.com/webapp/webapp.html !

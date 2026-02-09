@@ -1,0 +1,15 @@
+name: "&5End Stone Sword"
+material: STONE_SWORD
+lore:
+- "Something feels odd about this weapon..."
+- "Its as light as a feather."
+enchantments:
+- DAMAGE_ALL,6
+- DURABILITY,3
+- SWEEPING_EDGE,3
+- CRITICAL_STRIKES,2
+potionEffects:
+- LEVITATION,1,self,onHit
+scalability: scalable
+itemType: unique
+# Generated with https://magmaguy.com/webapp/webapp.html !

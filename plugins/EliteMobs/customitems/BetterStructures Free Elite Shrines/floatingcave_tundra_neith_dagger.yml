@@ -1,0 +1,13 @@
+name: "&9Neith's Dagger"
+material: IRON_SWORD
+lore:
+- "This dagger is used by neith to "
+- "control her arthropods."
+enchantments:
+- DAMAGE_ARTHROPODS,5
+- DURABILITY,3
+- LOOT_BONUS_MOBS,3
+
+scalability: scalable
+itemType: unique
+# Generated with https://magmaguy.com/webapp/webapp.html !

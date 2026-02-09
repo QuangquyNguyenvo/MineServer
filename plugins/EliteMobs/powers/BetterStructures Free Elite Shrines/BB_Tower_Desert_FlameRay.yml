@@ -1,0 +1,281 @@
+powerType: UNIQUE
+eliteScript:
+  TriggerManager:
+    Events:
+    - EliteMobDamagedByPlayerEvent
+    Zone:
+      shape: STATIC_RAY
+      Target2:
+        targetType: SELF_SPAWN
+      Target:
+        targetType: SELF
+    Actions:
+    - action: SET_MOB_AI
+      bValue: false
+      duration: 260
+      Target:
+        targetType: SELF
+    - action: MAKE_INVULNERABLE
+      invulnerable: true
+      duration: 260
+      Target:
+        targetType: SELF
+    - action: TELEPORT
+      FinalTarget:
+        targetType: SELF_SPAWN
+        offset: 0,10,0
+      Target:
+        targetType: SELF
+      wait: 10
+    - action: SPAWN_PARTICLE
+      particles:
+      - particle: FLAME
+      Target:
+        targetType: ZONE_FULL
+      wait: 50
+      repeatEvery: 10
+      times: 9
+    - action: RUN_SCRIPT
+      wait: 80
+      repeatEvery: 20
+      times: 4
+      scripts:
+      - "FireCyl1"
+      - "FireCyl2"
+      - "FireCyl3"
+      - "FireCyl4"
+      - "FireCyl5"
+      - "FireCyl6"
+      - "FireCyl7"
+      onlyRunOneScript: true
+    Cooldowns:
+      local: 600
+      global: 300
+
+
+  FireCyl1:
+    Zone:
+      shape: CYLINDER
+      radius: 3
+      borderRadius: 2
+      height: 3
+      Target:
+        targetType: SELF_SPAWN
+        offset: 0,-1,0
+    Actions:
+    - action: SPAWN_PARTICLE
+      particles:
+      - particle: REDSTONE
+        red: 255
+        green: 70
+        blue: 0
+      Target:
+        targetType: ZONE_FULL
+    - action: DAMAGE
+      multiplier: 0.5
+      Target:
+        targetType: ZONE_FULL
+    - action: PUSH
+      vValue: 0,0.2,0
+      Target:
+        targetType: ZONE_FULL
+      wait: 10
+    - action: SET_ON_FIRE
+      duration: 40
+      Target:
+        targetType: ZONE_FULL
+        
+  FireCyl2:
+    Zone:
+      shape: CYLINDER
+      radius: 4
+      borderRadius: 3
+      height: 3
+      Target:
+        targetType: SELF_SPAWN
+        offset: 0,-1,0
+    Actions:
+    - action: SPAWN_PARTICLE
+      particles:
+      - particle: REDSTONE
+        red: 255
+        green: 70
+        blue: 0
+      Target:
+        targetType: ZONE_BORDER
+    - action: DAMAGE
+      multiplier: 0.5
+      Target:
+        targetType: ZONE_BORDER
+    - action: PUSH
+      vValue: 0,0.2,0
+      Target:
+        targetType: ZONE_BORDER
+      wait: 10
+    - action: SET_ON_FIRE
+      duration: 40
+      Target:
+        targetType: ZONE_BORDER
+        
+  FireCyl3:
+    Zone:
+      shape: CYLINDER
+      radius: 5
+      borderRadius: 4
+      height: 3
+      Target:
+        targetType: SELF_SPAWN
+        offset: 0,-1,0
+    Actions:
+    - action: SPAWN_PARTICLE
+      particles:
+      - particle: REDSTONE
+        red: 255
+        green: 70
+        blue: 0
+      Target:
+        targetType: ZONE_BORDER
+    - action: DAMAGE
+      multiplier: 0.5
+      Target:
+        targetType: ZONE_BORDER
+    - action: PUSH
+      vValue: 0,0.2,0
+      Target:
+        targetType: ZONE_BORDER
+      wait: 10
+    - action: SET_ON_FIRE
+      duration: 40
+      Target:
+        targetType: ZONE_BORDER
+        
+  FireCyl4:
+    Zone:
+      shape: CYLINDER
+      radius: 6
+      borderRadius: 5
+      height: 3
+      Target:
+        targetType: SELF_SPAWN
+        offset: 0,-1,0
+    Actions:
+    - action: SPAWN_PARTICLE
+      particles:
+      - particle: REDSTONE
+        red: 255
+        green: 70
+        blue: 0
+      Target:
+        targetType: ZONE_BORDER
+    - action: DAMAGE
+      multiplier: 0.5
+      Target:
+        targetType: ZONE_BORDER
+    - action: PUSH
+      vValue: 0,0.2,0
+      Target:
+        targetType: ZONE_BORDER
+      wait: 10
+    - action: SET_ON_FIRE
+      duration: 40
+      Target:
+        targetType: ZONE_BORDER
+
+  FireCyl5:
+    Zone:
+      shape: CYLINDER
+      radius: 7
+      borderRadius: 6
+      height: 3
+      Target:
+        targetType: SELF_SPAWN
+        offset: 0,-1,0
+    Actions:
+    - action: SPAWN_PARTICLE
+      particles:
+      - particle: REDSTONE
+        red: 255
+        green: 70
+        blue: 0
+      Target:
+        targetType: ZONE_BORDER
+    - action: DAMAGE
+      multiplier: 0.5
+      Target:
+        targetType: ZONE_BORDER
+    - action: PUSH
+      vValue: 0,0.2,0
+      Target:
+        targetType: ZONE_BORDER
+      wait: 10
+    - action: SET_ON_FIRE
+      duration: 40
+      Target:
+        targetType: ZONE_BORDER
+
+  FireCyl6:
+    Zone:
+      shape: CYLINDER
+      radius: 8
+      borderRadius: 7
+      height: 3
+      Target:
+        targetType: SELF_SPAWN
+        offset: 0,-1,0
+    Actions:
+    - action: SPAWN_PARTICLE
+      particles:
+      - particle: REDSTONE
+        red: 255
+        green: 70
+        blue: 0
+      Target:
+        targetType: ZONE_BORDER
+    - action: DAMAGE
+      multiplier: 0.5
+      Target:
+        targetType: ZONE_BORDER
+    - action: PUSH
+      vValue: 0,0.2,0
+      Target:
+        targetType: ZONE_BORDER
+      wait: 10
+    - action: SET_ON_FIRE
+      duration: 40
+      Target:
+        targetType: ZONE_BORDER
+
+  FireCyl7:
+    Zone:
+      shape: CYLINDER
+      radius: 9
+      borderRadius: 8
+      height: 3
+      Target:
+        targetType: SELF_SPAWN
+        offset: 0,-1,0
+    Actions:
+    - action: SPAWN_PARTICLE
+      particles:
+      - particle: REDSTONE
+        red: 255
+        green: 70
+        blue: 0
+      Target:
+        targetType: ZONE_BORDER
+    - action: DAMAGE
+      multiplier: 0.5
+      Target:
+        targetType: ZONE_BORDER
+    - action: PUSH
+      vValue: 0,0.2,0
+      Target:
+        targetType: ZONE_BORDER
+      wait: 10
+    - action: SET_ON_FIRE
+      duration: 40
+      Target:
+        targetType: ZONE_BORDER
+
+
+# Generated with https://magmaguy.com/webapp/webapp.html !

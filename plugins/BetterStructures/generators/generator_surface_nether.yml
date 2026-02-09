@@ -1,0 +1,6 @@
+isEnabled: true
+structureType:
+- SURFACE
+validWorldEnvironments:
+- NETHER
+treasureFilename: treasure_nether.yml

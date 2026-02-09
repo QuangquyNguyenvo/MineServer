@@ -1,0 +1,24 @@
+entityType: DROWNED
+name: "$minibossLevel &2Lost Pirate"
+level: dynamic
+healthMultiplier: 4
+damageMultiplier: 1
+isBaby: false
+boots: DIAMOND_BOOTS
+powers:
+- invulnerability_arrow.yml
+- attack_vacuum.yml
+- BB_WaterTubes_Barren_InkAttack.yml
+- attack_push.yml
+normalizedCombat: true
+dropsEliteMobsLoot: true
+dropsVanillaLoot: false
+dropsRandomLoot: false
+trails: CLOUD
+isRegionalBoss: true
+leashRadius: 20
+removeAfterDeath: true
+uniqueLootList:
+- filename: watertubes_barren_pirate_boots.yml
+  chance: 1
+# Generated with https://magmaguy.com/webapp/webapp.html !
