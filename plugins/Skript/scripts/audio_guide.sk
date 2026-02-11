@@ -1,0 +1,53 @@
+# ╔══════════════════════════════════════════════════════════════╗
+# ║         ✦ HƯỚNG DẪN VOICE CHAT ✦                          ║
+# ║   Skript hướng dẫn sử dụng OpenAudioMc                    ║
+# ║   Không cần cài mod - chỉ cần trình duyệt web!            ║
+# ╚══════════════════════════════════════════════════════════════╝
+
+command /voiceguide:
+    aliases: /vcguide, /huongdanvoice, /hdvc
+    description: Hướng dẫn sử dụng Voice Chat
+    trigger:
+        send ""
+        send "&8&m                                                  "
+        send ""
+        send "  &b&l✦ HƯỚNG DẪN VOICE CHAT &8- &fRaumania SMP"
+        send ""
+        send "&8&m                                                  "
+        send ""
+        send "  &e&l☎ Voice Chat là gì?"
+        send "  &7Server dùng &bOpenAudioMc &7để bạn có thể"
+        send "  &7nói chuyện với người chơi gần mình &d(Proximity Voice)&7."
+        send "  &a✔ Không cần cài mod! &7Chỉ cần trình duyệt web."
+        send ""
+        send "&8&m                                                  "
+        send ""
+        send "  &a&l➤ BƯỚC 1: &fKết nối"
+        send "  &7Gõ &b/audio &7trong game"
+        send "  &7→ Nhấn vào &etin nhắn xanh &7trong chat"
+        send "  &7→ Trình duyệt sẽ mở trang web voice chat"
+        send ""
+        send "  &a&l➤ BƯỚC 2: &fCho phép Mic"
+        send "  &7Trên web, nhấn &e""Allow"" &7khi trình duyệt hỏi"
+        send "  &7cho phép sử dụng microphone."
+        send ""
+        send "  &a&l➤ BƯỚC 3: &fNói chuyện!"
+        send "  &7Đến gần người chơi khác và nói!"
+        send "  &7Bán kính voice: &e45 block&7."
+        send ""
+        send "&8&m                                                  "
+        send ""
+        send "  &6&l⚙ CÁC LỆNH HỮU ÍCH:"
+        send "  &8• &b/audio &8- &7Kết nối/mở web client"
+        send "  &8• &b/volume <0-100> &8- &7Chỉnh âm lượng"
+        send "  &8• &b/channel create <tên> &8- &7Tạo kênh voice riêng"
+        send "  &8• &b/channel invite <tên> &8- &7Mời người vào kênh"
+        send "  &8• &b/channel leave &8- &7Rời kênh hiện tại"
+        send ""
+        send "  &c&l⚠ MẸO:"
+        send "  &7- &fGiữ Shift + Swap (F) &7để tắt/bật mic nhanh"
+        send "  &7- &fĐể tab web mở &7trong khi chơi"
+        send "  &7- &fDùng tai nghe &7để trải nghiệm tốt nhất"
+        send ""
+        send "&8&m                                                  "
+        send ""

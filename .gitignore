@@ -43,6 +43,7 @@ plugins/BetterStructures/
 plugins/FreeMinecraftModels/
 plugins/MyFurniture/
 plugins/SkinsRestorer/
+plugins/voicechat/
 
 # ===== PLUGIN RUNTIME DATA (databases, backups, caches) =====
 plugins/ExecutableItems/backups/
