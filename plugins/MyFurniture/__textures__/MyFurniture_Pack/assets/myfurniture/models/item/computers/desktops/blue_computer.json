@@ -1,7 +1,0 @@
-{
-  "credit" : "Made by betaklerik with Blockbench",
-  "parent" : "myfurniture:item/computers/desktops/black_computer",
-  "textures" : {
-    "texture" : "myfurniture:item/item/computers/desktops/blue_computer"
-  }
-}

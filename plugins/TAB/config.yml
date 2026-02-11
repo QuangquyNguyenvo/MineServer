@@ -4,7 +4,7 @@ header-footer:
     default:
       header:
       - ''
-      - '%animation:RaumaniaLogo%'
+      - '%animation:RaumaniaTyping%'
       - ''
       - '<gradient:#56ab2f:#a8e063>⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯</gradient>'
       - ''

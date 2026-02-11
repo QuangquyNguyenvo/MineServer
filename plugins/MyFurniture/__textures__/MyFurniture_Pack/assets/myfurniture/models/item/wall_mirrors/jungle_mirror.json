@@ -1,7 +1,0 @@
-{
-  "credit" : "Made by betaklerik with Blockbench",
-  "parent" : "myfurniture:item/wall_mirrors/acacia_mirror",
-  "textures" : {
-    "texture" : "myfurniture:item/item/wall_mirrors/jungle_mirror"
-  }
-}

@@ -1,7 +1,0 @@
-isEnabled: true
-name: '&2Dungeoneering Modules Free'
-description:
-- '&fThe first modular dungeon for BetterStructures!'
-folderNameV2: dungeoneering_modules_free
-contentPackageType: MODULAR
-version: 2 # properly added props

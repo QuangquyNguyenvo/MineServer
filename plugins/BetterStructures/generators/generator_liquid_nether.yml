@@ -1,6 +1,0 @@
-isEnabled: true
-structureType:
-- LIQUID_SURFACE
-validWorldEnvironments:
-- NETHER
-treasureFilename: treasure_nether.yml

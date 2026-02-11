@@ -1,0 +1,339 @@
+# ╔══════════════════════════════════════════════════════════════╗
+# ║              ✦ ENDERVOTE SYSTEM ✦                          ║
+# ║   Hệ thống bỏ phiếu mở cổng The End                      ║
+# ║   Cần đủ 8 người vote để mở cổng End Portal               ║
+# ╚══════════════════════════════════════════════════════════════╝
+
+# ═══════════════════════════════════════
+# HÀM TẠO THANH TIẾN TRÌNH (đặt trước để load trước)
+# ═══════════════════════════════════════
+function makeBar(current: number, max: number) :: text:
+    set {_bar} to ""
+    set {_total} to 20
+    if {_max} <= 0:
+        set {_max} to 1
+    set {_ratio} to {_current} / {_max}
+    if {_ratio} > 1:
+        set {_ratio} to 1
+    set {_filled} to floor({_ratio} * {_total})
+
+    loop {_total} times:
+        if loop-number <= {_filled}:
+            set {_bar} to "%{_bar}%&a█"
+        else:
+            set {_bar} to "%{_bar}%&7░"
+
+    return {_bar}
+
+# ═══════════════════════════════════════
+# CẤU HÌNH
+# ═══════════════════════════════════════
+on load:
+    set {endervote::required} to 8
+    if {endervote::portal_open} is not set:
+        set {endervote::portal_open} to false
+    if {endervote::vote_open} is not set:
+        set {endervote::vote_open} to false
+    delete {endervote::voters::*}
+    send "&a[EnderVote] &fHe thong bo phieu The End da duoc nap!" to console
+    send "&a[EnderVote] &fCan &e%{endervote::required}% &fphieu de mo cong." to console
+
+# ═══════════════════════════════════════
+# HÀM MỞ CUỘC VOTE (1 PHÚT)
+# ═══════════════════════════════════════
+function startEnderVote(p: player):
+    if {endervote::portal_open} is true:
+        send "&5[EnderVote] &aCong The End da mo roi!" to {_p}
+        play sound "entity.villager.yes" with volume 1 and pitch 1 to {_p}
+        stop
+    if {endervote::vote_open} is true:
+        send "&5[EnderVote] &eCuoc vote dang mo! Dung &b/endervote accept &ede bo phieu." to {_p}
+        play sound "ui.button.click" with volume 0.6 and pitch 1.2 to {_p}
+        stop
+
+    set {endervote::vote_open} to true
+    delete {endervote::voters::*}
+    set {_session} to random integer between 100000 and 999999
+    set {endervote::vote_session} to {_session}
+
+    broadcast ""
+    broadcast "&8&m                                              "
+    broadcast ""
+    broadcast "  &5&l✦ ENDER VOTE &8- &7Mo cuoc vote 1 phut"
+    broadcast "  &7Dung &b/endervote accept &7de bo phieu mo cong The End."
+    broadcast "  &7Thoi gian: &c1 phut&7. Neu het thoi gian, vote se bi huy."
+    broadcast ""
+    broadcast "&8&m                                              "
+    broadcast ""
+
+    wait 60 seconds
+    if {endervote::vote_session} is {_session}:
+        if {endervote::vote_open} is true:
+            set {endervote::vote_open} to false
+            delete {endervote::voters::*}
+            broadcast ""
+            broadcast "&8&m                                                  "
+            broadcast ""
+            broadcast "  &5&l✦ ENDER VOTE &8│ &cHet thoi gian. Cuoc vote da bi huy."
+            broadcast "  &7Dung &b/endervote &7de mo vote moi."
+            broadcast ""
+            broadcast "&8&m                                                  "
+            broadcast ""
+
+# ═══════════════════════════════════════
+# CHẶN TELEPORT VÀO THE END KHI CHƯA ĐỦ VOTE
+# (Dùng on player teleport thay vì on player portal
+#  để chắc chắn cancel được teleportation)
+# ═══════════════════════════════════════
+on player teleport:
+    if teleport cause is end portal:
+        if {endervote::portal_open} is not true:
+            cancel event
+            send "" to player
+            send "&8&m                                              " to player
+            send "  &5&l⚠ CỔNG THE END ĐANG ĐÓNG!" to player
+            send "" to player
+            send "  &7Cần đủ &e%{endervote::required}% &7phiếu bỏ phiếu để mở cổng." to player
+            set {_count} to size of {endervote::voters::*}
+            if {_count} is not set:
+                set {_count} to 0
+            set {_bar} to makeBar({_count}, {endervote::required})
+            send "  &7Hiện tại: &a%{_count}%&7/&e%{endervote::required}% &8[%{_bar}%&8]" to player
+            send "" to player
+            send "  &b→ /endervote accept &7- Bỏ phiếu mở cổng" to player
+            send "  &b→ /endervote &7       - Mở vote / Xem trạng thái" to player
+            send "&8&m                                              " to player
+            send "" to player
+            play sound "block.note_block.bass" with volume 1 and pitch 0.5 to player
+            play sound "entity.enderman.stare" with volume 0.5 and pitch 0.8 to player
+            send title "&c&l⚠ THE END" with subtitle "&7Dùng &b/endervote accept &7để bỏ phiếu!" to player for 3 seconds with fade in 0.5 seconds and fade out 1 second
+            # Thông báo cho cả server
+            broadcast ""
+            broadcast "&8&m                                                  "
+            broadcast ""
+            broadcast "  &5&l✦ ENDER VOTE &8│ &cCó thằng cu %player% đang lén đánh rồng khi chưa đủ vote!"
+            broadcast "  &7Nếu muốn đánh rồng thì hãy dùng &b/endervote&7."
+            broadcast ""
+            broadcast "&8&m                                                  "
+            broadcast ""
+
+# ═══════════════════════════════════════
+# HÀM MỞ CỔNG THE END
+# ═══════════════════════════════════════
+function openEndPortal():
+    set {endervote::portal_open} to true
+    set {endervote::vote_open} to false
+    broadcast ""
+    broadcast "&8&m                                              "
+    broadcast ""
+    broadcast "  &5&l✦✦✦ THE END PORTAL ĐÃ MỞ! ✦✦✦"
+    broadcast ""
+    broadcast "  &7Cổng sẽ đóng sau &c30 giây&7!"
+    broadcast "  &e&lNhanh chân vào đi!"
+    broadcast ""
+    broadcast "&8&m                                              "
+    broadcast ""
+
+    # Hiệu ứng âm thanh EPIC cho tất cả người chơi
+    loop all players:
+        play sound "entity.ender_dragon.growl" with volume 1 and pitch 0.5 to loop-player
+        play sound "entity.wither.spawn" with volume 0.6 and pitch 1.2 to loop-player
+        play sound "block.end_portal.spawn" with volume 1 and pitch 0.8 to loop-player
+        send title "&5&l✦ THE END ✦" with subtitle "&eCổng đã được mở! (30s)" to loop-player for 3 seconds with fade in 0.5 seconds and fade out 1 second
+
+    # Countdown warning ở 10s
+    wait 20 seconds
+    broadcast "  &5&l✦ ENDER VOTE &8│ &eCòn &c&l10 giây &etrước khi đóng cổng!"
+    loop all players:
+        play sound "block.note_block.bell" with volume 1 and pitch 1 to loop-player
+
+    # Countdown 5s
+    wait 5 seconds
+    broadcast "  &5&l✦ ENDER VOTE &8│ &cCòn &4&l5 giây&c!"
+    loop all players:
+        play sound "block.note_block.bell" with volume 1 and pitch 1.5 to loop-player
+
+    # Countdown cuối
+    wait 1 second
+    loop all players:
+        send title "&c&l4" with subtitle "" to loop-player for 1 second
+        play sound "block.note_block.hat" with volume 1 and pitch 1 to loop-player
+    wait 1 second
+    loop all players:
+        send title "&c&l3" with subtitle "" to loop-player for 1 second
+        play sound "block.note_block.hat" with volume 1 and pitch 1 to loop-player
+    wait 1 second
+    loop all players:
+        send title "&4&l2" with subtitle "" to loop-player for 1 second
+        play sound "block.note_block.hat" with volume 1 and pitch 1.2 to loop-player
+    wait 1 second
+    loop all players:
+        send title "&4&l1" with subtitle "" to loop-player for 1 second
+        play sound "block.note_block.hat" with volume 1 and pitch 1.5 to loop-player
+    wait 1 second
+
+    # ĐÓNG CỔNG
+    set {endervote::portal_open} to false
+    set {endervote::vote_open} to false
+    delete {endervote::voters::*}
+
+    broadcast ""
+    broadcast "&8&m                                                  "
+    broadcast ""
+    broadcast "  &5&l✦ ENDER VOTE &8│ &cCổng The End đã ĐÓNG!"
+    broadcast "  &7Phiếu đã được reset. Bỏ phiếu lại bằng &b/endervote"
+    broadcast ""
+    broadcast "&8&m                                                  "
+    broadcast ""
+
+    loop all players:
+        play sound "block.portal.travel" with volume 0.5 and pitch 2 to loop-player
+        play sound "entity.enderman.teleport" with volume 1 and pitch 0.5 to loop-player
+        send title "&c&l🔒 ĐÓNG CỔNG" with subtitle "&7The End Portal đã đóng!" to loop-player for 2 seconds with fade in 0.25 seconds and fade out 0.5 seconds
+
+# ═══════════════════════════════════════
+# HÀM BỎ PHIẾU
+# ═══════════════════════════════════════
+function castEnderVote(p: player):
+    if {endervote::portal_open} is true:
+        send "&5[EnderVote] &aCổng The End đã mở rồi! Vào đi thôi~ &5✦" to {_p}
+        play sound "entity.villager.yes" with volume 1 and pitch 1 to {_p}
+        stop
+    if {endervote::vote_open} is not true:
+        send "&5[EnderVote] &eChua mo cuoc vote. Dung &b/endervote &ede mo vote 1 phut." to {_p}
+        play sound "entity.villager.no" with volume 1 and pitch 1 to {_p}
+        stop
+
+    # Kiểm tra đã vote chưa
+    set {_uuid} to uuid of {_p}
+    if {endervote::voters::%{_uuid}%} is set:
+        send "&5[EnderVote] &cBạn đã bỏ phiếu rồi!" to {_p}
+        play sound "entity.villager.no" with volume 1 and pitch 1 to {_p}
+        stop
+
+    # Ghi nhận vote
+    set {endervote::voters::%{_uuid}%} to name of {_p}
+    set {_count} to size of {endervote::voters::*}
+
+    # Âm thanh khi vote thành công
+    loop all players:
+        play sound "entity.experience_orb.pickup" with volume 0.8 and pitch 1.2 to loop-player
+        play sound "block.note_block.chime" with volume 0.5 and pitch 1 to loop-player
+
+    # Broadcast thông báo với progress bar
+    set {_bar} to makeBar({_count}, {endervote::required})
+    broadcast ""
+    broadcast "&8&m                                                  "
+    broadcast ""
+    broadcast "  &5&l✦ ENDER VOTE &8│ &f%{_p}% &7đã bỏ phiếu mở The End!"
+    broadcast "  &7Tiến trình: &a%{_count}%&7/&e%{endervote::required}% &8[%{_bar}%&8]"
+    broadcast ""
+    broadcast "&8&m                                                  "
+    broadcast ""
+
+    # Hiệu ứng milestone (mỗi 25%)
+    set {_progress} to {_count} / {endervote::required}
+    if {_progress} >= 0.25:
+        if {_progress} < 0.3:
+            broadcast "  &e&l⚡ 25%% đã hoàn thành! Còn thêm vài người nữa thôi!"
+            loop all players:
+                play sound "entity.player.levelup" with volume 0.5 and pitch 1.5 to loop-player
+    if {_progress} >= 0.5:
+        if {_progress} < 0.55:
+            broadcast "  &6&l⚡ 50%%! Nửa đường rồi! Tiếp tục vote nào!"
+            loop all players:
+                play sound "entity.player.levelup" with volume 0.7 and pitch 1.2 to loop-player
+    if {_progress} >= 0.75:
+        if {_progress} < 0.8:
+            broadcast "  &c&l⚡ 75%%! Sắp đủ rồi! Ai chưa vote thì nhanh!"
+            loop all players:
+                play sound "entity.player.levelup" with volume 0.9 and pitch 1 to loop-player
+
+    # Kiểm tra đã đủ vote chưa
+    if {_count} >= {endervote::required}:
+        openEndPortal()
+
+# ═══════════════════════════════════════
+# LỆNH /endervote
+# ═══════════════════════════════════════
+command /endervote [<text>]:
+    aliases: /ev
+    description: He thong bo phieu mo cong The End
+    trigger:
+        if arg-1 is not set:
+            if {endervote::vote_open} is not true:
+                if {endervote::portal_open} is not true:
+                    startEnderVote(player)
+                    stop
+
+            # Hiển thị thông tin trạng thái
+            send ""
+            send "&8&m                                              "
+            send "  &5&l✦ ENDER VOTE &8- &7Bỏ phiếu mở The End"
+            send "&8&m                                              "
+            send ""
+            set {_count} to size of {endervote::voters::*}
+            if {_count} is not set:
+                set {_count} to 0
+            set {_bar} to makeBar({_count}, {endervote::required})
+            send "  &7Số phiếu: &a%{_count}%&7/&e%{endervote::required}% &8[%{_bar}%&8]"
+            send ""
+            if {endervote::portal_open} is true:
+                send "  &a&l✦ CỔNG THE END ĐANG MỞ!"
+                send ""
+            else if {endervote::vote_open} is true:
+                send "  &eCuoc vote dang mo. Dung &b/endervote accept &ede bo phieu."
+                send ""
+            else:
+                send "  &c&l⚠ CỔNG THE END ĐANG ĐÓNG"
+                send ""
+                send "  &7Sử dụng &b/endervote &7để mở cuộc vote 1 phút"
+                send ""
+            if size of {endervote::voters::*} > 0:
+                send "  &7Đã bỏ phiếu:"
+                loop {endervote::voters::*}:
+                    send "    &8• &f%loop-value%"
+                send ""
+            send "&8&m                                              "
+            send ""
+            play sound "ui.button.click" with volume 0.5 and pitch 1.2 to player
+
+        # --- VOTE ---
+        else if arg-1 is "accept" or "vote" or "yes":
+            castEnderVote(player)
+
+        # --- RESET (OP ONLY) ---
+        else if arg-1 is "reset":
+            if player has permission "op":
+                set {endervote::portal_open} to false
+                set {endervote::vote_open} to false
+                delete {endervote::voters::*}
+                broadcast "&5[EnderVote] &ePhieu da duoc reset boi Admin."
+                loop all players:
+                    play sound "entity.item.break" with volume 0.8 and pitch 1 to loop-player
+            else:
+                send "&cBan khong co quyen su dung lenh nay!"
+
+        # --- FORCE OPEN (OP ONLY) ---
+        else if arg-1 is "open":
+            if player has permission "op":
+                openEndPortal()
+            else:
+                send "&cBan khong co quyen su dung lenh nay!"
+
+        # --- SET (OP ONLY) ---
+        else if arg-1 starts with "set":
+            if player has permission "op":
+                set {_num} to arg-1
+                replace all "set " with "" in {_num}
+                set {_num} to {_num} parsed as number
+                if {_num} is set:
+                    set {endervote::required} to {_num}
+                    send "&5[EnderVote] &aDa dat so phieu can thiet thanh &e%{_num}%"
+                else:
+                    send "&cSu dung: /endervote set <so>"
+            else:
+                send "&cBan khong co quyen su dung lenh nay!"
+
+        else:
+            send "&5[EnderVote] &7Lenh khong hop le. Dung &b/endervote &7de xem huong dan."

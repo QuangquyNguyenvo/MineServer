@@ -1,7 +1,0 @@
-{
-  "credit" : "Made by betaklerik with Blockbench",
-  "parent" : "myfurniture:item/dressers/acacia_dresser",
-  "textures" : {
-    "texture" : "myfurniture:item/item/dressers/crimson_dresser"
-  }
-}

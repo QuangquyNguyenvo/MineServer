@@ -1,7 +1,0 @@
-{
-  "credit" : "Made by betaklerik with Blockbench",
-  "parent" : "myfurniture:item/stoves/colored_stoves/black_stove",
-  "textures" : {
-    "texture" : "myfurniture:item/item/stoves/colored_stoves/lime_stove"
-  }
-}

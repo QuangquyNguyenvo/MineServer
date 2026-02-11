@@ -1,7 +1,0 @@
-{
-  "credit" : "Made by betaklerik with Blockbench",
-  "parent" : "myfurniture:item/nightstands/acacia_nightstand",
-  "textures" : {
-    "texture" : "myfurniture:item/item/nightstands/cherry_nightstand"
-  }
-}

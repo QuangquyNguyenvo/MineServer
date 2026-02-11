@@ -1,0 +1,205 @@
+# ╔══════════════════════════════════════════════════════════════╗
+# ║         ✦ TOẠ ĐỘ MINEPOINT SYSTEM ✦                       ║
+# ║   Gửi tọa độ lên Discord qua Webhook (SkHttp)             ║
+# ║   Kênh: 🧭┃𝐌𝐢𝐧𝐞𝐩𝐨𝐢𝐧𝐭                                     ║
+# ║   Dùng SkHttp HTTP Request Builder (raw JSON POST)        ║
+# ╚══════════════════════════════════════════════════════════════╝
+
+on load:
+    set {toado::webhook} to "https://discord.com/api/webhooks/1470974798115901680/4gmg-np0yFvdrrCrZShs-1OtllaeQGSzevTRZHEMPc9CUjBMnV-NpReexOKUzvNAdhbh"
+    send "&d[MinePoint] &fHe thong toa do Discord da san sang!" to console
+
+# ═══════════════════════════════════════
+# HÀM ESCAPE JSON
+# ═══════════════════════════════════════
+function escapeJson(input: text) :: text:
+    set {_out} to {_input}
+    replace all "\" with "\\" in {_out}
+    replace all """" with "\""" in {_out}
+    return {_out}
+
+# ═══════════════════════════════════════
+# HÀM GỬI WEBHOOK QUA HTTP REQUEST BUILDER
+# ═══════════════════════════════════════
+function sendMinepoint(pname: text, puuid: text, locname: text, cx: number, cy: number, cz: number, dim: text):
+    # Màu theo dimension
+    if {_dim} is "nether":
+        set {_color} to 16733525
+        set {_dimname} to "Nether"
+    else if {_dim} is "end":
+        set {_color} to 11141290
+        set {_dimname} to "The End"
+    else:
+        set {_color} to 5763719
+        set {_dimname} to "Overworld"
+
+    # Escape text
+    set {_safe} to escapeJson({_locname})
+    set {_safep} to escapeJson({_pname})
+
+    # URLs
+    set {_head} to "https://mc-heads.net/avatar/%{_puuid}%/64"
+    set {_body_img} to "https://mc-heads.net/body/%{_puuid}%/128"
+
+    # Build JSON payload
+    set {_json} to join "{""username"":""AstolfoCuteo UwU""," and """avatar_url"":""https://i.imgur.com/FdYBnIy.png""," and """embeds"":[{" and """title"":""\u2550\u2550\u2550\u2550\u2550[ \ud83d\udccd %{_safe}% \ud83d\udccd ]\u2550\u2550\u2550\u2550\u2550""," and """color"":%{_color}%," and """fields"":[" and "{""name"":""\u25b8 Toa do"",""value"":""```fix\n  X: %{_cx}%  |  Y: %{_cy}%  |  Z: %{_cz}%\n```"",""inline"":false}," and "{""name"":""\u25b8 Nguoi tao"",""value"":""%{_safep}%"",""inline"":true}," and "{""name"":""\u25b8 The gioi"",""value"":""%{_dimname}%"",""inline"":true}" and "]," and """footer"":{""text"":""\u2726 Raumania SMP \u2726"",""icon_url"":""%{_head}%""}," and """thumbnail"":{""url"":""%{_body_img}%""}" and "}]}"
+
+    # Gửi qua SkHttp HTTP Request Builder
+    http request builder stored in {_req}:
+        url: {toado::webhook}
+        method: "POST"
+        body: {_json}
+        headers:
+            Content-Type: application/json
+
+    send async request using {_req}
+
+# ═══════════════════════════════════════
+# LỆNH /toado <tên địa điểm>
+# ═══════════════════════════════════════
+command /toado [<text>]:
+    aliases: /td, /waypoint, /minepoint
+    description: Đánh dấu tọa độ và gửi lên Discord
+    trigger:
+        if arg-1 is not set:
+            send ""
+            send "&8&m                                                  "
+            send ""
+            send "  &d&l✦ MINEPOINT &8- &7Đánh dấu tọa độ"
+            send ""
+            send "&8&m                                                  "
+            send ""
+            send "  &7Sử dụng: &b/toado <tên địa điểm>"
+            send ""
+            send "  &7Ví dụ:"
+            send "    &8• &b/toado &fNhà của mình"
+            send "    &8• &b/toado &fSpawner Skeleton"
+            send "    &8• &b/toado &fEnd Portal"
+            send ""
+            send "  &7Tọa độ sẽ được gửi lên &e🧭┃𝐌𝐢𝐧𝐞𝐩𝐨𝐢𝐧𝐭 &7trên Discord!"
+            send "  &7Dùng &b/toadolist &7để xem danh sách."
+            send ""
+            send "&8&m                                                  "
+            send ""
+            stop
+
+        # Lấy thông tin
+        set {_name} to arg-1
+        set {_x} to floor(x-coordinate of player)
+        set {_y} to floor(y-coordinate of player)
+        set {_z} to floor(z-coordinate of player)
+        set {_world} to "%world of player%"
+
+        if {_world} contains "nether":
+            set {_dim} to "nether"
+        else if {_world} contains "end":
+            set {_dim} to "end"
+        else:
+            set {_dim} to "overworld"
+
+        # Lưu tọa độ
+        set {toado::saved::%uuid of player%::%{_name}%} to "&a%{_x}% &7/ &e%{_y}% &7/ &b%{_z}% &8(%{_dim}%)"
+        set {toado::all::%{_name}%} to "&a%{_x}%&7, &e%{_y}%&7, &b%{_z}% &8- &f%name of player% &8(%{_dim}%)"
+
+        # Thông báo trong game
+        send ""
+        send "&8&m                                                  "
+        send ""
+        send "  &d&l✦ MINEPOINT &8│ &fĐã đánh dấu &e%{_name}%"
+        send "  &7Tọa độ: &a%{_x}% &7/ &e%{_y}% &7/ &b%{_z}%"
+        send ""
+        send "&8&m                                                  "
+        send ""
+        play sound "entity.experience_orb.pickup" with volume 1 and pitch 1.5 to player
+
+        broadcast ""
+        broadcast "&8&m                                                  "
+        broadcast ""
+        broadcast "  &d✦ &f%player% &7đánh dấu &e%{_name}%"
+        broadcast "  &8[&a%{_x}%&7, &e%{_y}%&7, &b%{_z}%&8]"
+        broadcast ""
+        broadcast "&8&m                                                  "
+        broadcast ""
+
+        # Gửi webhook qua HTTP POST
+        sendMinepoint(name of player, "%uuid of player%", {_name}, {_x}, {_y}, {_z}, {_dim})
+
+        wait 1 second
+        send "  &d✦ &aĐã gửi lên Discord! ✦" to player
+
+# ═══════════════════════════════════════
+# /toadolist - Xem danh sách
+# ═══════════════════════════════════════
+command /toadolist [<text>]:
+    aliases: /tdlist, /waypoints
+    description: Xem danh sách tọa độ
+    trigger:
+        if arg-1 is "all":
+            send ""
+            send "&8&m                                                  "
+            send ""
+            send "  &d&l✦ MINEPOINTS &8- &7Tất cả tọa độ"
+            send ""
+            send "&8&m                                                  "
+            send ""
+            if {toado::all::*} is not set:
+                send "  &7Chưa có tọa độ nào."
+            else:
+                loop {toado::all::*}:
+                    send "  &8• &e%loop-index% &8│ &f%loop-value%"
+            send ""
+            send "&8&m                                                  "
+            send ""
+            stop
+
+        send ""
+        send "&8&m                                                  "
+        send ""
+        send "  &d&l✦ MINEPOINTS &8- &7Tọa độ của bạn"
+        send ""
+        send "&8&m                                                  "
+        send ""
+        if {toado::saved::%uuid of player%::*} is not set:
+            send "  &7Bạn chưa có tọa độ. Dùng &b/toado <tên>&7!"
+        else:
+            loop {toado::saved::%uuid of player%::*}:
+                send "  &8• &e%loop-index% &8│ &f%loop-value%"
+        send ""
+        send "  &7Dùng &b/toadolist all &7để xem tất cả."
+        send ""
+        send "&8&m                                                  "
+        send ""
+
+# ═══════════════════════════════════════
+# /toadodel - Xóa tọa độ
+# ═══════════════════════════════════════
+command /toadodel [<text>]:
+    aliases: /tddel
+    description: Xóa tọa độ
+    trigger:
+        if arg-1 is not set:
+            send ""
+            send "&8&m                                                  "
+            send ""
+            send "  &7Sử dụng: &c/toadodel <tên>"
+            send ""
+            send "&8&m                                                  "
+            send ""
+            stop
+        if {toado::saved::%uuid of player%::%arg-1%} is set:
+            delete {toado::saved::%uuid of player%::%arg-1%}
+            send ""
+            send "&8&m                                                  "
+            send ""
+            send "  &d[MinePoint] &aĐã xóa &e%arg-1%&a!"
+            send ""
+            send "&8&m                                                  "
+            send ""
+        else:
+            send ""
+            send "&8&m                                                  "
+            send ""
+            send "  &c[MinePoint] Không tìm thấy &e%arg-1%&c!"
+            send ""
+            send "&8&m                                                  "
+            send ""

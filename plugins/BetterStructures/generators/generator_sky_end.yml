@@ -1,6 +1,0 @@
-isEnabled: true
-structureType:
-- SKY
-validWorldEnvironments:
-- THE_END
-treasureFilename: treasure_end.yml

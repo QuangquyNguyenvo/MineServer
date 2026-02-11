@@ -1,7 +1,0 @@
-{
-  "credit" : "Made by betaklerik with Blockbench",
-  "parent" : "myfurniture:item/sofas/middlesofas/middlesofa_black",
-  "textures" : {
-    "2" : "myfurniture:item/item/sofas/middlesofas/sofa_magenta"
-  }
-}

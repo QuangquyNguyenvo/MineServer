@@ -1,7 +1,0 @@
-{
-  "credit" : "Made by betaklerik with Blockbench",
-  "parent" : "myfurniture:item/desks/acacia_desk",
-  "textures" : {
-    "texture" : "myfurniture:item/item/desks/spruce_desk"
-  }
-}
