@@ -5,6 +5,11 @@ on load:
     # Cài đặt thời gian hồi cooldown chung cho tất cả Biome (tính bằng giây)
     # Nghĩa là nếu rời Plain và quay lại trong vòng 60s, bạn sẽ không nhận được hiệu ứng.
     set {biome_cooldown_setting} to 60 seconds
+
+    # Thời lượng hiệu ứng chung (tính bằng giây)
+    # Nếu muốn dùng thời lượng gốc trong từng biome, để 0.
+    set {biome_effect_min_seconds} to 45
+    set {biome_effect_max_seconds} to 60
     
     # -----------------------------------------------------------
     # NHẬP DỮ LIỆU TỪ CONFIG CỦA BẠN
@@ -89,7 +94,9 @@ every 1 second:
                     set {_data} to {biome_data::%{_biome_key}%::effect}
                     set {_split::*} to {_data} split at ":"
                     set {_eff_name} to {_split::1}
-                    set {_seconds} to {_split::2}
+                    set {_seconds} to {_split::2} parsed as number
+                    if {biome_effect_min_seconds} > 0 and {biome_effect_max_seconds} > 0:
+                        set {_seconds} to random integer between {biome_effect_min_seconds} and {biome_effect_max_seconds}
                     set {_level} to {_split::3} parsed as number
                     
                     # Chuyển đổi để chạy lệnh

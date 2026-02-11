@@ -29,6 +29,8 @@ resize_icon.py
 # ===== OTHER GENERATED FILES =====
 version_history.json
 raumania_logo_transparent.png
+.tmp_custombosses_targets.json
+*.rar
 
 # ===== WORLD FILES (too large for git) =====
 world/
