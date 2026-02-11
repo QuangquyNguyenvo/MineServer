@@ -19,7 +19,16 @@ bundler/
 usercache.json
 
 # ===== JAR FILES (download separately) =====
-# *.jar
+*.jar
+
+# ===== UTILITY SCRIPTS (one-time use) =====
+fix_icon.ps1
+resize_icon.ps1
+resize_icon.py
+
+# ===== OTHER GENERATED FILES =====
+version_history.json
+raumania_logo_transparent.png
 
 # ===== WORLD FILES (too large for git) =====
 world/

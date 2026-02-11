@@ -37,12 +37,12 @@ function sendMinepoint(pname: text, puuid: text, locname: text, cx: number, cy: 
     set {_safe} to escapeJson({_locname})
     set {_safep} to escapeJson({_pname})
 
-    # URLs
-    set {_head} to "https://mc-heads.net/avatar/%{_puuid}%/64"
-    set {_body_img} to "https://mc-heads.net/body/%{_puuid}%/128"
+    # URLs (dùng tên thay vì UUID để hỗ trợ server crack)
+    set {_head} to "https://mc-heads.net/avatar/%{_pname}%/64"
+    set {_body_img} to "https://mc-heads.net/body/%{_pname}%/128"
 
     # Build JSON payload
-    set {_json} to join "{""username"":""AstolfoCuteo UwU""," and """avatar_url"":""https://i.imgur.com/FdYBnIy.png""," and """embeds"":[{" and """title"":""\u2550\u2550\u2550\u2550\u2550[ \ud83d\udccd %{_safe}% \ud83d\udccd ]\u2550\u2550\u2550\u2550\u2550""," and """color"":%{_color}%," and """fields"":[" and "{""name"":""\u25b8 Toa do"",""value"":""```fix\n  X: %{_cx}%  |  Y: %{_cy}%  |  Z: %{_cz}%\n```"",""inline"":false}," and "{""name"":""\u25b8 Nguoi tao"",""value"":""%{_safep}%"",""inline"":true}," and "{""name"":""\u25b8 The gioi"",""value"":""%{_dimname}%"",""inline"":true}" and "]," and """footer"":{""text"":""\u2726 Raumania SMP \u2726"",""icon_url"":""%{_head}%""}," and """thumbnail"":{""url"":""%{_body_img}%""}" and "}]}"
+    set {_json} to join "{""username"":""AstolfoCuteo UwU""," and """avatar_url"":""https://i.imgur.com/FdYBnIy.png""," and """embeds"":[{" and """author"":{""name"":""%{_safep}%"",""icon_url"":""%{_head}%""}," and """title"":""\ud83d\udccd %{_safe}%""," and """description"":""\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501""," and """color"":%{_color}%," and """fields"":[" and "{""name"":""\ud83d\udccc To\u1ea1 \u0111\u1ed9"",""value"":""```fix\nX: %{_cx}%  |  Y: %{_cy}%  |  Z: %{_cz}%\n```"",""inline"":false}," and "{""name"":""\ud83c\udf10 Th\u1ebf gi\u1edbi"",""value"":""%{_dimname}%"",""inline"":true}" and "]," and """thumbnail"":{""url"":""%{_body_img}%""}," and """footer"":{""text"":""\u2726 Raumania SMP \u2726""}" and "}]}"
 
     # Gửi qua SkHttp HTTP Request Builder
     http request builder stored in {_req}:
@@ -203,3 +203,29 @@ command /toadodel [<text>]:
             send ""
             send "&8&m                                                  "
             send ""
+
+# ═══════════════════════════════════════
+# /toadoclearall - Xóa TẤT CẢ tọa độ (Admin)
+# ═══════════════════════════════════════
+command /toadoclearall:
+    aliases: /tdclearall
+    description: Xóa TẤT CẢ tọa độ (chỉ Admin)
+    permission: op
+    permission message: &cBạn không có quyền dùng lệnh này!
+    trigger:
+        delete {toado::saved::*}
+        delete {toado::all::*}
+        send ""
+        send "&8&m                                                  "
+        send ""
+        send "  &d[MinePoint] &c&lĐã xóa TẤT CẢ tọa độ!"
+        send ""
+        send "&8&m                                                  "
+        send ""
+        broadcast ""
+        broadcast "&8&m                                                  "
+        broadcast ""
+        broadcast "  &d✦ &c%player% đã xóa toàn bộ danh sách MinePoint!"
+        broadcast ""
+        broadcast "&8&m                                                  "
+        broadcast ""
