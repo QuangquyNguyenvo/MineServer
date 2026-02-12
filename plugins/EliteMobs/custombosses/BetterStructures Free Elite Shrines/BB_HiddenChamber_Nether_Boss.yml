@@ -1,0 +1,22 @@
+entityType: PIGLIN
+name: "$minibossLevel &4PinkPyre"
+level: dynamic
+healthMultiplier: 3
+damageMultiplier: 1.5
+powers:
+- BB_HiddenChamber_Nether_SafeZone.yml
+- ground_pound.yml
+- lightning_bolts.yml
+- invulnerability_fire.yml
+normalizedCombat: true
+dropsEliteMobsLoot: true
+dropsVanillaLoot: false
+dropsRandomLoot: false
+trails: FLAME
+isRegionalBoss: true
+leashRadius: 20
+removeAfterDeath: true
+uniqueLootList:
+- filename: hiddenchamber_nether_pyre_cleaver.yml
+  chance: 1
+# Generated with https://magmaguy.com/webapp/webapp.html !

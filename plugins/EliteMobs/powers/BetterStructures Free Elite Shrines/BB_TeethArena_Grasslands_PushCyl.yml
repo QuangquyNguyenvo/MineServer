@@ -1,0 +1,97 @@
+powerType: UNIQUE
+eliteScript:
+  Upparticles:
+    Events:
+    - EliteMobDamagedByPlayerEvent
+    Zone:
+      shape: CYLINDER
+      radius: 12
+      borderRadius: 6
+      height: 2
+      Target:
+        targetType: SELF
+    Actions:
+    - action: PUSH
+      vValue: 0,1,0
+      Target:
+        targetType: SELF
+    - action: RUN_SCRIPT
+      Target:
+        targetType: SELF
+      scripts:
+      - SmallParticleSphere
+      - MedParticleSphere
+      - BigParticleSphere
+    - action: PUSH
+      vValue: 1,1.5,1
+      Target:
+        targetType: NEARBY_PLAYERS
+        range: 12
+      wait: 30
+    Cooldowns:
+      local: 600
+      global: 300
+      
+     
+      
+  SmallParticleSphere:
+    Zone:
+      shape: CYLINDER
+      radius: 5
+      borderRadius: 6
+      height: 2
+      Target:
+        targetType: SELF
+    Actions:
+    - action: SPAWN_PARTICLE
+      particles:
+      - particle: REDSTONE
+        amount: 10
+        red: 168
+        green: 4
+        blue: 193
+      Target:
+        targetType: ZONE_FULL
+      wait: 30
+
+  MedParticleSphere:
+    Zone:
+      shape: CYLINDER
+      radius: 8
+      borderRadius: 6
+      height: 2
+      Target:
+        targetType: SELF
+    Actions:
+    - action: SPAWN_PARTICLE
+      particles:
+      - particle: REDSTONE
+        amount: 5
+        red: 168
+        green: 4
+        blue: 193
+      Target:
+        targetType: ZONE_FULL
+      wait: 33
+
+  BigParticleSphere:
+    Zone:
+      shape: CYLINDER
+      radius: 12
+      borderRadius: 6
+      height: 2
+      Target:
+        targetType: SELF
+    Actions:
+    - action: SPAWN_PARTICLE
+      particles:
+      - particle: REDSTONE
+        amount: 2
+        red: 168
+        green: 4
+        blue: 193
+      Target:
+        targetType: ZONE_FULL
+      wait: 35
+
+# Generated with https://magmaguy.com/webapp/webapp.html !

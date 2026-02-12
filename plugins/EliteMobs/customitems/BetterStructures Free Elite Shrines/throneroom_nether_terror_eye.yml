@@ -1,0 +1,13 @@
+name: "&4Terror Eye"
+material: ENDER_EYE
+lore:
+- "Allows you to see all your surroundings "
+
+potionEffects:
+- LEVITATION,2,self,onHit
+- NIGHT_VISION,2,self,onHit
+- WEAKNESS,1,self,onHit
+- SPEED,2,self,onHit
+scalability: scalable
+itemType: unique
+# Generated with https://magmaguy.com/webapp/webapp.html !

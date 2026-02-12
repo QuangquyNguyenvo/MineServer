@@ -1,0 +1,1339 @@
+powerType: UNIQUE
+eliteScript:
+  TriggerManager:
+    Events:
+    - EliteMobDamagedByPlayerEvent
+    Cooldowns:
+      local: 2400
+      global: 680
+    Actions:
+    - action: TELEPORT
+      FinalTarget:
+        targetType: SELF_SPAWN
+      Target:
+        targetType: SELF
+      wait: 20
+    - action: POTION_EFFECT
+      potionEffectType: SLOWNESS
+      amplifier: 100
+      duration: 100
+      Target:
+        targetType: SELF
+      wait: 20
+    - action: POTION_EFFECT
+      potionEffectType: LEVITATION
+      amplifier: 2
+      duration: 120
+      Target:
+        targetType: SELF
+      wait: 30
+    - action: MAKE_INVULNERABLE
+      invulnerable: true
+      duration: 500
+      Target:
+        targetType: SELF
+    - action: SET_MOB_AI
+      bValue: false
+      duration: 540
+      Target:
+        targetType: SELF
+      wait: 140
+    - action: SPAWN_FIREWORKS
+      vValue: 0,0.5,0
+      flicker: true
+      withTrail: true
+      power: 1
+      fireworkEffects:
+      - [SILVER, WHITE]
+      Target:
+        targetType: SELF_SPAWN
+      wait: 160
+    - action: RUN_SCRIPT
+      wait: 170
+      repeatEvery: 20
+      times: 25
+      scripts:
+      - Ray1
+      - Ray2
+      - Ray3
+      - Ray4
+      - Ray5
+      - Ray6
+      - Ray7
+      - Ray8
+      - Ray9
+      - Ray10
+      - Ray12
+      - Ray13
+      - Ray14
+      - Ray15
+      - Ray16
+      - Ray17
+      - Ray18
+      - Ray19
+      - Ray20
+      - Ray21
+      - Ray22
+      - Ray23
+      - Ray24
+      - Ray25
+      - Ray26
+      - Ray27
+      - Ray28
+      - Ray29
+      - Ray30
+      onlyRunOneScript: true
+    - action: RUN_SCRIPT
+      wait: 170
+      repeatEvery: 20
+      times: 25
+      scripts:
+      - Ray1
+      - Ray2
+      - Ray3
+      - Ray4
+      - Ray5
+      - Ray6
+      - Ray7
+      - Ray8
+      - Ray9
+      - Ray10
+      - Ray12
+      - Ray13
+      - Ray14
+      - Ray15
+      - Ray16
+      - Ray17
+      - Ray18
+      - Ray19
+      - Ray20
+      - Ray21
+      - Ray22
+      - Ray23
+      - Ray24
+      - Ray25
+      - Ray26
+      - Ray27
+      - Ray28
+      - Ray29
+      - Ray30
+      onlyRunOneScript: true
+    - action: RUN_SCRIPT
+      wait: 170
+      repeatEvery: 20
+      times: 25
+      scripts:
+      - Ray1
+      - Ray2
+      - Ray3
+      - Ray4
+      - Ray5
+      - Ray6
+      - Ray7
+      - Ray8
+      - Ray9
+      - Ray10
+      - Ray12
+      - Ray13
+      - Ray14
+      - Ray15
+      - Ray16
+      - Ray17
+      - Ray18
+      - Ray19
+      - Ray20
+      - Ray21
+      - Ray22
+      - Ray23
+      - Ray24
+      - Ray25
+      - Ray26
+      - Ray27
+      - Ray28
+      - Ray29
+      - Ray30
+      onlyRunOneScript: true
+    - action: POTION_EFFECT
+      potionEffectType: SLOW_FALLING
+      amplifier: 2
+      duration: 100
+      wait: 680
+    - action: PLACE_BLOCK
+      material: POLISHED_DIORITE
+      duration: 680
+      Target:
+        targetType: SELF_SPAWN
+        offset: -2,-1,-6  
+
+  Ray1:
+    Actions:
+    - action: RUN_SCRIPT
+      scripts:
+      - "Particles1"
+      - "Damage1"
+  Ray2:
+    Actions:
+    - action: RUN_SCRIPT
+      scripts:
+      - "Particles2"
+      - "Damage2"
+  Ray3:
+    Actions:
+    - action: RUN_SCRIPT
+      scripts:
+      - "Particles3"
+      - "Damage3"
+  Ray4:
+    Actions:
+    - action: RUN_SCRIPT
+      scripts:
+      - "Particles4"
+      - "Damage4"
+  Ray5:
+    Actions:
+    - action: RUN_SCRIPT
+      scripts:
+      - "Particles5"
+      - "Damage5"
+  Ray6:
+    Actions:
+    - action: RUN_SCRIPT
+      scripts:
+      - "Particles6"
+      - "Damage6"
+  Ray7:
+    Actions:
+    - action: RUN_SCRIPT
+      scripts:
+      - "Particles7"
+      - "Damage7"
+  Ray8:
+    Actions:
+    - action: RUN_SCRIPT
+      scripts:
+      - "Particles8"
+      - "Damage8"
+  Ray9:
+    Actions:
+    - action: RUN_SCRIPT
+      scripts:
+      - "Particles9"
+      - "Damage9"
+  Ray10:
+    Actions:
+    - action: RUN_SCRIPT
+      scripts:
+      - "Particles10"
+      - "Damage10"
+  Ray12:
+    Actions:
+    - action: RUN_SCRIPT
+      scripts:
+      - "Particles12"
+      - "Damage12"
+  Ray13:
+    Actions:
+    - action: RUN_SCRIPT
+      scripts:
+      - "Particles13"
+      - "Damage13"
+  Ray14:
+    Actions:
+    - action: RUN_SCRIPT
+      scripts:
+      - "Particles14"
+      - "Damage14"
+  Ray15:
+    Actions:
+    - action: RUN_SCRIPT
+      scripts:
+      - "Particles15"
+      - "Damage15"
+  Ray16:
+    Actions:
+    - action: RUN_SCRIPT
+      scripts:
+      - "Particles16"
+      - "Damage16"
+  Ray17:
+    Actions:
+    - action: RUN_SCRIPT
+      scripts:
+      - "Particles17"
+      - "Damage17"
+  Ray18:
+    Actions:
+    - action: RUN_SCRIPT
+      scripts:
+      - "Particles18"
+      - "Damage18"
+  Ray19:
+    Actions:
+    - action: RUN_SCRIPT
+      scripts:
+      - "Particles19"
+      - "Damage19"
+  Ray20:
+    Actions:
+    - action: RUN_SCRIPT
+      scripts:
+      - "Particles20"
+      - "Damage20"
+  Ray21:
+    Actions:
+    - action: RUN_SCRIPT
+      scripts:
+      - "Particles21"
+      - "Damage21"
+  Ray22:
+    Actions:
+    - action: RUN_SCRIPT
+      scripts:
+      - "Particles22"
+      - "Damage22" 
+  Ray23:
+    Actions:
+    - action: RUN_SCRIPT
+      scripts:
+      - "Particles2"
+      - "Damage2"
+  Ray24:
+    Actions:
+    - action: RUN_SCRIPT
+      scripts:
+      - "Particles2"
+      - "Damage2"
+  Ray25:
+    Actions:
+    - action: RUN_SCRIPT
+      scripts:
+      - "Particles2"
+      - "Damage2"
+  Ray26:
+    Actions:
+    - action: RUN_SCRIPT
+      scripts:
+      - "Particles2"
+      - "Damage2"
+  Ray27:
+    Actions:
+    - action: RUN_SCRIPT
+      scripts:
+      - "Particles2"
+      - "Damage2"
+  Ray28:
+    Actions:
+    - action: RUN_SCRIPT
+      scripts:
+      - "Particles2"
+      - "Damage2"
+  Ray29:
+    Actions:
+    - action: RUN_SCRIPT
+      scripts:
+      - "Particles2"
+      - "Damage2"
+  Ray30:
+    Actions:
+    - action: RUN_SCRIPT
+      scripts:
+      - "Particles2"
+      - "Damage2"      
+      
+      
+      
+      
+      
+  Particles1:
+    Zone:
+      shape: STATIC_RAY
+      Target2:
+        targetType: SELF_SPAWN
+        offset: 0,24,0
+      Target:
+        targetType: SELF_SPAWN
+        offset: 3,0,5
+    Actions:
+    - action: SPAWN_PARTICLE
+      particles:
+      - particle: REDSTONE
+        amount: 3
+        red: 255
+        green: 255
+        blue: 255
+      Target:
+        targetType: ZONE_FULL
+  Damage1:
+    Zone:
+      shape: CYLINDER
+      radius: 2
+      height: 1
+      Target:
+        targetType: SELF_SPAWN
+        offset: 3,0,5
+    Actions:
+    - action: DAMAGE
+      multiplier: 1
+      Target:
+        targetType: ZONE_FULL
+
+  Particles2:
+    Zone:
+      shape: STATIC_RAY
+      Target2:
+        targetType: SELF_SPAWN
+        offset: 0,24,0
+      Target:
+        targetType: SELF_SPAWN
+        offset: 0,0,0
+    Actions:
+    - action: SPAWN_PARTICLE
+      particles:
+      - particle: REDSTONE
+        amount: 3
+        red: 255
+        green: 255
+        blue: 255
+      Target:
+        targetType: ZONE_FULL
+  Damage2:
+    Zone:
+      shape: CYLINDER
+      radius: 2
+      height: 1
+      Target:
+        targetType: SELF_SPAWN
+        offset: 0,0,0
+    Actions:
+    - action: DAMAGE
+      multiplier: 1
+      Target:
+        targetType: ZONE_FULL
+        
+  Particles3:
+    Zone:
+      shape: STATIC_RAY
+      Target2:
+        targetType: SELF_SPAWN
+        offset: 0,24,0
+      Target:
+        targetType: SELF_SPAWN
+        offset: -6,0,-4
+    Actions:
+    - action: SPAWN_PARTICLE
+      particles:
+      - particle: REDSTONE
+        amount: 3
+        red: 255
+        green: 255
+        blue: 255
+      Target:
+        targetType: ZONE_FULL
+  Damage3:
+    Zone:
+      shape: CYLINDER
+      radius: 2
+      height: 1
+      Target:
+        targetType: SELF_SPAWN
+        offset: -6,0,-4
+    Actions:
+    - action: DAMAGE
+      multiplier: 1
+      Target:
+        targetType: ZONE_FULL
+
+  Particles4:
+    Zone:
+      shape: STATIC_RAY
+      Target2:
+        targetType: SELF_SPAWN
+        offset: 0,24,0
+      Target:
+        targetType: SELF_SPAWN
+        offset: -5,0,-5
+    Actions:
+    - action: SPAWN_PARTICLE
+      particles:
+      - particle: REDSTONE
+        amount: 3
+        red: 255
+        green: 255
+        blue: 255
+      Target:
+        targetType: ZONE_FULL
+  Damage4:
+    Zone:
+      shape: CYLINDER
+      radius: 2
+      height: 1
+      Target:
+        targetType: SELF_SPAWN
+        offset: -5,0,-5
+    Actions:
+    - action: DAMAGE
+      multiplier: 1
+      Target:
+        targetType: ZONE_FULL
+
+  Particles5:
+    Zone:
+      shape: STATIC_RAY
+      Target2:
+        targetType: SELF_SPAWN
+        offset: 0,24,0
+      Target:
+        targetType: SELF_SPAWN
+        offset: 4,0,6
+    Actions:
+    - action: SPAWN_PARTICLE
+      particles:
+      - particle: REDSTONE
+        amount: 3
+        red: 255
+        green: 255
+        blue: 255
+      Target:
+        targetType: ZONE_FULL
+  Damage5:
+    Zone:
+      shape: CYLINDER
+      radius: 2
+      height: 1
+      Target:
+        targetType: SELF_SPAWN
+        offset: 4,0,6
+    Actions:
+    - action: DAMAGE
+      multiplier: 1
+      Target:
+        targetType: ZONE_FULL
+
+  Particles6:
+    Zone:
+      shape: STATIC_RAY
+      Target2:
+        targetType: SELF_SPAWN
+        offset: 0,24,0
+      Target:
+        targetType: SELF_SPAWN
+        offset: 7,0,7
+    Actions:
+    - action: SPAWN_PARTICLE
+      particles:
+      - particle: REDSTONE
+        amount: 3
+        red: 255
+        green: 255
+        blue: 255
+      Target:
+        targetType: ZONE_FULL
+  Damage6:
+    Zone:
+      shape: CYLINDER
+      radius: 2
+      height: 1
+      Target:
+        targetType: SELF_SPAWN
+        offset: 7,0,7
+    Actions:
+    - action: DAMAGE
+      multiplier: 1
+      Target:
+        targetType: ZONE_FULL
+
+  Particles7:
+    Zone:
+      shape: STATIC_RAY
+      Target2:
+        targetType: SELF_SPAWN
+        offset: 0,24,0
+      Target:
+        targetType: SELF_SPAWN
+        offset: 2,0,6
+    Actions:
+    - action: SPAWN_PARTICLE
+      particles:
+      - particle: REDSTONE
+        amount: 3
+        red: 255
+        green: 255
+        blue: 255
+      Target:
+        targetType: ZONE_FULL
+  Damage7:
+    Zone:
+      shape: CYLINDER
+      radius: 2
+      height: 1
+      Target:
+        targetType: SELF_SPAWN
+        offset: 2,0,6
+    Actions:
+    - action: DAMAGE
+      multiplier: 1
+      Target:
+        targetType: ZONE_FULL
+
+  Particles8:
+    Zone:
+      shape: STATIC_RAY
+      Target2:
+        targetType: SELF_SPAWN
+        offset: 0,24,0
+      Target:
+        targetType: SELF_SPAWN
+        offset: 1,0,5
+    Actions:
+    - action: SPAWN_PARTICLE
+      particles:
+      - particle: REDSTONE
+        amount: 3
+        red: 255
+        green: 255
+        blue: 255
+      Target:
+        targetType: ZONE_FULL
+  Damage8:
+    Zone:
+      shape: CYLINDER
+      radius: 2
+      height: 1
+      Target:
+        targetType: SELF_SPAWN
+        offset: 1,0,5
+    Actions:
+    - action: DAMAGE
+      multiplier: 1
+      Target:
+        targetType: ZONE_FULL
+
+  Particles9:
+    Zone:
+      shape: STATIC_RAY
+      Target2:
+        targetType: SELF_SPAWN
+        offset: 0,24,0
+      Target:
+        targetType: SELF_SPAWN
+        offset: -5,0,6
+    Actions:
+    - action: SPAWN_PARTICLE
+      particles:
+      - particle: REDSTONE
+        amount: 3
+        red: 255
+        green: 255
+        blue: 255
+      Target:
+        targetType: ZONE_FULL
+  Damage9:
+    Zone:
+      shape: CYLINDER
+      radius: 2
+      height: 1
+      Target:
+        targetType: SELF_SPAWN
+        offset: -5,0,6
+    Actions:
+    - action: DAMAGE
+      multiplier: 1
+      Target:
+        targetType: ZONE_FULL
+
+  Particles10:
+    Zone:
+      shape: STATIC_RAY
+      Target2:
+        targetType: SELF_SPAWN
+        offset: 0,24,0
+      Target:
+        targetType: SELF_SPAWN
+        offset: -2,0,7
+    Actions:
+    - action: SPAWN_PARTICLE
+      particles:
+      - particle: REDSTONE
+        amount: 3
+        red: 255
+        green: 255
+        blue: 255
+      Target:
+        targetType: ZONE_FULL
+  Damage10:
+    Zone:
+      shape: CYLINDER
+      radius: 2
+      height: 1
+      Target:
+        targetType: SELF_SPAWN
+        offset: -2,0,7
+    Actions:
+    - action: DAMAGE
+      multiplier: 1
+      Target:
+        targetType: ZONE_FULL
+
+  Particles11:
+    Zone:
+      shape: STATIC_RAY
+      Target2:
+        targetType: SELF_SPAWN
+        offset: 0,24,0
+      Target:
+        targetType: SELF_SPAWN
+        offset: -7,0,2
+    Actions:
+    - action: SPAWN_PARTICLE
+      particles:
+      - particle: REDSTONE
+        amount: 3
+        red: 255
+        green: 255
+        blue: 255
+      Target:
+        targetType: ZONE_FULL
+  Damage11:
+    Zone:
+      shape: CYLINDER
+      radius: 2
+      height: 1
+      Target:
+        targetType: SELF_SPAWN
+        offset: -7,0,2
+    Actions:
+    - action: DAMAGE
+      multiplier: 1
+      Target:
+        targetType: ZONE_FULL
+
+  Particles12:
+    Zone:
+      shape: STATIC_RAY
+      Target2:
+        targetType: SELF_SPAWN
+        offset: 0,24,0
+      Target:
+        targetType: SELF_SPAWN
+        offset: -8,0,2
+    Actions:
+    - action: SPAWN_PARTICLE
+      particles:
+      - particle: REDSTONE
+        amount: 3
+        red: 255
+        green: 255
+        blue: 255
+      Target:
+        targetType: ZONE_FULL
+  Damage12:
+    Zone:
+      shape: CYLINDER
+      radius: 2
+      height: 1
+      Target:
+        targetType: SELF_SPAWN
+        offset: -8,0,2
+    Actions:
+    - action: DAMAGE
+      multiplier: 1
+      Target:
+        targetType: ZONE_FULL
+
+  Particles13:
+    Zone:
+      shape: STATIC_RAY
+      Target2:
+        targetType: SELF_SPAWN
+        offset: 0,24,0
+      Target:
+        targetType: SELF_SPAWN
+        offset: -4,0,5
+    Actions:
+    - action: SPAWN_PARTICLE
+      particles:
+      - particle: REDSTONE
+        amount: 3
+        red: 255
+        green: 255
+        blue: 255
+      Target:
+        targetType: ZONE_FULL
+  Damage13:
+    Zone:
+      shape: CYLINDER
+      radius: 2
+      height: 1
+      Target:
+        targetType: SELF_SPAWN
+        offset: -4,0,5
+    Actions:
+    - action: DAMAGE
+      multiplier: 1
+      Target:
+        targetType: ZONE_FULL
+
+  Particles14:
+    Zone:
+      shape: STATIC_RAY
+      Target2:
+        targetType: SELF_SPAWN
+        offset: 0,24,0
+      Target:
+        targetType: SELF_SPAWN
+        offset: -8,0,-1
+    Actions:
+    - action: SPAWN_PARTICLE
+      particles:
+      - particle: REDSTONE
+        amount: 3
+        red: 255
+        green: 255
+        blue: 255
+      Target:
+        targetType: ZONE_FULL
+  Damage14:
+    Zone:
+      shape: CYLINDER
+      radius: 2
+      height: 1
+      Target:
+        targetType: SELF_SPAWN
+        offset: -8,0,-1
+    Actions:
+    - action: DAMAGE
+      multiplier: 1
+      Target:
+        targetType: ZONE_FULL
+
+  Particles15:
+    Zone:
+      shape: STATIC_RAY
+      Target2:
+        targetType: SELF_SPAWN
+        offset: 0,24,0
+      Target:
+        targetType: SELF_SPAWN
+        offset: -8,0,8
+    Actions:
+    - action: SPAWN_PARTICLE
+      particles:
+      - particle: REDSTONE
+        amount: 3
+        red: 255
+        green: 255
+        blue: 255
+      Target:
+        targetType: ZONE_FULL
+  Damage15:
+    Zone:
+      shape: CYLINDER
+      radius: 2
+      height: 1
+      Target:
+        targetType: SELF_SPAWN
+        offset: -8,0,8
+    Actions:
+    - action: DAMAGE
+      multiplier: 1
+      Target:
+        targetType: ZONE_FULL
+
+  Particles16:
+    Zone:
+      shape: STATIC_RAY
+      Target2:
+        targetType: SELF_SPAWN
+        offset: 0,24,0
+      Target:
+        targetType: SELF_SPAWN
+        offset: -6,0,0
+    Actions:
+    - action: SPAWN_PARTICLE
+      particles:
+      - particle: REDSTONE
+        amount: 3
+        red: 255
+        green: 255
+        blue: 255
+      Target:
+        targetType: ZONE_FULL
+  Damage16:
+    Zone:
+      shape: CYLINDER
+      radius: 2
+      height: 1
+      Target:
+        targetType: SELF_SPAWN
+        offset: -6,0,0
+    Actions:
+    - action: DAMAGE
+      multiplier: 1
+      Target:
+        targetType: ZONE_FULL
+
+  Particles17:
+    Zone:
+      shape: STATIC_RAY
+      Target2:
+        targetType: SELF_SPAWN
+        offset: 0,24,0
+      Target:
+        targetType: SELF_SPAWN
+        offset: 8,0,-1
+    Actions:
+    - action: SPAWN_PARTICLE
+      particles:
+      - particle: REDSTONE
+        amount: 3
+        red: 255
+        green: 255
+        blue: 255
+      Target:
+        targetType: ZONE_FULL
+  Damage17:
+    Zone:
+      shape: CYLINDER
+      radius: 2
+      height: 1
+      Target:
+        targetType: SELF_SPAWN
+        offset: 8,0,-1
+    Actions:
+    - action: DAMAGE
+      multiplier: 1
+      Target:
+        targetType: ZONE_FULL
+
+  Particles18:
+    Zone:
+      shape: STATIC_RAY
+      Target2:
+        targetType: SELF_SPAWN
+        offset: 0,24,0
+      Target:
+        targetType: SELF_SPAWN
+        offset: 4,0,-4
+    Actions:
+    - action: SPAWN_PARTICLE
+      particles:
+      - particle: REDSTONE
+        amount: 3
+        red: 255
+        green: 255
+        blue: 255
+      Target:
+        targetType: ZONE_FULL
+  Damage18:
+    Zone:
+      shape: CYLINDER
+      radius: 2
+      height: 1
+      Target:
+        targetType: SELF_SPAWN
+        offset: 4,0,-4
+    Actions:
+    - action: DAMAGE
+      multiplier: 1
+      Target:
+        targetType: ZONE_FULL
+
+  Particles19:
+    Zone:
+      shape: STATIC_RAY
+      Target2:
+        targetType: SELF_SPAWN
+        offset: 0,24,0
+      Target:
+        targetType: SELF_SPAWN
+        offset: 7,0,-7
+    Actions:
+    - action: SPAWN_PARTICLE
+      particles:
+      - particle: REDSTONE
+        amount: 3
+        red: 255
+        green: 255
+        blue: 255
+      Target:
+        targetType: ZONE_FULL
+  Damage19:
+    Zone:
+      shape: CYLINDER
+      radius: 2
+      height: 1
+      Target:
+        targetType: SELF_SPAWN
+        offset: 7,0,-7
+    Actions:
+    - action: DAMAGE
+      multiplier: 1
+      Target:
+        targetType: ZONE_FULL
+
+  Particles20:
+    Zone:
+      shape: STATIC_RAY
+      Target2:
+        targetType: SELF_SPAWN
+        offset: 0,24,0
+        offset: 0,24,0
+      Target:
+        targetType: SELF_SPAWN
+        offset: 2,0,-2
+    Actions:
+    - action: SPAWN_PARTICLE
+      particles:
+      - particle: REDSTONE
+        amount: 3
+        red: 255
+        green: 255
+        blue: 255
+      Target:
+        targetType: ZONE_FULL
+  Damage20:
+    Zone:
+      shape: CYLINDER
+      radius: 2
+      height: 1
+      Target:
+        targetType: SELF_SPAWN
+        offset: 2,0,-2
+    Actions:
+    - action: DAMAGE
+      multiplier: 1
+      Target:
+        targetType: ZONE_FULL
+
+  Particles21:
+    Zone:
+      shape: STATIC_RAY
+      Target2:
+        targetType: SELF_SPAWN
+        offset: 0,24,0
+      Target:
+        targetType: SELF_SPAWN
+        offset: 3,0,-7
+    Actions:
+    - action: SPAWN_PARTICLE
+      particles:
+      - particle: REDSTONE
+        amount: 3
+        red: 255
+        green: 255
+        blue: 255
+      Target:
+        targetType: ZONE_FULL
+  Damage21:
+    Zone:
+      shape: CYLINDER
+      radius: 2
+      height: 1
+      Target:
+        targetType: SELF_SPAWN
+        offset: 3,0,-7
+    Actions:
+    - action: DAMAGE
+      multiplier: 1
+      Target:
+        targetType: ZONE_FULL
+
+  Particles22:
+    Zone:
+      shape: STATIC_RAY
+      Target2:
+        targetType: SELF_SPAWN
+        offset: 0,24,0
+      Target:
+        targetType: SELF_SPAWN
+        offset: 7,0,-2
+    Actions:
+    - action: SPAWN_PARTICLE
+      particles:
+      - particle: REDSTONE
+        amount: 3
+        red: 255
+        green: 255
+        blue: 255
+      Target:
+        targetType: ZONE_FULL
+  Damage22:
+    Zone:
+      shape: CYLINDER
+      radius: 2
+      height: 1
+      Target:
+        targetType: SELF_SPAWN
+        offset: 7,0,-2
+    Actions:
+    - action: DAMAGE
+      multiplier: 1
+      Target:
+        targetType: ZONE_FULL
+
+  Particles23:
+    Zone:
+      shape: STATIC_RAY
+      Target2:
+        targetType: SELF_SPAWN
+        offset: 0,24,0
+      Target:
+        targetType: SELF_SPAWN
+        offset: 1,0,-5
+    Actions:
+    - action: SPAWN_PARTICLE
+      particles:
+      - particle: REDSTONE
+        amount: 3
+        red: 255
+        green: 255
+        blue: 255
+      Target:
+        targetType: ZONE_FULL
+  Damage23:
+    Zone:
+      shape: CYLINDER
+      radius: 2
+      height: 1
+      Target:
+        targetType: SELF_SPAWN
+        offset: 1,0,-5
+    Actions:
+    - action: DAMAGE
+      multiplier: 1
+      Target:
+        targetType: ZONE_FULL
+
+  Particles24:
+    Zone:
+      shape: STATIC_RAY
+      Target2:
+        targetType: SELF_SPAWN
+        offset: 0,24,0
+      Target:
+        targetType: SELF_SPAWN
+        offset: 2,0,-5
+    Actions:
+    - action: SPAWN_PARTICLE
+      particles:
+      - particle: REDSTONE
+        amount: 3
+        red: 255
+        green: 255
+        blue: 255
+      Target:
+        targetType: ZONE_FULL
+  Damage24:
+    Zone:
+      shape: CYLINDER
+      radius: 2
+      height: 1
+      Target:
+        targetType: SELF_SPAWN
+        offset: 2,0,-5
+    Actions:
+    - action: DAMAGE
+      multiplier: 1
+      Target:
+        targetType: ZONE_FULL
+
+  Particles25:
+    Zone:
+      shape: STATIC_RAY
+      Target2:
+        targetType: SELF_SPAWN
+        offset: 0,24,0
+      Target:
+        targetType: SELF_SPAWN
+        offset: -3,0,-4
+    Actions:
+    - action: SPAWN_PARTICLE
+      particles:
+      - particle: REDSTONE
+        amount: 3
+        red: 255
+        green: 255
+        blue: 255
+      Target:
+        targetType: ZONE_FULL
+  Damage25:
+    Zone:
+      shape: CYLINDER
+      radius: 2
+      height: 1
+      Target:
+        targetType: SELF_SPAWN
+        offset: -3,0,-4
+    Actions:
+    - action: DAMAGE
+      multiplier: 1
+      Target:
+        targetType: ZONE_FULL
+
+  Particles26:
+    Zone:
+      shape: STATIC_RAY
+      Target2:
+        targetType: SELF_SPAWN
+        offset: 0,24,0
+      Target:
+        targetType: SELF_SPAWN
+        offset: -2,0,-7
+    Actions:
+    - action: SPAWN_PARTICLE
+      particles:
+      - particle: REDSTONE
+        amount: 3
+        red: 255
+        green: 255
+        blue: 255
+      Target:
+        targetType: ZONE_FULL
+  Damage26:
+    Zone:
+      shape: CYLINDER
+      radius: 2
+      height: 1
+      Target:
+        targetType: SELF_SPAWN
+        offset: -2,0,-7
+    Actions:
+    - action: DAMAGE
+      multiplier: 1
+      Target:
+        targetType: ZONE_FULL
+
+  Particles27:
+    Zone:
+      shape: STATIC_RAY
+      Target2:
+        targetType: SELF_SPAWN
+        offset: 0,24,0
+      Target:
+        targetType: SELF_SPAWN
+        offset: -5,0,-2
+    Actions:
+    - action: SPAWN_PARTICLE
+      particles:
+      - particle: REDSTONE
+        amount: 3
+        red: 255
+        green: 255
+        blue: 255
+      Target:
+        targetType: ZONE_FULL
+  Damage27:
+    Zone:
+      shape: CYLINDER
+      radius: 2
+      height: 1
+      Target:
+        targetType: SELF_SPAWN
+        offset: -5,0,-2
+    Actions:
+    - action: DAMAGE
+      multiplier: 1
+      Target:
+        targetType: ZONE_FULL
+
+  Particles28:
+    Zone:
+      shape: STATIC_RAY
+      Target2:
+        targetType: SELF_SPAWN
+        offset: 0,24,0
+      Target:
+        targetType: SELF_SPAWN
+        offset: -3,0,-6
+    Actions:
+    - action: SPAWN_PARTICLE
+      particles:
+      - particle: REDSTONE
+        amount: 3
+        red: 255
+        green: 255
+        blue: 255
+      Target:
+        targetType: ZONE_FULL
+  Damage28:
+    Zone:
+      shape: CYLINDER
+      radius: 2
+      height: 1
+      Target:
+        targetType: SELF_SPAWN
+        offset: -3,0,-6
+    Actions:
+    - action: DAMAGE
+      multiplier: 1
+      Target:
+        targetType: ZONE_FULL
+
+  Particles29:
+    Zone:
+      shape: STATIC_RAY
+      Target2:
+        targetType: SELF_SPAWN
+        offset: 0,24,0
+      Target:
+        targetType: SELF_SPAWN
+        offset: -4,0,-5
+    Actions:
+    - action: SPAWN_PARTICLE
+      particles:
+      - particle: REDSTONE
+        amount: 3
+        red: 255
+        green: 255
+        blue: 255
+      Target:
+        targetType: ZONE_FULL
+  Damage29:
+    Zone:
+      shape: CYLINDER
+      radius: 2
+      height: 1
+      Target:
+        targetType: SELF_SPAWN
+        offset: -4,0,-5
+    Actions:
+    - action: DAMAGE
+      multiplier: 1
+      Target:
+        targetType: ZONE_FULL
+
+  Particles30:
+    Zone:
+      shape: STATIC_RAY
+      Target2:
+        targetType: SELF_SPAWN
+        offset: 0,24,0
+      Target:
+        targetType: SELF_SPAWN
+        offset: -5,0,-2
+    Actions:
+    - action: SPAWN_PARTICLE
+      particles:
+      - particle: REDSTONE
+        amount: 3
+        red: 255
+        green: 255
+        blue: 255
+      Target:
+        targetType: ZONE_FULL
+  Damage30:
+    Zone:
+      shape: CYLINDER
+      radius: 2
+      height: 1
+      Target:
+        targetType: SELF_SPAWN
+        offset: -5,0,-2
+    Actions:
+    - action: DAMAGE
+      multiplier: 1
+      Target:
+        targetType: ZONE_FULL
+
+ 
+# Generated with https://magmaguy.com/webapp/webapp.html !

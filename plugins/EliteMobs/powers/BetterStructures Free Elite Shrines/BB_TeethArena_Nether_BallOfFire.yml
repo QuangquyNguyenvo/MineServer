@@ -1,0 +1,35 @@
+powerType: UNIQUE
+eliteScript:
+  TriggerManager:
+    Events:
+    - EliteMobDamagedByPlayerEvent
+    Actions:
+    - action: SPAWN_FIREWORKS
+      vValue: 0,0,0
+      power: 0
+      fireworkEffects:
+      - [ORANGE]
+      Target:
+        targetType: NEARBY_PLAYERS
+        range: 20
+    - action: DAMAGE
+      multiplier: 1
+      Target:
+        targetType: NEARBY_PLAYERS
+        range: 20
+      wait: 5
+    - action: SET_ON_FIRE
+      duration: 80
+      Target:
+        targetType: NEARBY_PLAYERS
+        range: 20
+      wait: 5
+    - action: PUSH
+      vValue: 1,1,1
+      Target:
+        targetType: NEARBY_PLAYERS
+        range: 20
+    Cooldowns:
+      local: 400
+      global: 200
+# Generated with https://magmaguy.com/webapp/webapp.html !

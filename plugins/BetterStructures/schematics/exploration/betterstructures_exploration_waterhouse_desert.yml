@@ -1,0 +1,4 @@
+isEnabled: true
+weight: 1.0
+generatorConfigFilename: generator_liquid_overworld.yml
+pedestalMaterial: OAK_LOG

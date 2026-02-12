@@ -1,0 +1,14 @@
+name: "&dGuard's Boots"
+material: IRON_BOOTS
+lore:
+- "This Gear was specifically crafted"
+- "by one of the greatest blacksmiths"
+- "for the city's archers."
+enchantments:
+- PROTECTION_PROJECTILE,5
+- DURABILITY,3
+- PROTECTION_FALL,4
+
+scalability: scalable
+itemType: unique
+# Generated with https://magmaguy.com/webapp/webapp.html !

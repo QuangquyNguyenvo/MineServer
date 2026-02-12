@@ -39,17 +39,3 @@ world_the_end/
 
 # ===== PLUGIN DATA (too large / auto-generated) =====
 plugins/.paper-remapped/
-plugins/FastAsyncWorldEdit/clipboard/
-plugins/EliteMobs/
-plugins/BetterStructures/
-plugins/FreeMinecraftModels/
-plugins/MyFurniture/
-plugins/SkinsRestorer/
-plugins/voicechat/
-
-# ===== PLUGIN RUNTIME DATA (databases, backups, caches) =====
-plugins/ExecutableItems/backups/
-plugins/SCore/data.db
-plugins/SCore/textures-cache/
-plugins/FlectonePulse/flectonepulse.h2.mv.db
-plugins/Skript/variables.csv

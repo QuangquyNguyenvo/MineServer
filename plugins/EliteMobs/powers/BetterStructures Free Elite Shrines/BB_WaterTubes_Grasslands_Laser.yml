@@ -1,0 +1,37 @@
+powerType: UNIQUE
+eliteScript:
+  TriggerManager:
+    Events:
+    - EliteMobDamagedByPlayerEvent
+    Zone:
+      shape: CYLINDER
+      radius: 2
+      height: 30
+      Target:
+        targetType: DIRECT_TARGET
+    Actions:
+    - action: SPAWN_PARTICLE
+      particles:
+      - particle: REDSTONE
+        amount: 4
+        red: 0
+        green: 255
+        blue: 0
+      Target:
+        targetType: ZONE_FULL
+      repeatEvery: 5
+      times: 2
+    - action: POTION_EFFECT
+      potionEffectType: BLINDNESS
+      amplifier: 1
+      duration: 40
+      Target:
+        targetType: DIRECT_TARGET
+    - action: DAMAGE
+      multiplier: 2
+      Target:
+        targetType: DIRECT_TARGET
+    Cooldowns:
+      local: 400
+      global: 300
+# Generated with https://magmaguy.com/webapp/webapp.html !

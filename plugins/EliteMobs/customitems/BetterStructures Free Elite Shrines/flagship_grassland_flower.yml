@@ -1,0 +1,13 @@
+name: "&dRose"
+material: POPPY
+lore:
+- "Kill 'em with kindness!"
+potionEffects:
+- ABSORPTION,0,self,onHit
+- SATURATION,0,self,onHit
+- SLOW,0,self,onHit
+- WEAKNESS,0,self,onHit
+
+scalability: scalable
+itemType: unique
+# Generated with https://magmaguy.com/webapp/webapp.html !

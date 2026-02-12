@@ -1,0 +1,39 @@
+powerType: UNIQUE
+eliteScript:
+  triggermanager:
+    Events:
+    - EliteMobDamagedByPlayerEvent
+    Actions:
+    - action: SPAWN_FALLING_BLOCK
+      material: SNOW_BLOCK
+      landingScripts:
+      - "Boom"
+      Target:
+        targetType: NEARBY_PLAYERS
+        offset: 0,5,0
+        range: 20
+    Cooldowns:
+      local: 500
+      global: 300
+      
+      
+
+  Boom:
+    Actions:
+    - action: VISUAL_FREEZE
+      duration: 60
+      Target:
+        targetType: NEARBY_PLAYERS
+        range: 20
+    - action: DAMAGE
+      multiplier: 0.7
+      Target:
+        targetType: NEARBY_PLAYERS
+        range: 20
+    - action: SPAWN_PARTICLE
+      particles:
+      - particle: EXPLOSION_HUGE
+        amount: 2
+      Target:
+        targetType: LANDING_LOCATION
+# Generated with https://magmaguy.com/webapp/webapp.html !

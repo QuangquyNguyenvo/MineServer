@@ -1,0 +1,26 @@
+entityType: STRAY
+name: "$minibossLevel &9Frosted Undead"
+level: dynamic
+healthMultiplier: 3
+damageMultiplier: 1
+isBaby: false
+helmet: CHAINMAIL_HELMET
+boots: IRON_BOOTS
+mainHand: BOW
+powers:
+- attack_freeze.yml
+- skeleton_pillar.yml
+- skeleton_tracking_arrow.yml
+- BB_Tower_Tundra_FreezeCyl.yml
+normalizedCombat: true
+dropsEliteMobsLoot: true
+dropsVanillaLoot: false
+dropsRandomLoot: false
+trails: SNOWFLAKE
+isRegionalBoss: true
+leashRadius: 20
+removeAfterDeath: true
+uniqueLootList:
+- filename: tower_tundra_helmet.yml
+  chance: 1
+# Generated with https://magmaguy.com/webapp/webapp.html !

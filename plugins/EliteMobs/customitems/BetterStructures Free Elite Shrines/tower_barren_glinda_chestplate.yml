@@ -1,0 +1,13 @@
+name: "&2Glinda's Chestplate"
+material: CHAINMAIL_CHESTPLATE
+lore:
+- "Made from the best material "
+- "in town!"
+enchantments:
+- PROTECTION_ENVIRONMENTAL,5
+- DURABILITY,3
+- THORNS,3
+
+scalability: scalable
+itemType: unique
+# Generated with https://magmaguy.com/webapp/webapp.html !

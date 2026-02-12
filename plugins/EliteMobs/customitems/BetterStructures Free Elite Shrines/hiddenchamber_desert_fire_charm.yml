@@ -1,0 +1,10 @@
+name: "&6Fire Charm"
+material: FLINT_AND_STEEL
+lore:
+- "Your best friend in the nether"
+
+potionEffects:
+- FIRE_RESISTANCE,2,self,continuous
+scalability: scalable
+itemType: unique
+# Generated with https://magmaguy.com/webapp/webapp.html !

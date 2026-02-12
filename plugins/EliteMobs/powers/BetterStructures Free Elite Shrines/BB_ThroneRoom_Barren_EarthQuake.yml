@@ -1,0 +1,61 @@
+powerType: UNIQUE
+eliteScript:
+  TriggerManager:
+    Events:
+    - EliteMobDamagedByPlayerEvent
+    Zone:
+      shape: CUBOID
+      x: 28
+      y: 1
+      z: 18
+      Target:
+        targetType: SELF
+        offset: -13,15,0
+    Actions:
+    - action: SPAWN_FALLING_BLOCK
+      material: POINTED_DRIPSTONE
+      wait: 40
+      landingScripts:
+      - "Dripstone"
+      Target:
+        targetType: ZONE_FULL
+        coverage: 0.01
+      repeatEvery: 10
+      times: 36
+    - action: POTION_EFFECT
+      potionEffectType: SLOW
+      amplifier: 1
+      duration: 360
+      wait: 20
+      Target:
+        targetType: NEARBY_PLAYERS
+        range: 20
+    - action: MESSAGE
+      sValue: "&2[BOSS]&f&rCan you feel the earth shake?!"
+      Target:
+        targetType: NEARBY_PLAYERS
+        range: 25
+    Cooldowns:
+      local: 900
+      global: 200
+
+
+  Dripstone:
+    Zone:
+      shape: CYLINDER
+      radius: 3
+      height: 1
+      Target:
+        targetType: LANDING_LOCATION
+    Actions:
+    - action: DAMAGE
+      multiplier: 0.5
+      Target:
+        targetType: ZONE_FULL
+        offset: 0,-1,0
+    - action: SPAWN_PARTICLE
+      particles:
+      - particle: EXPLOSION_LARGE
+      Target:
+        targetType: LANDING_LOCATION
+# Generated with https://magmaguy.com/webapp/webapp.html !

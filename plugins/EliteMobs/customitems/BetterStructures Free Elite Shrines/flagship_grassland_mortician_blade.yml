@@ -1,0 +1,15 @@
+name: "&dMortician Blade"
+material: IRON_SWORD
+lore:
+- "Rewarded to those who defeat the &d&lMortician."
+- "A  sign of great power and perseverance"
+enchantments:
+- DAMAGE_ALL,5
+- DURABILITY,3
+- SWEEPING_EDGE,3
+- VANISHING_CURSE,1
+potionEffects:
+- DAMAGE_RESISTANCE,1,self,onHit
+scalability: scalable
+itemType: unique
+# Generated with https://magmaguy.com/webapp/webapp.html !

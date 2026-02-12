@@ -1,0 +1,34 @@
+powerType: UNIQUE
+eliteScript:
+  TriggerManager:
+    Events:
+    - EliteMobDamagedByPlayerEvent
+    Zone:
+      shape: CYLINDER
+      radius: 2
+      height: 1
+      Target:
+        targetType: DIRECT_TARGET
+        offset: 0,-1,0
+    Actions:
+    - action: POTION_EFFECT
+      potionEffectType: SLOW
+      amplifier: 7
+      duration: 150
+      Target:
+        targetType: DIRECT_TARGET
+    - action: POTION_EFFECT
+      potionEffectType: JUMP
+      amplifier: 200
+      duration: 150
+      Target:
+        targetType: DIRECT_TARGET
+    - action: PLACE_BLOCK
+      material: SOUL_SAND
+      duration: 150
+      Target:
+        targetType: ZONE_FULL
+    Cooldowns:
+      local: 600
+      global: 400
+# Generated with https://magmaguy.com/webapp/webapp.html !

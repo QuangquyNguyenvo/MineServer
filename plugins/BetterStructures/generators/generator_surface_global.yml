@@ -1,0 +1,7 @@
+isEnabled: true
+structureType:
+- SURFACE
+validWorldEnvironments:
+- NORMAL
+- CUSTOM
+treasureFilename: treasure_overworld_surface.yml

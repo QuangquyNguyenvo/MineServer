@@ -1,0 +1,13 @@
+name: "&4Flame Blade"
+material: STONE_SWORD
+lore:
+- "This has been said to be able to "
+- "set everything in its way ablaze"
+enchantments:
+- DAMAGE_ALL,4
+- FIRE_ASPECT,2
+- SWEEPING_EDGE,3
+
+scalability: scalable
+itemType: unique
+# Generated with https://magmaguy.com/webapp/webapp.html !

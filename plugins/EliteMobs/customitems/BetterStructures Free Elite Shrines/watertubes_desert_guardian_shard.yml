@@ -1,0 +1,13 @@
+name: "&6Guardian's Rod"
+material: FISHING_ROD
+lore:
+- "Fished from the depths of the sea."
+enchantments:
+- LUCK,3
+- LURE,3
+- DURABILITY,3
+potionEffects:
+- LUCK,1,self,continuous
+scalability: scalable
+itemType: unique
+# Generated with https://magmaguy.com/webapp/webapp.html !

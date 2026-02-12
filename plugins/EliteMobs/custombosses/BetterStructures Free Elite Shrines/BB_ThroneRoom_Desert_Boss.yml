@@ -1,0 +1,26 @@
+entityType: IRON_GOLEM
+name: "$minibossLevel &6Darklord"
+level: dynamic
+healthMultiplier: 3
+damageMultiplier: 2
+isBaby: false
+mainHand: CROSSBOW
+powers:
+- invulnerability_fire.yml
+- attack_vacuum.yml
+- attack_weakness.yml
+- BB_ThroneRoom_Desert_DarknessKing.yml
+- shield_wall.yml
+- taze.yml
+normalizedCombat: true
+dropsEliteMobsLoot: true
+dropsVanillaLoot: false
+dropsRandomLoot: false
+trails: FLAME
+isRegionalBoss: true
+leashRadius: 30
+removeAfterDeath: true
+uniqueLootList:
+- filename: throneroom_desert_Dark_Blade.yml
+  chance: 1
+# Generated with https://magmaguy.com/webapp/webapp.html !

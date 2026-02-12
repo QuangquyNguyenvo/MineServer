@@ -1,0 +1,42 @@
+powerType: UNIQUE
+eliteScript:
+  TriggerManager:
+    Events:
+    - EliteMobDamagedByPlayerEvent
+    Zone:
+      shape: SPHERE
+      radius: 3
+      borderRadius: 1
+      Target:
+        targetType: NEARBY_PLAYERS
+        range: 20
+    Actions:
+    - action: POTION_EFFECT
+      potionEffectType: LEVITATION
+      amplifier: 3
+      duration: 60
+      Target:
+        targetType: NEARBY_PLAYERS
+        range: 20
+    - action: PLACE_BLOCK
+      material: AIR
+      duration: 120
+      Target:
+        targetType: ZONE_FULL
+      wait: 80
+    - action: SPAWN_PARTICLE
+      particles:
+      - particle: EXPLOSION_HUGE
+      Target:
+        targetType: ZONE_FULL
+      wait: 80
+    - action: DAMAGE
+      multiplier: 1
+      Target:
+        targetType: NEARBY_PLAYERS
+        range: 20
+      wait: 80
+    Cooldowns:
+      local: 600
+      global: 400
+# Generated with https://magmaguy.com/webapp/webapp.html !

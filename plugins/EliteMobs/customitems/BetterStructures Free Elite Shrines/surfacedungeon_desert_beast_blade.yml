@@ -1,0 +1,11 @@
+name: "&6Beast's Blade"
+material: GOLDEN_SWORD
+lore:
+- "Perfect for a barbecue!"
+enchantments:
+- FIRE_ASPECT,3
+- DAMAGE_ALL,3
+
+scalability: scalable
+itemType: unique
+# Generated with https://magmaguy.com/webapp/webapp.html !

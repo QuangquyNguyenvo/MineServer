@@ -1,0 +1,15 @@
+name: "&5Ender Bow"
+material: BOW
+lore:
+- "This seems to be used for more than"
+- "just fightning."
+enchantments:
+- ARROW_DAMAGE,5
+- ARROW_INFINITE,1
+- ARROW_KNOCKBACK,2
+- DURABILITY,3
+- GRAPPLING_HOOK,1
+
+scalability: scalable
+itemType: unique
+# Generated with https://magmaguy.com/webapp/webapp.html !

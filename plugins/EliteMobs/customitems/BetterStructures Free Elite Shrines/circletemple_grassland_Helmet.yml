@@ -1,0 +1,12 @@
+name: "&dKnight's Leggings"
+material: DIAMOND_HELMET
+lore:
+- "Scavengered from the knight's"
+- "mighty corpse!"
+enchantments:
+- PROTECTION_ENVIRONMENTAL,3
+- DURABILITY,3
+
+scalability: scalable
+itemType: unique
+# Generated with https://magmaguy.com/webapp/webapp.html !

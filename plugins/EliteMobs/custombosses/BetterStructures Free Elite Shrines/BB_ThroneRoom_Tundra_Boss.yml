@@ -1,0 +1,38 @@
+entityType: SLIME
+name: "$minibossLevel &aSlime King"
+level: dynamic
+healthMultiplier: 4
+damageMultiplier: 0.1
+isBaby: false
+powers:
+- ground_pound.yml
+- attack_vacuum.yml
+- attack_poison.yml
+- BB_ThroneRoom_Tundra_SlimeAttack.yml
+normalizedCombat: true
+dropsEliteMobsLoot: true
+dropsVanillaLoot: false
+dropsRandomLoot: false
+isRegionalBoss: true
+leashRadius: 20
+slimeSize: 4
+removeAfterDeath: true
+uniqueLootList:
+- filename: throneroom_tundra_sticky_charm.yml
+  chance: 1
+eliteScript:
+  NerfDamage:
+    Events:
+    - ZoneEnterEvent
+    - ZoneLeaveEvent
+    Zone:
+      shape: SPHERE
+      radius: 1
+      Target:
+        targetType: SELF
+    Actions:
+    - action: SET_MOB_AI
+      Target:
+        targetType: SELF
+      bValue: false
+      duration: 10

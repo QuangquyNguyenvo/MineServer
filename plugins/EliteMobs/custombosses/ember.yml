@@ -1,0 +1,12 @@
+isEnabled: true
+entityType: BLAZE
+name: $reinforcementLevel &cEmber
+level: dynamic
+healthMultiplier: 0.5
+damageMultiplier: 0.5
+dropsEliteMobsLoot: false
+trails:
+- WITCH
+onSpawnBlockStates: []
+onRemoveBlockStates: []
+bossType: NORMAL

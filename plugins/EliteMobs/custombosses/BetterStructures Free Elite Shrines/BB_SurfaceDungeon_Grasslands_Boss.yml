@@ -1,0 +1,23 @@
+entityType: VINDICATOR
+name: "$minibossLevel &dDungeon Master"
+level: dynamic
+healthMultiplier: 2
+damageMultiplier: 1
+isBaby: false
+powers:
+- BB_SurfaceDungeon_Grasslands_DamageRay.yml
+- BB_SurfaceDungeon_Grasslands_PushSphere.yml
+- attack_vacuum.yml
+- invulnerability_fire.yml
+normalizedCombat: true
+dropsEliteMobsLoot: true
+dropsVanillaLoot: false
+dropsRandomLoot: false
+trails: NAUTILUS
+isRegionalBoss: true
+leashRadius: 25
+removeAfterDeath: true
+uniqueLootList:
+- filename: surfacedungeon_grassland_dagger.yml
+  chance: 1
+# Generated with https://magmaguy.com/webapp/webapp.html !

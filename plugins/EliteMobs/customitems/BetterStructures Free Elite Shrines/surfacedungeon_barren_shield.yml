@@ -1,0 +1,12 @@
+name: "&2Dungeon Keeper's Shield "
+material: SHIELD
+lore:
+- "Keeps the danger away!"
+enchantments:
+- DURABILITY,3
+- VANISHING_CURSE,1
+potionEffects:
+- DAMAGE_RESISTANCE,1,self,continuous
+scalability: scalable
+itemType: unique
+# Generated with https://magmaguy.com/webapp/webapp.html !

@@ -1,0 +1,51 @@
+powerType: UNIQUE
+eliteScript:
+  TriggerManager:
+    Events:
+    - EliteMobDamagedByPlayerEvent
+    Zone:
+      shape: STATIC_RAY
+      Target2:
+        targetType: SELF
+      Target:
+        targetType: DIRECT_TARGET
+    Actions:
+    - action: SPAWN_PARTICLE
+      particles:
+      - particle: SNOWFLAKE
+        amount: 4
+      Target:
+        targetType: ZONE_FULL
+    - action: RUN_SCRIPT
+      wait: 10
+      scripts:
+      - "IglooDome"
+    Cooldowns:
+      local: 600
+      global: 400
+
+  IglooDome:
+    Zone:
+      shape: DOME
+      radius: 4
+      Target:
+        targetType: DIRECT_TARGET
+        offset: 0,0,0
+    Actions:
+    - action: PLACE_BLOCK
+      material: POWDER_SNOW
+      duration: 100
+      Target:
+        targetType: ZONE_FULL
+    - action: VISUAL_FREEZE
+      duration: 100
+      Target:
+        targetType: ZONE_FULL
+    - action: DAMAGE
+      multiplier: 0.2
+      Target:
+        targetType: ZONE_FULL
+      repeatEvery: 20
+      times: 5
+
+# Generated with https://magmaguy.com/webapp/webapp.html !

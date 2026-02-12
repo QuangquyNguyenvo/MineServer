@@ -1,0 +1,13 @@
+name: "&2Poisonous Blade"
+material: STONE_SWORD
+lore:
+- "Unleash your poison on those who"
+- " shall dare to speak against you."
+enchantments:
+- DAMAGE_ALL,5
+- DURABILITY,3
+potionEffects:
+- POISON,1,target,onHit
+scalability: scalable
+itemType: unique
+# Generated with https://magmaguy.com/webapp/webapp.html !

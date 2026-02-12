@@ -1,0 +1,39 @@
+powerType: UNIQUE
+eliteScript:
+  TriggerManager:
+    Events:
+    - EliteMobDamagedByPlayerEvent
+    Actions:
+    - action: POTION_EFFECT
+      potionEffectType: BLINDNESS
+      amplifier: 2
+      duration: 60
+      Target:
+        targetType: NEARBY_PLAYERS
+        range: 25
+    - action: SUMMON_REINFORCEMENT
+      sValue: "BB_SurfaceDungeon_End_Reinforcement.yml"
+      Target:
+        targetType: SELF
+        offset: 0,0,3
+    - action: SUMMON_REINFORCEMENT
+      sValue: "BB_SurfaceDungeon_End_Reinforcement.yml"
+      Target:
+        targetType: SELF
+        offset: 0,0,-3
+    - action: MESSAGE
+      sValue: "&5[Boss]&f&rBoo! Which of us is the real one...."
+      Target:
+        targetType: NEARBY_PLAYERS
+        range: 20
+      wait: 60
+    - action: MESSAGE
+      sValue: "&5[Boss]&f&rThat's for you to find out...."
+      Target:
+        targetType: NEARBY_PLAYERS
+        range: 20
+      wait: 80
+    Cooldowns:
+      local: 9900
+      global: 300
+# Generated with https://magmaguy.com/webapp/webapp.html !
