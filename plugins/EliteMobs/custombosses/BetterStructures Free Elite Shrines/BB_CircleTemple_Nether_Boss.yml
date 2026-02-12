@@ -1,5 +1,5 @@
 entityType: WITHER_SKELETON
-name: "$minibossLevel &4Corrupted Horror"
+name: $minibossLevel &4Corrupted Horror
 level: dynamic
 healthMultiplier: 3
 damageMultiplier: 1
@@ -21,4 +21,5 @@ removeAfterDeath: true
 uniqueLootList:
 - filename: circletemple_nether_corrupted_dagger.yml
   chance: 1
+spawnLocations: []
 # Generated with https://magmaguy.com/webapp/webapp.html !

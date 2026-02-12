@@ -1,0 +1,44 @@
+# ============================================================
+# Chặn người chơi mới tương tác với EliteMobs
+# Yêu cầu: chơi tối thiểu 3 giờ mới được nhặt đồ & nhận coin
+# ============================================================
+
+# --- Chặn nhặt đồ EliteMobs rơi dưới đất ---
+on pickup:
+  if time played of player is less than 3 hours:
+    set {_lore::*} to lore of event-item
+    if {_lore::*} is set:
+      set {_isEliteLore} to false
+      loop {_lore::*}:
+        if loop-value contains "Looted from":
+          set {_isEliteLore} to true
+        if loop-value contains "Elite DPS":
+          set {_isEliteLore} to true
+        if loop-value contains "Elite Armor":
+          set {_isEliteLore} to true
+      if {_isEliteLore} is true:
+        cancel event
+        send "&c[EM] &fBạn cần chơi đủ 3 giờ mới nhặt được đồ EliteMobs. Còn lại: &e%difference between 3 hours and time played of player%&f." to player
+        stop
+
+# --- Chặn gây sát thương lên EliteMobs nếu chưa đủ giờ ---
+on damage:
+  attacker is a player
+  if time played of attacker is less than 3 hours:
+    set {_isEliteName} to false
+    if name of victim contains "Lvl":
+      set {_isEliteName} to true
+    if name of victim contains "lvl":
+      set {_isEliteName} to true
+    if name of victim contains "❤":
+      set {_isEliteName} to true
+    if {_isEliteName} is true:
+      cancel event
+      send "&c[EM] &fBạn cần chơi đủ 3 giờ mới được đánh EliteMobs. Còn lại: &e%difference between 3 hours and time played of attacker%&f." to attacker
+
+# --- Thông báo khi người chơi mới vào server ---
+on join:
+  if time played of player is less than 3 hours:
+    wait 3 seconds
+    send "&6[Server] &fChào mừng bạn! Bạn cần chơi đủ &e3 giờ &ftrước khi tương tác với hệ thống EliteMobs." to player
+    send "&6[Server] &fHãy tập trung khai thác tài nguyên, xây nhà và khám phá thế giới trước nhé!" to player

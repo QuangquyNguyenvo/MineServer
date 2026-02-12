@@ -397,10 +397,10 @@ healthPrestige7Bonus: 3.0
 # Sets the prestige level for the third max health bonus.
 healthPrestige10Bonus: 4.0
 # Sets the estimated base amount of bosses that must be killed to be able to afford a rank up.
-baseKillsForRankUpV2: 100
+baseKillsForRankUpV2: 150
 # Sets the estimated additional amount of bosses that must be killed to be able to rank up, per level.
 # The formula is this amount x the level the player is currently at.
-additionalKillsForRankUpPerTierV2: 50
+additionalKillsForRankUpPerTierV2: 75
 # Sets title sent to players when someone unlocks a prestige rank.
 # $player is a placeholder that gets replaced with the player's display name.
 prestigeUnlockMessageTitle: $player

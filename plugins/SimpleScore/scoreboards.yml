@@ -66,11 +66,11 @@ default:
     14: ' &a❤ &fHEALTH: &a%math_1_{player_health}% ❤'
     11: ''
     10: ' &#3DE0B8&l✔ &fONLINE: &#3DE0B8%server_online%'
-    9:  ' &#3D65E0🌊 &fTIME: &#3D65E0%statistic_time_played:hours%h %math_0_{statistic_time_played:minutes}-{statistic_time_played:hours}*60%m'
+    9:  ' &#3D65E0🌊 &fTIME: &#3D65E0%statistic_time_played:hours%h %statistic_time_played:minutes%m'
     8:  ' &c⚔ &fKILLS: &c%statistic_player_kills%'
     7:  ' &4☠ &fDEATHS: &4%statistic_deaths%'
     5:  ''
-    4:  ' &7⛏ play.raumania.net'
+    4:  ' &7⛏ raumasmp.online'
   # Hide scoreboard score numbers on supported versions.
   defaultHideNumber: true
   # Render each line every 20 ticks (1 second) (see Important Concepts).

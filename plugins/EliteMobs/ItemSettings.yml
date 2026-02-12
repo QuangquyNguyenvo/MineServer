@@ -51,7 +51,7 @@ loreWorths: '&7Worth $worth $currencyName'
 # Sets the item resale value lore
 loreResaleValues: '&7Sells for $resale $currencyName'
 # Sets the base chance for any elite item to drop from elite mobs
-flatDropRateV3: 0.2
+flatDropRateV3: 0.1
 # Sets the base chance for any elite item to drop from regional bosses
 regionalBossNonUniqueDropRate: 0.05
 # Sets if the regional bosses can drop vanilla loot
