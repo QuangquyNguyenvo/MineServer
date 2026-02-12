@@ -5,43 +5,38 @@ on load:
     # Cài đặt thời gian hồi cooldown chung cho tất cả Biome (tính bằng giây)
     # Nghĩa là nếu rời Plain và quay lại trong vòng 60s, bạn sẽ không nhận được hiệu ứng.
     set {biome_cooldown_setting} to 60 seconds
-
-    # Thời lượng hiệu ứng chung (tính bằng giây)
-    # Nếu muốn dùng thời lượng gốc trong từng biome, để 0.
-    set {biome_effect_min_seconds} to 45
-    set {biome_effect_max_seconds} to 60
     
     # -----------------------------------------------------------
     # NHẬP DỮ LIỆU TỪ CONFIG CỦA BẠN
     # Format: setBiomeData("BIOME", "Message", "EFFECT:SECONDS:LEVEL")
     # -----------------------------------------------------------
     
-    setBiomeData("PLAINS", "&aCánh đồng xanh tươi làm bạn cảm thấy khỏe khoắn.", "SPEED:10:1")
-    setBiomeData("DESERT", "&eThời tiết nóng bức làm bạn cảm thấy mệt mỏi.", "HUNGER:10:1")
-    setBiomeData("JUNGLE", "&2Bạn cảm thấy nhanh nhẹn giữa những cây rừng rậm.", "JUMP_BOOST:10:1")
-    setBiomeData("SNOWY_PLAINS", "&bSự lạnh lẽo làm bạn cảm thấy yếu ớt.", "WEAKNESS:10:1")
-    setBiomeData("SWAMP", "&2Đầm lầy làm bạn cảm thấy khó chịu", "POISON:5:1")
-    setBiomeData("FOREST", "&aKhông khí trong lành của rừng làm bạn cảm thấy khỏe mạnh.", "REGENERATION:10:1")
-    setBiomeData("DARK_FOREST", "&8Bóng tối bao quanh bạn.", "SLOWNESS:10:1")
+    setBiomeData("PLAINS", "&aCánh đồng xanh tươi làm bạn cảm thấy khỏe khoắn.", "SPEED:20:1")
+    setBiomeData("DESERT", "&eThời tiết nóng bức làm bạn cảm thấy mệt mỏi.", "HUNGER:20:1")
+    setBiomeData("JUNGLE", "&2Bạn cảm thấy nhanh nhẹn giữa những cây rừng rậm.", "JUMP_BOOST:20:1")
+    setBiomeData("SNOWY_PLAINS", "&bSự lạnh lẽo làm bạn cảm thấy yếu ớt.", "WEAKNESS:20:1")
+    setBiomeData("SWAMP", "&2Đầm lầy làm bạn cảm thấy khó chịu", "POISON:8:1")
+    setBiomeData("FOREST", "&aKhông khí trong lành của rừng làm bạn cảm thấy khỏe mạnh.", "REGENERATION:15:1")
+    setBiomeData("DARK_FOREST", "&8Bóng tối bao quanh bạn.", "BLINDNESS:30:2")
     setBiomeData("MOUNTAINS", "&7Áp suất cao làm bạn cảm thấy khó thở.", "SLOW_FALLING:15:1")
-    setBiomeData("TAIGA", "&2Bạn cảm thấy lạnh sóng lưng trong khu rừng taiga.", "SLOWNESS:10:1")
-    setBiomeData("SNOWY_TAIGA", "&bTuyết bao phủ dưới chân bạn.", "WEAKNESS:10:1")
-    setBiomeData("SAVANNA", "&6Mặt trời chiếu rực lên cỏ khô.", "HUNGER:10:1")
-    setBiomeData("BADLANDS", "&cLời nguyền của vùng đất khô cằn làm bạn cảm thấy yếu ớt.", "WEAKNESS:10:1")
-    setBiomeData("BEACH", "&eBãi cát ấm áp dưới chân bạn.", "SPEED:10:1")
-    setBiomeData("MANGROVE_SWAMP", "&2Những rễ cây đước làm bạn cảm thấy khó chịu.", "SLOWNESS:10:1")
-    setBiomeData("RIVER", "&bBạn bước qua dòng sông.", "WATER_BREATHING:10:1")
-    setBiomeData("OCEAN", "&3Biển cả rộng lớn chờ đợi bạn khám phá", "WATER_BREATHING:15:1")
-    setBiomeData("DEEP_OCEAN", "&1Biển sâu thẳm đầy bí ẩn.", "WATER_BREATHING:30:1")
+    setBiomeData("TAIGA", "&2Bạn cảm thấy lạnh sóng lưng trong khu rừng taiga.", "SLOWNESS:20:1")
+    setBiomeData("SNOWY_TAIGA", "&bTuyết bao phủ dưới chân bạn.", "WEAKNESS:20:1")
+    setBiomeData("SAVANNA", "&6Mặt trời chiếu rực lên cỏ khô.", "HUNGER:20:1")
+    setBiomeData("BADLANDS", "&cLời nguyền của vùng đất khô cằn làm bạn cảm thấy yếu ớt.", "WEAKNESS:20:1")
+    setBiomeData("BEACH", "&eBãi cát ấm áp dưới chân bạn.", "SPEED:15:1")
+    setBiomeData("MANGROVE_SWAMP", "&2Những rễ cây đước làm bạn cảm thấy khó chịu.", "SLOWNESS:20:1")
+    setBiomeData("RIVER", "&bBạn bước qua dòng sông.", "WATER_BREATHING:15:1")
+    setBiomeData("OCEAN", "&3Biển cả rộng lớn chờ đợi bạn khám phá", "WATER_BREATHING:20:1")
+    setBiomeData("DEEP_OCEAN", "&1Biển sâu thẳm đầy bí ẩn.", "WATER_BREATHING:40:1")
     setBiomeData("NETHER_WASTES", "&4Nơi hoang tàn của địa ngục.", "FIRE_RESISTANCE:20:1")
-    setBiomeData("SOUL_SAND_VALLEY", "&8Tiếng rên rỉ vang vọng khắp thung lũng.", "SLOWNESS:10:1")
-    setBiomeData("CRIMSON_FOREST", "&cRừng máu đỏ rực.", "RESISTANCE:10:1")
-    setBiomeData("WARPED_FOREST", "&bRừng méo mó kỳ lạ.", "SPEED:10:1")
-    setBiomeData("BASALT_DELTAS", "&8Lava nóng chảy quanh bạn.", "RESISTANCE:10:1")
-    setBiomeData("THE_END", "&5Vực thẳm vô tận của The End.", "SLOWNESS:10:1")
-    setBiomeData("END_MIDLANDS", "&5Bạn khám phá vùng đất giữa của The End.", "RESISTANCE:10:1")
-    setBiomeData("END_HIGHLANDS", "&5Tận cùng thế giới", "SPEED:10:1")
-    setBiomeData("END_BARRENS", "&5Vùng đất khô cằn của The End rất khắc nghiệt.", "SLOWNESS:10:1")
+    setBiomeData("SOUL_SAND_VALLEY", "&8Tiếng rên rỉ vang vọng khắp thung lũng.", "SLOWNESS:25:1")
+    setBiomeData("CRIMSON_FOREST", "&cRừng máu đỏ rực.", "RESISTANCE:20:1")
+    setBiomeData("WARPED_FOREST", "&bRừng méo mó kỳ lạ.", "SPEED:20:1")
+    setBiomeData("BASALT_DELTAS", "&8Lava nóng chảy quanh bạn.", "RESISTANCE:30:1")
+    setBiomeData("THE_END", "&5Vực thẳm vô tận của The End.", "SLOWNESS:20:1")
+    setBiomeData("END_MIDLANDS", "&5Bạn khám phá vùng đất giữa của The End.", "RESISTANCE:20:1")
+    setBiomeData("END_HIGHLANDS", "&5Tận cùng thế giới", "SPEED:20:1")
+    setBiomeData("END_BARRENS", "&5Vùng đất khô cằn của The End rất khắc nghiệt.", "SLOWNESS:20:1")
 
     send "&a[BiomeSystem] Đã nạp dữ liệu Biome và Cooldown thành công!" to console
 
@@ -94,9 +89,7 @@ every 1 second:
                     set {_data} to {biome_data::%{_biome_key}%::effect}
                     set {_split::*} to {_data} split at ":"
                     set {_eff_name} to {_split::1}
-                    set {_seconds} to {_split::2} parsed as number
-                    if {biome_effect_min_seconds} > 0 and {biome_effect_max_seconds} > 0:
-                        set {_seconds} to random integer between {biome_effect_min_seconds} and {biome_effect_max_seconds}
+                    set {_seconds} to {_split::2}
                     set {_level} to {_split::3} parsed as number
                     
                     # Chuyển đổi để chạy lệnh
