@@ -3,8 +3,8 @@ entityType: ZOMBIE
 name: $eventBossLevel &eTreasure Goblin
 level: dynamic
 isPersistent: true
-healthMultiplier: 4.0
-damageMultiplier: 1.25
+healthMultiplier: 6.0
+damageMultiplier: 1.2
 isBaby: true
 deathMessages:
 - '&e&l---------------------------------------------'

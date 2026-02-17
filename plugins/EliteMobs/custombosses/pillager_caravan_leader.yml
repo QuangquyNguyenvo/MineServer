@@ -3,8 +3,8 @@ entityType: PILLAGER
 name: $eventBossLevel &cPillager Caravan Leader
 level: dynamic
 isPersistent: true
-healthMultiplier: 5.0
-damageMultiplier: 1.45
+healthMultiplier: 6.0
+damageMultiplier: 1.4
 uniqueLootList:
 - summon_merchant_scroll.yml:0.5
 - summon_merchant_scroll.yml:0.5

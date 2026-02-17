@@ -5,8 +5,8 @@ bossFilenames:
 eventStartCommands: []
 eventEndCommands: []
 breakableMaterials: []
-localCooldown: 120.0
-globalCooldown: 25.0
+localCooldown: 130.0
+globalCooldown: 30.0
 weight: 100.0
 eventDuration: 30.0
 spawnType: normal_surface_spawn.yml

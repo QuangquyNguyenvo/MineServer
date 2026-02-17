@@ -3,7 +3,7 @@ entityType: VINDICATOR
 name: $eventBossLevel &7Enraged Vindicator
 level: dynamic
 isPersistent: true
-healthMultiplier: 4.0
+healthMultiplier: 5.0
 damageMultiplier: 1.25
 deathMessages:
 - '&e&l---------------------------------------------'

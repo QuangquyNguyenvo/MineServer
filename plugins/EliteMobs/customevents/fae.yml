@@ -6,12 +6,11 @@ bossFilenames:
 - lightning_fae.yml
 eventStartCommands: []
 eventEndCommands: []
-chance: 0.001
+chance: 0.1
 breakableMaterials:
 - BIRCH_LOG
 - ACACIA_LOG
 - DARK_OAK_LOG
-- OAK_LOG
 - SPRUCE_LOG
 - JUNGLE_LOG
 weight: 0.0

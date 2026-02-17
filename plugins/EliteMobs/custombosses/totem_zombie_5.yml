@@ -2,8 +2,8 @@ isEnabled: true
 entityType: ZOMBIE
 name: $eventBossLevel Totem Zombie
 level: dynamic
-healthMultiplier: 1.5
-damageMultiplier: 1.5
+healthMultiplier: 2.5
+damageMultiplier: 1.2
 powers:
 - attack_gravity.yml
 - attack_blinding.yml

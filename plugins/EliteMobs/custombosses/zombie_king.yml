@@ -3,8 +3,8 @@ entityType: ZOMBIE
 name: $eventBossLevel &4Zombie King
 level: dynamic
 isPersistent: true
-healthMultiplier: 8.0
-damageMultiplier: 1.45
+healthMultiplier: 10.0
+damageMultiplier: 1.4
 uniqueLootList:
 - zombie_kings_axe.yml:1
 powers:

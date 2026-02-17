@@ -4,7 +4,7 @@ bossFilenames:
 - balrog.yml
 eventStartCommands: []
 eventEndCommands: []
-chance: 0.001
+chance: 0.1
 breakableMaterials:
 - COAL_ORE
 - IRON_ORE

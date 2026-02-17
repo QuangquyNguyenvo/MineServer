@@ -3,8 +3,8 @@ entityType: ZOMBIE
 name: $eventBossLevel Head Zombie
 level: dynamic
 isPersistent: true
-healthMultiplier: 5.0
-damageMultiplier: 1.5
+healthMultiplier: 10.0
+damageMultiplier: 1.6
 deathMessages:
 - '&e&l---------------------------------------------'
 - '&4The Zombie Totem been slain!'

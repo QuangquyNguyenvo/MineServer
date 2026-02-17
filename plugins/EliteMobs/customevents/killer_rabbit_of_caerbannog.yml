@@ -4,7 +4,7 @@ bossFilenames:
 - killer_rabbit_of_caerbannog.yml
 eventStartCommands: []
 eventEndCommands: []
-chance: 1.0E-4
+chance: 0.1
 breakableMaterials: []
 weight: 0.0
 eventDuration: 20.0

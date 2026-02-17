@@ -2,7 +2,7 @@ isEnabled: true
 entityType: WOLF
 name: $normalLevel Wolfy
 level: dynamic
-healthMultiplier: 3.0
+healthMultiplier: 2.0
 dropsEliteMobsLoot: false
 dropsVanillaLoot: false
 onDamageMessages:

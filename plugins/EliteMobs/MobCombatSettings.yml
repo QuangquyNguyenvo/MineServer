@@ -3,7 +3,7 @@ doNaturalEliteMobSpawning: true
 # Sets if spawns spawned from mob spawners can be converted to elites. Not recommended!
 doSpawnersSpawnEliteMobs: false
 # Sets the percentage of naturally spawned mobs that get converted to elite mobs.
-eliteMobsSpawnPercentage: 0.05
+eliteMobsSpawnPercentage: 0.1
 # Sets the super mob range to scan for super mob stacking
 superMobStackRange: 15
 # Sets the maximum level elites can spawn at.
@@ -40,11 +40,11 @@ hideEliteMobPowersUntilAggro: true
 damageToEliteMobMultiplierV2: 1.0
 # Sets the multiplier for the damage dealt to players by elites. Higher values increase the amount of damage dealt by bosses, except those using the normalized damage system (regional dungeon bosses), making bosses hit harder.
 # 2.0 = 200%, 0.5 = 50%
-damageToPlayerMultiplierV2: 1.0
+damageToPlayerMultiplierV2: 0.9
 # Sets if special bosses can be tracked.
 showCustomBossLocation: true
 # Sets the message sent to players to track a boss location.
-bossLocationMessage: '&7[EM] &2[Click to track!]'
+bossLocationMessage: '&7[EM] &2[Nhấn vào để định vị!]'
 # Sets the commands that run when an elite dies. Valid placeholders are:
 # $level for the level of the boss
 # $name for the name of the boss
@@ -55,7 +55,7 @@ bossKillParticipationMessage: '&eYour damage: &2$playerDamage'
 # Sets if bosses regenerate health when they go out of combat. Strongly recommended.
 regenerateCustomBossHealthOnCombatEnd: true
 # Sets the message sent to players that are trying to track bosses currently in a different world.
-defaultOtherWorldBossLocationMessage: '$name: In different world!'
+defaultOtherWorldBossLocationMessage: '$name: Ở thế giới khác!'
 # Sets the prefix added to damage indicators when players hit a boss with something that boss is weak against.
 weakTextColor: '&9'
 # Sets the prefix added to damage indicators when players hit a boss with something that boss is strong against.
@@ -88,7 +88,7 @@ strengthAndWeaknessDamageMultipliers: 2.0
 # Sets the multiplier applied to damage reduction from the resistance potion effect for players.
 resistanceDamageMultiplier: 1.0
 # Sets the multiplier applied to damage reduction when a player is holding up a shield for melee attacks (powers excluded).
-blockingDamageReduction: 0.8
+blockingDamageReduction: 0.7
 # Sets if all death messages will be silenced. This is not recommended, as it might hide some lore in dungeons.
 silenceAllDeathMessages: false
 # Sets if visual health bars (using bar characters) will be displayed above elite mobs during combat.
