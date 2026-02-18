@@ -36,9 +36,9 @@ scoreboard-teams:
   - GROUPS:Owner,Admin,Helper,default,none
   disable-condition: ''
 belowname-objective:
-  enabled: false
+  enabled: true
   fancy-value-default: NPC
-  fancy-value: '&c%health%'
+  fancy-value: '&c%health%❤'
 bossbar:
   enabled: false
 scoreboard:
