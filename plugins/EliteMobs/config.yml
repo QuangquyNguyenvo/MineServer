@@ -47,14 +47,13 @@ characterLimitForBookMenuPagesV2: 170
 # Not recommended if you are using the EliteMobs resource pack.
 useGlassToFillMenuEmptySpace: false
 # Sets the message sent to players if they run '/em confirm' with no pending commands.
-noPendingCommands: '&cYou don''t currently have any pending commands!'
+noPendingCommands: '&c「Thiên Cơ」 Hiện không có chỉ dụ nào đang chờ xử lý!'
 # Sets the tracking message for bosses that send tracking messages.
-trackMessage: Track the $name
+trackMessage: '&e⚔ Truy Tích $name'
 # Sets the message sent to players that open treasure chests with level requirements above their guild rank.
-chestLowRankMessage: '&7[EM] &cYour guild rank needs to be at least $rank &cin order
-  to open this chest!'
+chestLowRankMessage: '&7「Bảo Rương」 &cCông hội phẩm cấp cần đạt tối thiểu $rank &cmới khai mở được bảo rương này!'
 # Sets the message sent to players that try to reopen a treasure chest they have already opened.
-chestCooldownMessage: '&7[EM] &cYou''ve already opened this chest recently! Wait $time!'
+chestCooldownMessage: '&7「Bảo Rương」 &cNgươi vừa khai mở bảo rương này! Chờ thêm $time!'
 # Sets the message that appears recommending the /em alt command for players having issues with the /em command
 dismissEMMessage: '&8[EliteMobs] &2/elitemobs &fmenu not working for you? Try &2/elitemobs
   alt &fto see an alternative version of the menu! &cDon''t want to see this message
@@ -62,31 +61,26 @@ dismissEMMessage: '&8[EliteMobs] &2/elitemobs &fmenu not working for you? Try &2
 # Sets the message that appears when players run the /em alt command.
 switchEMStyleMessage: '&8[EliteMobs] &2/elitemobs &fmenu style changed! Check it out!'
 # Sets the message that appears when a player opens a treasure chest but gets nothing
-treasureChestNoDropMessage: '&8[EliteMobs] &cYou didn''t get anything! Better luck
-  next time!'
+treasureChestNoDropMessage: '&8「Bảo Rương」 &cHư không! Ngươi chẳng nhận được gì! Vận may lần sau!'
 # Sets the message that appears when a player tries to track a boss that is no longer valid
-bossAlreadyGoneMessage: '&c[EliteMobs] Sorry, this boss is already gone!'
+bossAlreadyGoneMessage: '&c「Ma Vương」 Ma vương đã tiêu tan khỏi chiến trường!'
 # Sets whether to reset player scale (literally, the player size on login).
 # This is important because some elite powers can modify it and if the server crashes players will be stuck to whatever scale was set when the server crashed, unless this option is set to true.
 resetPlayerScale: true
 # Sets the message sent to players when they fail an enchantment challenge
-enchantmentChallengeFailureMessage: '&8[EliteMobs] &cFailed enchantment! The enchantment
-  did not bind to the item.'
+enchantmentChallengeFailureMessage: '&8「Phù Phép」 &cPhù phép thất bại! Linh ấn không thể dung hợp với bảo vật.'
 # Sets the message sent to players when they succeed an enchantment challenge
-enchantmentChallengeSuccessMessage: '&8[EliteMobs] &2Successful enchantment!'
+enchantmentChallengeSuccessMessage: '&8「Phù Phép」 &2Phù phép thành công! Linh khí đã dung hợp!'
 # Sets the message sent to players when their inventory is full during an enchantment challenge
 enchantmentChallengeInventoryFullMessage: '&8[EliteMobs] &cYour inventory was full
   so the item you were trying to upgrade has been deleted! It will be restored if
   your item is not full by the time you leave the instanced dungeon.'
 # Sets the message sent to players about the consequences of an enchantment challenge
-enchantmentChallengeConsequencesMessage: '&cThere''s a 10% chance of losing your item
-  if you lose the fight! Leaving the arena counts as losing.'
+enchantmentChallengeConsequencesMessage: '&cCó 10% khả năng mất bảo vật nếu ngươi bại trận! Rời khỏi lôi đài cũng tính là thất bại.'
 # Sets the message sent to players when they critically fail an enchantment challenge
-enchantmentChallengeCriticalFailureMessage: '&8[EliteMobs] &4Critical failure! You
-  lost the item!'
+enchantmentChallengeCriticalFailureMessage: '&8「Phù Phép」 &4Đại hung! Ngươi đã đánh mất bảo vật!'
 # Sets the message sent to players at the start of an enchantment challenge
-enchantmentChallengeStartMessage: '&8[EliteMobs] &6Challenge! Defeat the boss to get
-  your upgraded item!'
+enchantmentChallengeStartMessage: '&8「Phù Phép」 &6Thử thách khai mở! Đánh bại ma vương để nhận bảo vật cường hóa!'
 # Enables the use of resource packs even if the resource pack manager is not installed
 useResourcePackEvenIfResourcePackManagerIsNotInstalled: false
 # Sets whether the scale (size) of the elites will be slightly randomized, for variety.

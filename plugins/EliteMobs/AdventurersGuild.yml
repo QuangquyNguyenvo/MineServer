@@ -8,27 +8,27 @@ Add dodge chance when unlocking higher guild ranks: true
 userCommandsTeleportToAdventurersGuild: true
 # Sets the in-game display name of the adventurer's guild
 adventurersGuildMenuName: '&6&lAdventurer''s Hub'
-Prestige 0 rank 0: '&8Commoner - disables elites!'
+Prestige 0 rank 0: '&8Thường Dân - vô hiệu tinh anh!'
 Prestige 0 rank 0 short placeholder: '&6&l✧&e0'
-Prestige 0 rank 1: '&fRookie'
+Prestige 0 rank 1: '&fTân Binh'
 Prestige 0 rank 1 short placeholder: '&6&l✧&eⅠ'
-Prestige 0 rank 2: '&fNovice'
+Prestige 0 rank 2: '&fSơ Nhập'
 Prestige 0 rank 2 short placeholder: '&6&l✧&eⅠⅠ'
-Prestige 0 rank 3: '&fApprentice'
+Prestige 0 rank 3: '&fHọc Đồ'
 Prestige 0 rank 3 short placeholder: '&6&l✧&eⅠⅠⅠ'
-Prestige 0 rank 4: '&2Adventurer'
+Prestige 0 rank 4: '&2Mạo Hiểm Gia'
 Prestige 0 rank 4 short placeholder: '&6&l✧&eⅠⅤ'
-Prestige 0 rank 5: '&2Journeyman'
+Prestige 0 rank 5: '&2Hành Giả'
 Prestige 0 rank 5 short placeholder: '&6&l✧&eⅤ'
-Prestige 0 rank 6: '&2Adept'
+Prestige 0 rank 6: '&2Lão Luyện'
 Prestige 0 rank 6 short placeholder: '&6&l✧&eⅤⅠ'
-Prestige 0 rank 7: '&1Veteran'
+Prestige 0 rank 7: '&1Chiến Tướng'
 Prestige 0 rank 7 short placeholder: '&6&l✧&eⅤⅠⅠ'
-Prestige 0 rank 8: '&1Elite'
+Prestige 0 rank 8: '&1Tinh Anh'
 Prestige 0 rank 8 short placeholder: '&6&l✧&eⅤⅠⅠⅠ'
-Prestige 0 rank 9: '&lMaster'
+Prestige 0 rank 9: '&lTôn Sư'
 Prestige 0 rank 9 short placeholder: '&6&l✧&eⅠⅩ'
-Prestige 0 rank 10: '&5Hero'
+Prestige 0 rank 10: '&5Anh Hùng'
 Prestige 0 rank 10 short placeholder: '&6&l✧&eⅩ'
 Prestige 1 rank 0: '&ePrestige 1 &8Commoner'
 Prestige 1 rank 0 short placeholder: '&e⚜Ⅰ&6&l✧&e0'
@@ -364,8 +364,7 @@ Prestige 10 rank 20 short placeholder: '&5⚜Ⅹ&6&l✧&eⅩⅩ'
 #  This is an incredibly important part of EliteMobs and extremely highly recommended.
 limitLootBasedOnGuildTier: true
 # Sets the message sent to players if their loot gets nerfed due to their low guild level.
-lootLimiterMessage: '&7[EM] &cYou must unlock the next guild rank through /ag to loot
-  better items!'
+lootLimiterMessage: '&7「Công Hội」 &cNgươi cần nâng cấp phẩm cấp công hội qua /ag để nhận bảo vật tốt hơn!'
 # Sets the commands that run on guild rank up. Placeholders are:
 # $prestigerank - outputs the prestige rank
 # $activerank - outputs the currently active rank
@@ -397,10 +396,10 @@ healthPrestige7Bonus: 3.0
 # Sets the prestige level for the third max health bonus.
 healthPrestige10Bonus: 4.0
 # Sets the estimated base amount of bosses that must be killed to be able to afford a rank up.
-baseKillsForRankUpV2: 150
+baseKillsForRankUpV2: 50
 # Sets the estimated additional amount of bosses that must be killed to be able to rank up, per level.
 # The formula is this amount x the level the player is currently at.
-additionalKillsForRankUpPerTierV2: 75
+additionalKillsForRankUpPerTierV2: 25
 # Sets title sent to players when someone unlocks a prestige rank.
 # $player is a placeholder that gets replaced with the player's display name.
 prestigeUnlockMessageTitle: $player

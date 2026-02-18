@@ -24,32 +24,33 @@ preventCustomItemPlacement: true
 # $ifPotionEffects - only shows the line if the item has potion effects
 # $potionEffects - shows the potion effects on the item
 # $loreResaleValue - shows the value of the item. Might show the purchase or sell price depending on where it is viewed
+itemResaleValue: 15.0
 # Important: Several of the placeholders can be further customized by the configuration settings further below
 itemLoreStructureV2:
-- §7§m§l---------§7<§lEquip Info§7>§m§l---------
-- '§7Item level: §f$itemLevel §7Prestige §6$prestigeLevel'
+- §7§m§l---------§7<§lTrang Bị§7>§m§l---------
+- '§7Cấp bậc: §f$itemLevel §7Uy Danh §6$prestigeLevel'
 - $weaponOrArmorStats
 - $soulbindInfo
 - $itemSource
-- $ifLore§7§m§l-----------§7< §f§lLore§7 >§m§l-----------
+- $ifLore§7§m§l-----------§7< §f§lTruyền Thuyết§7 >§m§l-----------
 - $customLore
-- $ifEnchantments§7§m§l--------§7<§9§lEnchantments§7>§m§l--------
+- $ifEnchantments§7§m§l--------§7<§9§lPhù Phép§7>§m§l--------
 - $enchantments
 - $eliteEnchantments
-- $ifCustomEnchantments§7§m§l------§7< §3§lCustom Enchants§7 >§m§l------
+- $ifCustomEnchantments§7§m§l------§7< §3§lLinh Phù§7 >§m§l------
 - $customEnchantments
-- $ifPotionEffects§7§m§l----------§7< §5§lEffects§7 >§m§l----------
+- $ifPotionEffects§7§m§l----------§7< §5§lHiệu Ứng§7 >§m§l----------
 - $potionEffect
 - §7§l§m-----------------------------
 - $loreResaleValue
 # Sets the shop source lore for store purchased
-shopSourceItemLores: '&7Purchased from a store'
+shopSourceItemLores: '&7Mua từ Thương Quán'
 # Sets the shop source lore for items looted from bosses
-mobSourceItemLores: '&7Looted from $mob'
+mobSourceItemLores: '&7Chiến lợi phẩm từ $mob'
 # Sets the item worth lore
-loreWorths: '&7Worth $worth $currencyName'
+loreWorths: '&7Giá trị $worth $currencyName'
 # Sets the item resale value lore
-loreResaleValues: '&7Sells for $resale $currencyName'
+loreResaleValues: '&7Bán được $resale $currencyName'
 # Sets the base chance for any elite item to drop from elite mobs
 flatDropRateV3: 0.1
 # Sets the base chance for any elite item to drop from regional bosses
@@ -86,7 +87,7 @@ maximumItemLevel: 200
 # Elite sharpness only affects mobs spawned by EliteMobs. This is done so PVP and vanilla combat don't become unbalanced.
 useEliteEnchantments: true
 # Sets the display name that will be used for the elite enchantments on item lore.
-eliteEnchantmentLoreStrings: Elite
+eliteEnchantmentLoreStrings: 'Tinh Anh'
 # Sets if EliteMobs will see hoes as valid weapons for the damage calculations.
 useHoesAsWeapons: false
 # Sets if EliteMobs will spawn special particles over dropped items of high quality.
@@ -106,13 +107,13 @@ customEnchantmentColor: '&3◇'
 # Sets the characters prefixed to potion effects in item lore.
 potionEffectLoreColor: '&5◇'
 # Sets the text that will appear on the item if the item is not soulbound.
-noSoulbindLore: '&7Not Soulbound!'
+noSoulbindLore: '&7Chưa Hồn Ấn!'
 # Sets if elite item can be enchanted by vanilla means. This is not recommended as EliteMobs has its own custom enchantments system  with its own balance!
 preventEliteItemEnchantment: true
 # Sets if elite items can be disenchanted by vanilla means.
 preventEliteItemDisenchantment: true
 # Sets the message that appears for players when they attempt to disenchant an item and that is not allowed.
-preventEliteItemDisenchantmentMessage: '&c[EliteMobs] Can''t disenchant Elite Items!'
+preventEliteItemDisenchantmentMessage: '&c「Hệ Thống」 Không thể giải phù bảo vật Tinh Anh!'
 # Sets whether elite items can be upgraded from diamond to netherite by vanilla means. Not recommended!
 preventEliteItemDiamondToNetheriteUpgrade: true
 # Sets whether elite items will only lose durability on death.
@@ -131,7 +132,7 @@ putLootDirectlyIntoPlayerInventory: false
 # Sets maximum level difference players can have before they can no longer loot items that are too low level.
 # This is calculated based on the average level of the loot the player is wearing.
 # As an example, if it is set to 10 and a player has level 50 gear, they will not be able to farm level 39 bosses.
-lootLevelDifferenceLockout: 10
+lootLevelDifferenceLockout: 10000
 # Sets if EliteMobs will prevent Elite Items from breaking when using the durability loss on death system.
 # Players will not be able to use items with no durability left anyway, this is simply to prevent the accidental loss of high level but low durability items.
 preventEliteItemsFromBreaking: true
@@ -153,9 +154,9 @@ directDropCoinMessage: '&8[EliteMobs] &aObtained &2$amount $currencyName &a!'
 # Sets if EliteMobs will hide vanilla Minecraft attributes.
 hideItemAttributes: true
 # Sets the weapon-specific lore entry on an elite item. The $EDPS placeholder gets replaced with the elite DPS (damage per second) of the weapon.
-weaponEntry: '&7Elite DPS: &2$EDPS'
+weaponEntry: '&7Sát Thương Tinh Anh: &2$EDPS'
 # Sets the armor-specific lore entry on an elite item. The $EDEF placeholder gets replaced with the elite DEF (defense) of the weapon.
-armorEntry: '&7Elite Armor: &2$EDEF'
+armorEntry: '&7Hộ Giáp Tinh Anh: &2$EDEF'
 # Sets the message sent when a played kills a boss but the gear level is too different from the boss level to get coins
 levelRangeTooDifferent: '&8EM] &4Your gear is level $playerLevel and the boss is level
   $bossLevel, level difference is too high to get coins!'

@@ -85,19 +85,15 @@ prestigeNextUnlockButtons:
   - §4EliteMobs ITEMS AND CURRENCY!
   - §f§m-------------------------------
   customModelID: 31173
-notEnoughCurrencyMessages: '&7[EliteMobs] &4You don''t have enough Elite Coins ($neededAmount
-  $currencyName)! Sell some Elite Mob loot to [/em shop]! You have $currentAmount
-  $currencyName.'
-unlockMessages: "&7[EliteMobs] &aYou have unlocked the $rankName &arank for $price\
-  \ $currencyName. \n&6Happy hunting!"
-questCompleteBroadcastMessages: '&7[EliteMobs] &a$player &ahas reached the $rankName
-  &aguild rank!'
-failedMessages: '&7[EliteMobs] &cYou need to unlock other ranks first!'
-spawnRateModifierMessages: '&fElite Mob spawn rate modifier: &c$modifier%'
-lootModifierMessages: '&fElite Mob loot modifier: &a$modifier%'
-difficultyModifierMessages: '&fElite Mob difficulty modifier: &c$modifier%'
-lootTierMessages: '&2Elites can drop up to tier $tier loot!'
-currencyBonusMessages: '&a$amountx coins from drops and quests!'
-healthBonusMessages: '&cAdds $amount ❤ of max health'
-critBonusMessages: '&eAdds $amount% chance to crit'
-dodgeBonusMessages: '&8Adds $amount% chance to dodge'
+notEnoughCurrencyMessages: '&7「Công Hội」 &4Ngươi không đủ Tinh Kim ($neededAmount $currencyName)! Hãy bán chiến lợi phẩm tại [/em shop]! Hiện có $currentAmount $currencyName.'
+unlockMessages: '&7「Công Hội」 &aNgươi đã khai mở phẩm cấp $rankName &avới giá $price $currencyName. \n&6Xung trận vui vẻ!'
+questCompleteBroadcastMessages: '&7「Công Hội」 &a$player &ađã đạt phẩm cấp $rankName &a!'
+failedMessages: '&7「Công Hội」 &cNgươi cần khai mở các phẩm cấp trước đã!'
+spawnRateModifierMessages: '&fTỉ lệ xuất hiện Tinh Anh: &c$modifier%'
+lootModifierMessages: '&fHệ số chiến lợi phẩm: &a$modifier%'
+difficultyModifierMessages: '&fĐộ khó Tinh Anh: &c$modifier%'
+lootTierMessages: '&2Tinh anh có thể rơi bảo vật tầng $tier!'
+currencyBonusMessages: '&a$amountx Tinh Kim từ chiến lợi phẩm và nhiệm vụ!'
+healthBonusMessages: '&cThêm $amount ❤ sinh mệnh tối đa'
+critBonusMessages: '&eThêm $amount% tỉ lệ bạo kích'
+dodgeBonusMessages: '&8Thêm $amount% tỉ lệ thân pháp'

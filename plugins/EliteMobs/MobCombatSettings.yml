@@ -44,26 +44,26 @@ damageToPlayerMultiplierV2: 0.9
 # Sets if special bosses can be tracked.
 showCustomBossLocation: true
 # Sets the message sent to players to track a boss location.
-bossLocationMessage: '&7[EM] &2[Nhấn vào để định vị!]'
+bossLocationMessage: '&7「Ma Vương」 &2[⚔ Nhấn để truy tích vị trí!]'
 # Sets the commands that run when an elite dies. Valid placeholders are:
 # $level for the level of the boss
 # $name for the name of the boss
 # $players will make the command run for each player that participated in the kill. As an example, if Bob and Steve killed a boss, 'broadcast $players killed the boss!' will run 'bob killed the boss' and 'steve killed the boss!'
 commandsOnEliteMobDeath: []
 # Sets the message sent to players that participate in big boss kills.
-bossKillParticipationMessage: '&eYour damage: &2$playerDamage'
+bossKillParticipationMessage: '&eSát thương của ngươi: &2$playerDamage'
 # Sets if bosses regenerate health when they go out of combat. Strongly recommended.
 regenerateCustomBossHealthOnCombatEnd: true
 # Sets the message sent to players that are trying to track bosses currently in a different world.
-defaultOtherWorldBossLocationMessage: '$name: Ở thế giới khác!'
+defaultOtherWorldBossLocationMessage: '$name: &cĐang ở dị giới!'
 # Sets the prefix added to damage indicators when players hit a boss with something that boss is weak against.
 weakTextColor: '&9'
 # Sets the prefix added to damage indicators when players hit a boss with something that boss is strong against.
 resistTextColor: '&c'
 # Sets the message that appears when players hit the boss with something that boss is weak against.
-weakText: '&9&lWeak!'
+weakText: '&9&lĐiểm Yếu!'
 # Sets the message that appears when players hit the boss with something that boss is strong against.
-resistText: '&c&lResist!'
+resistText: '&c&lKháng Cự!'
 # Sets if visuals will be used to show that a boss is weak against an attack.
 doWeakEffect: true
 # Sets if visuals will be used to show that a boss is strong against an attack.
@@ -82,7 +82,7 @@ normalizedRegionalBossBaselineHealthV3: 4.0
 # This is very strongly recommended, and premade content will not be balanced properly if modified.
 normalizeRegionalBosses: true
 # Sets the message that appears when a boss heals from going out of combat.
-fullHealMessage: '&2FULL HEAL!'
+fullHealMessage: '&2HỒI PHỤC TOÀN DIỆN!'
 # Sets the multipliers applied to attacks bosses are strong and weak against.
 strengthAndWeaknessDamageMultipliers: 2.0
 # Sets the multiplier applied to damage reduction from the resistance potion effect for players.
