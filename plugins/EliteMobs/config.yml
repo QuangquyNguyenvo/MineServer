@@ -55,11 +55,11 @@ chestLowRankMessage: '&7「Bảo Rương」 &cCông hội phẩm cấp cần đ�
 # Sets the message sent to players that try to reopen a treasure chest they have already opened.
 chestCooldownMessage: '&7「Bảo Rương」 &cNgươi vừa khai mở bảo rương này! Chờ thêm $time!'
 # Sets the message that appears recommending the /em alt command for players having issues with the /em command
-dismissEMMessage: '&8[EliteMobs] &2/elitemobs &fmenu not working for you? Try &2/elitemobs
-  alt &fto see an alternative version of the menu! &cDon''t want to see this message
-  again? &4/em dismiss'
+dismissEMMessage: '&8「Hệ Thống」 &2/elitemobs &fkhông hoạt động? Thử &2/elitemobs
+  alt &fđể xem phiên bản khác! &cKhông muốn thấy thông báo này?
+  &4/em dismiss'
 # Sets the message that appears when players run the /em alt command.
-switchEMStyleMessage: '&8[EliteMobs] &2/elitemobs &fmenu style changed! Check it out!'
+switchEMStyleMessage: '&8「Hệ Thống」 &2/elitemobs &fgiao diện đã thay đổi! Kiểm tra ngay!'
 # Sets the message that appears when a player opens a treasure chest but gets nothing
 treasureChestNoDropMessage: '&8「Bảo Rương」 &cHư không! Ngươi chẳng nhận được gì! Vận may lần sau!'
 # Sets the message that appears when a player tries to track a boss that is no longer valid
@@ -72,9 +72,7 @@ enchantmentChallengeFailureMessage: '&8「Phù Phép」 &cPhù phép thất bạ
 # Sets the message sent to players when they succeed an enchantment challenge
 enchantmentChallengeSuccessMessage: '&8「Phù Phép」 &2Phù phép thành công! Linh khí đã dung hợp!'
 # Sets the message sent to players when their inventory is full during an enchantment challenge
-enchantmentChallengeInventoryFullMessage: '&8[EliteMobs] &cYour inventory was full
-  so the item you were trying to upgrade has been deleted! It will be restored if
-  your item is not full by the time you leave the instanced dungeon.'
+enchantmentChallengeInventoryFullMessage: '&8「Phù Phép」 &cHành trang đã đầy! Bảo vật đang cường hóa đã bị tiêu hủy! Sẽ phục hồi nếu hành trang còn trống khi rời bí cảnh.'
 # Sets the message sent to players about the consequences of an enchantment challenge
 enchantmentChallengeConsequencesMessage: '&cCó 10% khả năng mất bảo vật nếu ngươi bại trận! Rời khỏi lôi đài cũng tính là thất bại.'
 # Sets the message sent to players when they critically fail an enchantment challenge

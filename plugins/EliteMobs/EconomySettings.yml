@@ -2,7 +2,7 @@
 # If disabled, players will not be able to progress in the plugin!
 enableEconomy: true
 # Sets the resale item of items, as a % of the original price. 5 is 5%
-itemResaleValue: 5.0
+itemResaleValue: 15.0
 # Sets the in-game name of the currency used.
 currencyName: Tinh Kim
 # Sets the plugin to use Vault. THIS IS NOT RECOMMENDED! Read why here: https://github.com/MagmaGuy/EliteMobs/wiki/%5BThird-party-support%5D-Vault
@@ -10,7 +10,7 @@ useVault - not recommended: false
 # Sets if elites will drop coins based on their level.
 enableCurrencyShower: true
 # Sets the multiplier for the currency dropped by elites.
-currencyShowerTierMultiplier: 1.0
+currencyShowerTierMultiplier: 3.0
 # Sets the message sent when players pick up elite currency.
 chatCurrencyShowerMessage: '&7「Tài Bảo」 Ngươi thu được &a$amount $currency_name!'
 # Sets the action bar message sent when players pick up elite currency.
