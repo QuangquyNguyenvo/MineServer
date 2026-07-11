@@ -1,0 +1,5 @@
+{
+  "teleportDelay": 5,
+  "commandCooldown": 5,
+  "requestTimeout": 60
+}

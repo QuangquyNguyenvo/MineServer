@@ -1,0 +1,153 @@
+{
+	"badlands_miner_outpost": {
+		"salt": 783,
+		"separation": 12,
+		"spacing": 60
+	},
+	"badlands_miner_outpost_mineshafts": {
+		"salt": 783,
+		"separation": 12,
+		"spacing": 60
+	},
+	"bunker": {
+		"salt": 6798544,
+		"separation": 30,
+		"spacing": 70
+	},
+	"crypts": {
+		"salt": 96586859,
+		"separation": 25,
+		"spacing": 50
+	},
+	"desert_structures": {
+		"salt": 239021,
+		"separation": 12,
+		"spacing": 80
+	},
+	"end_lighthouses": {
+		"salt": 435656543,
+		"separation": 22,
+		"spacing": 70
+	},
+	"end_ship": {
+		"frequency": 0.25,
+		"salt": 79584390,
+		"separation": 10,
+		"spacing": 70
+	},
+	"firewatch_towers": {
+		"salt": 123,
+		"separation": 15,
+		"spacing": 50
+	},
+	"illager_barracks": {
+		"salt": 2059314391,
+		"separation": 25,
+		"spacing": 60
+	},
+	"illager_camp": {
+		"salt": 4533232,
+		"separation": 32,
+		"spacing": 50
+	},
+	"illager_hideout": {
+		"salt": 3094032,
+		"separation": 12,
+		"spacing": 200
+	},
+	"illager_manor": {
+		"salt": 10387319,
+		"separation": 90,
+		"spacing": 180
+	},
+	"jungle_ruins": {
+		"salt": 239021,
+		"separation": 12,
+		"spacing": 80
+	},
+	"mangrove_witch_hut": {
+		"salt": 594,
+		"separation": 8,
+		"spacing": 32
+	},
+	"nether_encampments": {
+		"salt": 940354935,
+		"separation": 16,
+		"spacing": 32
+	},
+	"nether_structures": {
+		"salt": 5894302,
+		"separation": 40,
+		"spacing": 90
+	},
+	"ocean_structures": {
+		"salt": 394,
+		"separation": 90,
+		"spacing": 140
+	},
+	"pale_residence": {
+		"salt": 560486059,
+		"separation": 15,
+		"spacing": 60
+	},
+	"remnants": {
+		"salt": 1195802790,
+		"separation": 30,
+		"spacing": 80
+	},
+	"ruin_town": {
+		"salt": 39043,
+		"separation": 30,
+		"spacing": 72
+	},
+	"shrine_tower": {
+		"salt": 78409300,
+		"separation": 100,
+		"spacing": 150
+	},
+	"shrines": {
+		"salt": 78409300,
+		"separation": 26,
+		"spacing": 70
+	},
+	"small_cave_structures": {
+		"salt": 79984849,
+		"separation": 6,
+		"spacing": 16
+	},
+	"stray_big_structures": {
+		"salt": 709971604,
+		"separation": 70,
+		"spacing": 150
+	},
+	"swamp_structure": {
+		"salt": 3042970,
+		"separation": 20,
+		"spacing": 80
+	},
+	"taverns": {
+		"salt": 783,
+		"separation": 30,
+		"spacing": 50
+	},
+	"trident_trial_monument": {
+		"salt": 69846574,
+		"separation": 190,
+		"spacing": 200
+	},
+	"villages": {
+		"salt": 10387312,
+		"separation": 16,
+		"spacing": 51
+	},
+	"wells": {
+		"salt": 430930,
+		"separation": 15,
+		"spacing": 40
+	},
+	"wild_ruin": {
+		"salt": 75489234,
+		"separation": 18,
+		"spacing": 40
+	}
+}

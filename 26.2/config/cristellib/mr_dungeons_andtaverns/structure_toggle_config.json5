@@ -1,0 +1,184 @@
+{
+	"badlands_miner_outpost": {
+		"badlands_miner_outpost": true
+	},
+	"badlands_miner_outpost_mineshafts": {
+		"minecraft:mineshaft_mesa": true
+	},
+	"bunker": {
+		"bunker": true
+	},
+	"crypts": {
+		"catacomb": true,
+		"creeping_crypt": true,
+		"undead_crypt": true
+	},
+	"desert_structures": {
+		"desert_ruins": true
+	},
+	"end_castle": {
+		"end_castle": true
+	},
+	"end_lighthouses": {
+		"end_lighthouse": true
+	},
+	"end_ship": {
+		"end_ship": true
+	},
+	"firewatch_towers": {
+		"firewatch_tower_birch": true,
+		"firewatch_tower_cherry": true,
+		"firewatch_tower_dark_oak": true,
+		"firewatch_tower_forest": true,
+		"firewatch_tower_jungle": true,
+		"firewatch_tower_mangrove": true,
+		"firewatch_tower_pale": true,
+		"firewatch_tower_savanna": true,
+		"firewatch_tower_swamp": true,
+		"firewatch_tower_taiga": true
+	},
+	"illager_barracks": {
+		"illager_barracks": true,
+		"illager_camp": true,
+		"minecraft:pillager_outpost": true
+	},
+	"illager_camp": {
+		"illager_camp": true
+	},
+	"illager_hideout": {
+		"illager_hideout": true
+	},
+	"illager_manor": {
+		"illager_manor": true
+	},
+	"jungle_ruins": {
+		"jungle_ruins": true
+	},
+	"mangrove_witch_hut": {
+		"mangrove_witch_hut": true
+	},
+	"nether_encampments": {
+		"nether_skeleton_tower_crimson": true,
+		"nether_skeleton_tower_fort": true,
+		"nether_skeleton_tower_soul": true,
+		"nether_skeleton_tower_warped": true,
+		"piglin_camp": true,
+		"piglin_camp_collony": true
+	},
+	"nether_structures": {
+		"hamlet": true,
+		"nether_keep": true,
+		"nether_port": true,
+		"piglin_donjon": true,
+		"piglin_outstation": true,
+		"sealing_halls": true
+	},
+	"ocean_structures": {
+		"conduit_ruin": true
+	},
+	"pale_residence": {
+		"pale_residence": true
+	},
+	"remnants": {
+		"remnant_bee_keeper": true,
+		"remnant_big_remnant": true,
+		"remnant_big_remnant_2": true,
+		"remnant_big_remnant_3": true,
+		"remnant_birch_graveyard": true,
+		"remnant_bridge_remnant": true,
+		"remnant_bundle_tent": true,
+		"remnant_bunny_base": true,
+		"remnant_classic_village": true,
+		"remnant_creeper_homestead": true,
+		"remnant_desert_remnant": true,
+		"remnant_forest_smith": true,
+		"remnant_frog_ranch": true,
+		"remnant_graveyard": true,
+		"remnant_medium_remnant": true,
+		"remnant_medium_remnant_2": true,
+		"remnant_miner_hut": true,
+		"remnant_mud_brick_constructor": true,
+		"remnant_ominous_shop": true,
+		"remnant_ruin_farmer": true,
+		"remnant_ruin_smith": true,
+		"remnant_sawmill": true,
+		"remnant_school_remnant": true,
+		"remnant_taiga_castle": true,
+		"remnant_woodland_hud": true,
+		"remnant_zombie_horse_ranch": true
+	},
+	"ruin_town": {
+		"ruin_town": true
+	},
+	"shrine_tower": {
+		"shrine_tower": true
+	},
+	"shrines": {
+		"shrine_biome_tier_1": true,
+		"shrine_biome_tier_2": true,
+		"shrine_biome_tier_3": true,
+		"shrine_biome_tier_4": true,
+		"shrine_biome_tier_5": true,
+		"shrine_combat_tier_1": true,
+		"shrine_combat_tier_2": true,
+		"shrine_combat_tier_3": true,
+		"shrine_combat_tier_4": true,
+		"shrine_combat_tier_5": true,
+		"shrine_combat_tier_6": true
+	},
+	"small_cave_structures": {
+		"cave_chamber": true,
+		"cave_chamber_archeology_ruins": true,
+		"cave_chamber_colony": true,
+		"cave_chamber_dungeon_colony": true,
+		"cave_hut": true,
+		"deepslate_camp": true,
+		"trial_dungeon": true,
+		"underground_house": true
+	},
+	"stray_big_structures": {
+		"lone_citadel": true,
+		"stray_fort": true,
+		"stray_outlook": true
+	},
+	"strongholds_buinker": {
+		"bunker": true
+	},
+	"swamp_structure": {
+		"toxic_lair": true,
+		"witch_villa": true
+	},
+	"taverns": {
+		"tavern_acacia": true,
+		"tavern_birch": true,
+		"tavern_cherry": true,
+		"tavern_dark_oak": true,
+		"tavern_desert": true,
+		"tavern_jungle": true,
+		"tavern_mangrove": true,
+		"tavern_oak": true,
+		"tavern_pale": true,
+		"tavern_snowy": true,
+		"tavern_spruce": true,
+		"tavern_swamp": true
+	},
+	"trident_trial_monument": {
+		"trident_trial_monument": true
+	},
+	"villages": {
+		"village_birch": true,
+		"village_jungle": true,
+		"village_swamp": true
+	},
+	"wells": {
+		"well_birch": true,
+		"well_dark_oak": true,
+		"well_jungle": true,
+		"well_oak": true,
+		"well_savana": true,
+		"well_spruce": true
+	},
+	"wild_ruin": {
+		"wild_ruin": true
+	}
+}

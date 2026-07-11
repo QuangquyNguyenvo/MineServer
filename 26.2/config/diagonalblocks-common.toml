@@ -1,0 +1,4 @@
+#When placing blocks use the diagonal variants instead of the non-diagonal blocks.
+#Default Value: true
+#Requires Restart: Game
+diagonal_blocks_by_default = true

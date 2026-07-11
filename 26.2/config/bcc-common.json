@@ -1,0 +1,21 @@
+{
+  "modpackName": {
+    "value": "CHANGE_ME",
+    "comments": [
+      "The name of the modpack"
+    ]
+  },
+  "modpackVersion": {
+    "value": "CHANGE_ME",
+    "comments": [
+      "The version of the modpack"
+    ]
+  },
+  "useMetadata": {
+    "value": false,
+    "comments": [
+      "Use the metadata.json to determine the modpack version",
+      "ONLY ENABLE THIS IF YOU KNOW WHAT YOU ARE DOING"
+    ]
+  }
+}
