@@ -79,6 +79,37 @@ function Write-Section {
 # Function to run update in console mode (Fallback)
 function Run-ConsoleUpdate($targetDir) {
     Write-Banner "MINESERVER v26.2 MOD UPDATER" "Cong cu dong bo & cap nhat Mod tu dong (Console)" Cyan
+    
+    if ($null -eq $targetDir -or $targetDir -eq "") {
+        # Prompt for Launcher choice in Console mode
+        Write-Host " Chon launcher game cua ban:" -ForegroundColor Yellow
+        Write-Host "  [1] Legacy Launcher (Mac dinh)" -ForegroundColor Gray
+        Write-Host "  [2] Official (Minecraft Ban Quyen)" -ForegroundColor Gray
+        Write-Host "  [3] TLauncher" -ForegroundColor Gray
+        Write-Host "  [4] Duong dan tu chon (Custom)" -ForegroundColor Gray
+        
+        $choice = Read-Host " Nhap lua chon (1-4, Enter de lay Mac dinh [1])"
+        
+        $targetDir = $legacyPath
+        if ($choice -eq "2") {
+            $targetDir = $premiumPath
+            Write-Host " -> Da chon: Official (Minecraft Ban Quyen)" -ForegroundColor Green
+        } elseif ($choice -eq "3") {
+            $targetDir = $tlauncherPath
+            Write-Host " -> Da chon: TLauncher" -ForegroundColor Green
+        } elseif ($choice -eq "4") {
+            $targetDir = Read-Host " Nhap duong dan day du cua thu muc mods"
+            if (!(Test-Path -LiteralPath $targetDir)) {
+                Write-Host " [LOI] Duong dan khong ton tai!" -ForegroundColor Red
+                return
+            }
+            Write-Host " -> Da chon duong dan custom: $targetDir" -ForegroundColor Green
+        } else {
+            Write-Host " -> Da chon: Legacy Launcher" -ForegroundColor Green
+        }
+    }
+    
+    Write-Divider '-' DarkGray
     Write-Host " [DIR] Thu muc dich: " -ForegroundColor Yellow -NoNewline
     Write-Host $targetDir -ForegroundColor White
     Write-Divider '-' DarkGray
@@ -554,5 +585,5 @@ if ($guiLoaded) {
     $window.ShowDialog() | Out-Null
 } else {
     # Fallback to CLI mode for headless environment
-    Run-ConsoleUpdate $defaultPath
+    Run-ConsoleUpdate
 }
