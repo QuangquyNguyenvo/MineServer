@@ -1,9 +1,9 @@
-[CmdletBinding()]
+﻿[CmdletBinding()]
 param(
     [switch]$NoGui
 )
 
-# Set Output Encoding to UTF8 for console output
+# Set Output Encoding to UTF8 for proper Vietnamese accent rendering
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 
 # Try to load GUI assemblies
@@ -24,27 +24,63 @@ $defaultPath = $legacyPath
 
 # Function to run update in console mode (Fallback)
 function Run-ConsoleUpdate($targetDir) {
-    Write-Host "=========================================" -ForegroundColor Cyan
-    Write-Host "🚀 MINESERVER v26.2 MOD UPDATER (CONSOLE)" -ForegroundColor Cyan
-    Write-Host "=========================================" -ForegroundColor Cyan
-    Write-Host "Thu muc dich: $targetDir" -ForegroundColor Yellow
-    Write-Host "Dang ket noi toi GitHub API..." -ForegroundColor Gray
+    Write-Host "╔═════════════════════════════════════════════════════════╗" -ForegroundColor Cyan
+    Write-Host "║        🚀 MINESERVER v26.2 MOD UPDATER (CONSOLE)        ║" -ForegroundColor Cyan
+    Write-Host "╚═════════════════════════════════════════════════════════╝" -ForegroundColor Cyan
+    Write-Host " Thư mục đích: $targetDir" -ForegroundColor Yellow
+    Write-Host "───────────────────────────────────────────────────────────" -ForegroundColor DarkGray
     
     try {
         [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
         $apiUrl = "https://api.github.com/repos/QuangquyNguyenvo/MineServer/contents/26.2/mods"
-        $headers = @{ "User-Agent" = "PowerShell-Minecraft-Updater" }
         
-        $repoFiles = Invoke-RestMethod -Uri $apiUrl -Headers $headers -Method Get
+        # Load list of files asynchronously using a Runspace to show a smooth loading spinner
+        $iss = [system.management.automation.runspaces.initialsessionstate]::CreateDefault()
+        $runspace = [runspacefactory]::CreateRunspace($iss)
+        $runspace.Open()
+        
+        $ps = [powershell]::Create().AddScript({
+            param($url)
+            $headers = @{ "User-Agent" = "PowerShell-Minecraft-Updater" }
+            Invoke-RestMethod -Uri $url -Headers $headers -Method Get | Write-Output
+        }).AddArgument($apiUrl)
+        
+        $ps.Runspace = $runspace
+        $asyncResult = $ps.BeginInvoke()
+        
+        # Braille loading spinner animation
+        $spinner = @('⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏')
+        $i = 0
+        while (!$asyncResult.IsCompleted) {
+            Write-Host -NoNewline "`r  $($spinner[$i]) Đang kết nối tới GitHub API để kiểm tra danh sách mod..." -ForegroundColor Cyan
+            $i = ($i + 1) % $spinner.Length
+            Start-Sleep -Milliseconds 100
+        }
+        
+        $repoFiles = $ps.EndInvoke($asyncResult)
+        
+        # Safely unroll nested array if wrapped by pipeline output
+        if ($repoFiles -and $repoFiles.Count -eq 1 -and $repoFiles[0] -is [System.Array]) {
+            $repoFiles = $repoFiles[0]
+        }
+        
+        $ps.Dispose()
+        $runspace.Close()
+        
+        # Clear spinner line
+        Write-Host -NoNewline "`r                                                                           `r"
         
         if ($null -eq $repoFiles -or $repoFiles.Count -eq 0) {
-            Write-Host "[LOI] Khong the doc danh sach mod tu GitHub hoac thu muc trong." -ForegroundColor Red
+            Write-Host " ❌ [LỖI] Không thể đọc danh sách mod từ GitHub hoặc thư mục trống." -ForegroundColor Red
             return
         }
+        
+        Write-Host " ✔️ Kết nối GitHub thành công!" -ForegroundColor Green
+        Write-Host "───────────────────────────────────────────────────────────" -ForegroundColor DarkGray
 
         # Ensure target folder exists
         if (!(Test-Path -LiteralPath $targetDir)) {
-            Write-Host "Tao thu muc moi: $targetDir" -ForegroundColor Gray
+            Write-Host " 📁 Tạo thư mục mới: $targetDir" -ForegroundColor Gray
             New-Item -ItemType Directory -Path $targetDir -Force | Out-Null
         }
 
@@ -69,7 +105,8 @@ function Run-ConsoleUpdate($targetDir) {
 
         # Calculate download list
         $toDownload = @()
-        foreach ($rmName in $repoMods.Keys) {
+        foreach ($key in $repoMods.Keys) {
+            $rmName = "$key"
             $rm = $repoMods[$rmName]
             $localFilePath = Join-Path $targetDir $rmName
             
@@ -83,26 +120,28 @@ function Run-ConsoleUpdate($targetDir) {
             }
         }
 
-        Write-Host "Tim thay: $($repoMods.Count) mod tren Repo | $($localFiles.Count) mod o may." -ForegroundColor Green
-        Write-Host "Can tai them: $($toDownload.Count) mod | Can xoa bo: $($toDelete.Count) mod." -ForegroundColor Yellow
+        Write-Host " 📊 Thống kê: Tìm thấy $($repoMods.Count) mod trên Server | $($localFiles.Count) mod ở máy bạn." -ForegroundColor Green
+        Write-Host " 📥 Cần tải thêm: $($toDownload.Count) mod | ❌ Cần xóa bỏ: $($toDelete.Count) mod." -ForegroundColor Yellow
+        Write-Host "───────────────────────────────────────────────────────────" -ForegroundColor DarkGray
 
         # Delete old mods
         if ($toDelete.Count -gt 0) {
-            Write-Host "`n[ XOA MOD CU ]" -ForegroundColor Red
+            Write-Host " [ XÓA MOD CŨ KHÔNG SỬ DỤNG ]" -ForegroundColor Red
             foreach ($df in $toDelete) {
-                Write-Host "- Dang xoa: $($df.Name)" -ForegroundColor DarkRed
+                Write-Host "  - Đang xóa: $($df.Name)" -ForegroundColor DarkRed
                 Remove-Item -LiteralPath $df.FullName -Force
             }
+            Write-Host " ───────────────────────────────────────────────────────────" -ForegroundColor DarkGray
         }
 
         # Download missing/modified mods
         if ($toDownload.Count -gt 0) {
-            Write-Host "`n[ TAI MOD MOI ]" -ForegroundColor Green
+            Write-Host " [ TẢI CÁC MOD MỚI CẬP NHẬT ]" -ForegroundColor Green
             $client = New-Object System.Net.WebClient
             $count = 0
             foreach ($rm in $toDownload) {
                 $count++
-                Write-Host "-> Tai ($count/$($toDownload.Count)): $($rm.name) ($([Math]::Round($rm.size / 1MB, 2)) MB)..." -ForegroundColor White
+                Write-Host "  -> Tải ($count/$($toDownload.Count)): $($rm.name) ($([Math]::Round($rm.size / 1MB, 2)) MB)..." -ForegroundColor White
                 
                 $destPath = Join-Path $targetDir $rm.name
                 $tempDestPath = $destPath + ".tmp"
@@ -111,22 +150,45 @@ function Run-ConsoleUpdate($targetDir) {
                     $client.DownloadFile($rm.download_url, $tempDestPath)
                     if (Test-Path -LiteralPath $destPath) { Remove-Item -LiteralPath $destPath -Force }
                     Rename-Item -LiteralPath $tempDestPath -NewName $rm.name
-                    Write-Host "   [ OK ] Tai xong!" -ForegroundColor Green
+                    Write-Host "     [✓] Đã tải xong!" -ForegroundColor Green
                 } catch {
-                    Write-Host "   [ LOI ] That bai khi tai: $($rm.name)" -ForegroundColor Red
+                    Write-Host "     [❌] Thất bại khi tải: $($rm.name)" -ForegroundColor Red
                     if (Test-Path -LiteralPath $tempDestPath) { Remove-Item -LiteralPath $tempDestPath -Force }
                 }
             }
-        } else {
-            Write-Host "Tat ca cac mod da dong bo va o ban moi nhat!" -ForegroundColor Green
+            Write-Host " ───────────────────────────────────────────────────────────" -ForegroundColor DarkGray
         }
 
-        Write-Host "`n=========================================" -ForegroundColor Green
-        Write-Host "HOAN THANH DONG BO HOA MODS!" -ForegroundColor Green
-        Write-Host "=========================================" -ForegroundColor Green
+        # Reload local file list after sync for accurate mod counting
+        $finalLocalFiles = Get-ChildItem -Path $targetDir -File | Where-Object { $_.Extension -eq ".jar" -or $_.Name.EndsWith(".jar.disabled") } | Sort-Object Name
+        
+        Write-Host " 📦 DANH SÁCH MOD HIỆN TẠI TRÊN MÁY BẠN ($($finalLocalFiles.Count) mods):" -ForegroundColor Green
+        
+        # Display in a beautiful two-column list
+        for ($idx = 0; $idx -lt $finalLocalFiles.Count; $idx += 2) {
+            $file1 = $finalLocalFiles[$idx].Name
+            $file2 = ""
+            if ($idx + 1 -lt $finalLocalFiles.Count) {
+                $file2 = $finalLocalFiles[$idx + 1].Name
+            }
+            
+            # Format display strings
+            $col1 = $file1
+            if ($col1.Length -gt 38) { $col1 = $col1.Substring(0, 35) + "..." }
+            $col1 = $col1.PadRight(40)
+            
+            $col2 = $file2
+            if ($col2.Length -gt 38) { $col2 = $col2.Substring(0, 35) + "..." }
+            
+            Write-Host "   • $col1 • $col2" -ForegroundColor DarkGray
+        }
+
+        Write-Host "`n===========================================================" -ForegroundColor Green
+        Write-Host " 🎉 HOÀN THÀNH ĐỒNG BỘ HÓA MODS - CHÚC BẠN CHƠI GAME VUI VẺ!" -ForegroundColor Green
+        Write-Host "===========================================================" -ForegroundColor Green
 
     } catch {
-        Write-Host "[LOI NGHIEM TRONG] $_" -ForegroundColor Red
+        Write-Host " ❌ [LỖI NGHIÊM TRỌNG] $_" -ForegroundColor Red
     }
 }
 
@@ -168,16 +230,16 @@ if ($guiSupported -and !$NoGui -and [System.Environment]::UserInteractive) {
         <!-- Title -->
         <StackPanel Grid.Row="0" Margin="0,0,0,15">
             <TextBlock Text="🚀 MINESERVER v26.2 MOD UPDATER" FontSize="20" FontWeight="Bold" Foreground="#3B82F6"/>
-            <TextBlock Text="Cong cu tu dong dong bo va cap nhat Mod 1-Click" FontSize="12" Foreground="#A1A1AA" Margin="0,2,0,0"/>
+            <TextBlock Text="Công cụ tự động đồng bộ và cập nhật Mod 1-Click" FontSize="12" Foreground="#A1A1AA" Margin="0,2,0,0"/>
         </StackPanel>
 
         <!-- Launcher Option -->
-        <GroupBox Grid.Row="1" Header="Chon Launcher" BorderBrush="#27272A" Foreground="#A1A1AA" Padding="10" Margin="0,0,0,10">
+        <GroupBox Grid.Row="1" Header="Chọn Launcher" BorderBrush="#27272A" Foreground="#A1A1AA" Padding="10" Margin="0,0,0,10">
             <WrapPanel>
                 <RadioButton Name="radLegacy" Content="Legacy Launcher" IsChecked="True"/>
-                <RadioButton Name="radPremium" Content="Official (Ban Quyen)"/>
+                <RadioButton Name="radPremium" Content="Official (Bản Quyền)"/>
                 <RadioButton Name="radTLauncher" Content="TLauncher"/>
-                <RadioButton Name="radCustom" Content="Duong dan tu chon"/>
+                <RadioButton Name="radCustom" Content="Đường dẫn tự chọn"/>
             </WrapPanel>
         </GroupBox>
 
@@ -188,12 +250,12 @@ if ($guiSupported -and !$NoGui -and [System.Environment]::UserInteractive) {
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
             <TextBox Name="txtPath" Grid.Column="0" Height="28" Padding="5,3" Background="#09090B" Foreground="#F4F4F5" BorderBrush="#27272A" VerticalContentAlignment="Center" IsReadOnly="True"/>
-            <Button Name="btnBrowse" Grid.Column="1" Content="Duyet..." Margin="5,0,0,0" Width="80" Height="28" IsEnabled="False"/>
+            <Button Name="btnBrowse" Grid.Column="1" Content="Duyệt..." Margin="5,0,0,0" Width="80" Height="28" IsEnabled="False"/>
         </Grid>
 
         <!-- Log Box -->
-        <GroupBox Grid.Row="3" Header="Nhat ky cap nhat" BorderBrush="#27272A" Foreground="#A1A1AA" Margin="0,0,0,15">
-            <TextBox Name="txtLog" Background="#09090B" Foreground="#E4E4E7" BorderThickness="0" AcceptsReturn="True" VerticalScrollBarVisibility="Auto" IsReadOnly="True" Padding="8" FontFamily="Consolas" FontSize="11" Text="San sang cap nhat mod... Click 'Kiem tra &amp; Cap nhat' de bat dau.&#x0d;&#x0a;"/>
+        <GroupBox Grid.Row="3" Header="Nhật ký cập nhật" BorderBrush="#27272A" Foreground="#A1A1AA" Margin="0,0,0,15">
+            <TextBox Name="txtLog" Background="#09090B" Foreground="#E4E4E7" BorderThickness="0" AcceptsReturn="True" VerticalScrollBarVisibility="Auto" IsReadOnly="True" Padding="8" FontFamily="Consolas" FontSize="11" Text="Sẵn sàng cập nhật mod... Click 'Kiểm tra &amp; Cập nhật' để bắt đầu.&#x0d;&#x0a;"/>
         </GroupBox>
 
         <!-- Progress Bar -->
@@ -212,8 +274,8 @@ if ($guiSupported -and !$NoGui -and [System.Environment]::UserInteractive) {
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
-            <TextBlock Name="txtStatus" Grid.Column="0" Text="Nhan nut de bat dau dong bo..." VerticalAlignment="Center" Foreground="#A1A1AA" FontSize="12"/>
-            <Button Name="btnStart" Grid.Column="1" Content="Kiem tra &amp; Cap nhat" Background="#3B82F6" Foreground="White" Width="180" Height="35" FontSize="13"/>
+            <TextBlock Name="txtStatus" Grid.Column="0" Text="Nhấn nút để bắt đầu đồng bộ..." VerticalAlignment="Center" Foreground="#A1A1AA" FontSize="12"/>
+            <Button Name="btnStart" Grid.Column="1" Content="Kiểm tra &amp; Cập nhật" Background="#3B82F6" Foreground="White" Width="180" Height="35" FontSize="13"/>
         </Grid>
     </Grid>
 </Window>
@@ -255,7 +317,7 @@ if ($guiLoaded) {
     $btnBrowse.add_Click({
         Add-Type -AssemblyName System.Windows.Forms
         $dialog = New-Object System.Windows.Forms.FolderBrowserDialog
-        $dialog.Description = "Chon thu muc mods cua game Minecraft"
+        $dialog.Description = "Chọn thư mục mods của game Minecraft"
         if ($dialog.ShowDialog() -eq [System.Windows.Forms.DialogResult]::OK) {
             $txtPath.Text = $dialog.SelectedPath
         }
@@ -286,21 +348,21 @@ if ($guiLoaded) {
         $radCustom.IsEnabled = $false
         $btnBrowse.IsEnabled = $false
 
-        $txtStatus.Text = "Dang kiem tra cap nhat..."
-        $txtLog.Text = "--- BAT DAU CAP NHAT ---`r`n"
-        $txtLog.AppendText("Dang ket noi toi GitHub API...`r`n")
+        $txtStatus.Text = "Đang kiểm tra cập nhật..."
+        $txtLog.Text = "--- BẮT ĐẦU CẬP NHẬT ---`r`n"
+        $txtLog.AppendText("Đang kết nối tới GitHub API...`r`n")
         Update-UI
 
         try {
-            [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+            [Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12
             $apiUrl = "https://api.github.com/repos/QuangquyNguyenvo/MineServer/contents/26.2/mods"
             $headers = @{ "User-Agent" = "PowerShell-Minecraft-Updater" }
             
             $repoFiles = Invoke-RestMethod -Uri $apiUrl -Headers $headers -Method Get
             
             if ($null -eq $repoFiles -or $repoFiles.Count -eq 0) {
-                $txtLog.AppendText("[LOI] Khong the doc danh sach mod tu GitHub hoac thu muc trong.`r`n")
-                $txtStatus.Text = "Loi ket noi GitHub API."
+                $txtLog.AppendText("[LỖI] Không thể đọc danh sách mod từ GitHub hoặc thư mục trống.`r`n")
+                $txtStatus.Text = "Lỗi kết nối GitHub API."
                 Reset-UI
                 return
             }
@@ -308,7 +370,7 @@ if ($guiLoaded) {
             # Ensure target folder exists
             $targetDir = $txtPath.Text
             if (!(Test-Path -LiteralPath $targetDir)) {
-                $txtLog.AppendText("Tao thu muc mods moi: $targetDir`r`n")
+                $txtLog.AppendText("Tạo thư mục mods mới: $targetDir`r`n")
                 New-Item -ItemType Directory -Path $targetDir -Force | Out-Null
             }
 
@@ -333,7 +395,8 @@ if ($guiLoaded) {
 
             # Calculate download list
             $toDownload = @()
-            foreach ($rmName in $repoMods.Keys) {
+            foreach ($key in $repoMods.Keys) {
+                $rmName = "$key"
                 $rm = $repoMods[$rmName]
                 $localFilePath = Join-Path $targetDir $rmName
                 
@@ -347,16 +410,16 @@ if ($guiLoaded) {
                 }
             }
 
-            $txtLog.AppendText("Tim thay: $($repoMods.Count) mod tren Repo, $($localFiles.Count) mod o may.`r`n")
-            $txtLog.AppendText("Can tai them: $($toDownload.Count) mod.`r`n")
-            $txtLog.AppendText("Can xoa bo: $($toDelete.Count) mod.`r`n")
+            $txtLog.AppendText("Tìm thấy: $($repoMods.Count) mod trên Repo, $($localFiles.Count) mod ở máy.`r`n")
+            $txtLog.AppendText("Cần tải thêm: $($toDownload.Count) mod.`r`n")
+            $txtLog.AppendText("Cần xóa bỏ: $($toDelete.Count) mod.`r`n")
             Update-UI
 
             # Delete old mods
             if ($toDelete.Count -gt 0) {
-                $txtLog.AppendText("--- DANG XOA CAC MOD CU ---`r`n")
+                $txtLog.AppendText("--- ĐANG XÓA CÁC MOD CŨ ---`r`n")
                 foreach ($df in $toDelete) {
-                    $txtLog.AppendText("Xoa mod cu: $($df.Name)`r`n")
+                    $txtLog.AppendText("Xóa mod cũ: $($df.Name)`r`n")
                     Remove-Item -LiteralPath $df.FullName -Force
                     Update-UI
                 }
@@ -364,7 +427,7 @@ if ($guiLoaded) {
 
             # Download missing/modified mods
             if ($toDownload.Count -gt 0) {
-                $txtLog.AppendText("--- DANG TAI CAC MOD MOI ---`r`n")
+                $txtLog.AppendText("--- ĐANG TẢI CÁC MOD MỚI ---`r`n")
                 $progress.Maximum = $toDownload.Count
                 $progress.Value = 0
                 $txtProgressVal.Text = "0/$($toDownload.Count)"
@@ -374,10 +437,10 @@ if ($guiLoaded) {
                 
                 foreach ($rm in $toDownload) {
                     $count++
-                    $txtStatus.Text = "Dang tai: $($rm.name) ($count/$($toDownload.Count))"
+                    $txtStatus.Text = "Đang tải: $($rm.name) ($count/$($toDownload.Count))"
                     $txtProgressVal.Text = "$count/$($toDownload.Count)"
                     $progress.Value = $count
-                    $txtLog.AppendText("Tai ($count/$($toDownload.Count)): $($rm.name) ($([Math]::Round($rm.size / 1MB, 2)) MB)...`r`n")
+                    $txtLog.AppendText("Tải ($count/$($toDownload.Count)): $($rm.name) ($([Math]::Round($rm.size / 1MB, 2)) MB)...`r`n")
                     Update-UI
                     
                     $destPath = Join-Path $targetDir $rm.name
@@ -387,9 +450,9 @@ if ($guiLoaded) {
                         $client.DownloadFile($rm.download_url, $tempDestPath)
                         if (Test-Path -LiteralPath $destPath) { Remove-Item -LiteralPath $destPath -Force }
                         Rename-Item -LiteralPath $tempDestPath -NewName $rm.name
-                        $txtLog.AppendText("-> Hoan thanh!`r`n")
+                        $txtLog.AppendText("-> Hoàn thành!`r`n")
                     } catch {
-                        $txtLog.AppendText("[LOI] That bai khi tai: $($rm.name). Chi tiết: $_ `r`n")
+                        $txtLog.AppendText("[LỖI] Thất bại khi tải: $($rm.name). Chi tiết: $_ `r`n")
                         if (Test-Path -LiteralPath $tempDestPath) { Remove-Item -LiteralPath $tempDestPath -Force }
                     }
                     Update-UI
@@ -400,15 +463,15 @@ if ($guiLoaded) {
                 $txtProgressVal.Text = "Xong"
             }
 
-            $txtLog.AppendText("`r`n--- HOAN THANH CAP NHAT ---`r`n")
-            $txtLog.AppendText("Dong bo hoa thu muc mod thanh cong!`r`n")
-            $txtStatus.Text = "Cap nhat thanh cong!"
-            [System.Windows.MessageBox]::Show("Dong bo hoa mods Minecraft thanh cong!", "Thong bao", [System.Windows.MessageBoxButton]::OK, [System.Windows.MessageBoxImage]::Information)
+            $txtLog.AppendText("`r`n--- HOÂN THÀNH CẬP NHẬT ---`r`n")
+            $txtLog.AppendText("Đồng bộ hóa thư mục mod thành công!`r`n")
+            $txtStatus.Text = "Cập nhật thành công!"
+            [System.Windows.MessageBox]::Show("Đồng bộ hóa mods Minecraft thành công!", "Thông báo", [System.Windows.MessageBoxButton]::OK, [System.Windows.MessageBoxImage]::Information)
 
         } catch {
-            $txtLog.AppendText("[LOI NGHIEM TRONG] $_ `r`n")
-            $txtStatus.Text = "Gap loi trong qua trinh cap nhat."
-            [System.Windows.MessageBox]::Show("Gap loi trong qua trinh cap nhat: `n$_", "Loi", [System.Windows.MessageBoxButton]::OK, [System.Windows.MessageBoxImage]::Error)
+            $txtLog.AppendText("[LỖI NGHIÊM TRỌNG] $_ `r`n")
+            $txtStatus.Text = "Gặp lỗi trong quá trình cập nhật."
+            [System.Windows.MessageBox]::Show("Gặp lỗi trong quá trình cập nhật: `n$_", "Lỗi", [System.Windows.MessageBoxButton]::OK, [System.Windows.MessageBoxImage]::Error)
         }
 
         Reset-UI
