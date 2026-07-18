@@ -22,14 +22,59 @@ $tlauncherPath = Join-Path $env:APPDATA ".minecraft\mods"
 
 $defaultPath = $legacyPath
 
+# ── Console UI helpers (tự động co giãn theo chiều rộng terminal) ──
+
+# Lấy chiều rộng terminal hiện tại (fallback 80 nếu bị redirect)
+function Get-ConsoleWidth {
+    try {
+        $w = [Console]::WindowWidth
+        if ($w -lt 40) { return 80 }
+        return $w
+    } catch {
+        return 80
+    }
+}
+
+# Vẽ một đường kẻ ngang lấp đầy toàn bộ chiều rộng màn hình
+function Write-Divider {
+    param([char]$Char = '─', [System.ConsoleColor]$Color = 'DarkGray')
+    Write-Host ([string]$Char * (Get-ConsoleWidth)) -ForegroundColor $Color
+}
+
+# In một dòng chữ căn giữa theo chiều rộng màn hình
+function Write-Centered {
+    param([string]$Text, [System.ConsoleColor]$Color = 'White')
+    $w = Get-ConsoleWidth
+    $pad = [Math]::Max(0, [int](($w - $Text.Length) / 2))
+    Write-Host ((' ' * $pad) + $Text) -ForegroundColor $Color
+}
+
+# Banner tiêu đề: 2 đường đôi ═ full-width + tiêu đề căn giữa
+function Write-Banner {
+    param([string]$Title, [string]$Subtitle, [System.ConsoleColor]$Color = 'Cyan')
+    Write-Host ""
+    Write-Divider '═' $Color
+    Write-Centered $Title $Color
+    if ($Subtitle) { Write-Centered $Subtitle DarkCyan }
+    Write-Divider '═' $Color
+}
+
+# Tiêu đề của một mục (section) với dấu ◆ và đuôi ─ kéo dài hết dòng
+function Write-Section {
+    param([string]$Text, [System.ConsoleColor]$Color = 'White')
+    $w = Get-ConsoleWidth
+    $prefix = "◆ $Text "
+    $tail = [Math]::Max(0, $w - $prefix.Length)
+    Write-Host ($prefix + ('─' * $tail)) -ForegroundColor $Color
+}
+
 # Function to run update in console mode (Fallback)
 function Run-ConsoleUpdate($targetDir) {
-    Write-Host "╔═════════════════════════════════════════════════════════╗" -ForegroundColor Cyan
-    Write-Host "║        🚀 MINESERVER v26.2 MOD UPDATER (CONSOLE)        ║" -ForegroundColor Cyan
-    Write-Host "╚═════════════════════════════════════════════════════════╝" -ForegroundColor Cyan
-    Write-Host " Thư mục đích: $targetDir" -ForegroundColor Yellow
-    Write-Host "───────────────────────────────────────────────────────────" -ForegroundColor DarkGray
-    
+    Write-Banner "🚀  MINESERVER v26.2 MOD UPDATER  🚀" "Công cụ đồng bộ & cập nhật Mod tự động (Console)" Cyan
+    Write-Host " 📂 Thư mục đích: " -ForegroundColor Yellow -NoNewline
+    Write-Host $targetDir -ForegroundColor White
+    Write-Divider '─' DarkGray
+
     try {
         [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
         $apiUrl = "https://api.github.com/repos/QuangquyNguyenvo/MineServer/contents/26.2/mods"
@@ -74,9 +119,9 @@ function Run-ConsoleUpdate($targetDir) {
             Write-Host " ❌ [LỖI] Không thể đọc danh sách mod từ GitHub hoặc thư mục trống." -ForegroundColor Red
             return
         }
-        
-        Write-Host " ✔️ Kết nối GitHub thành công!" -ForegroundColor Green
-        Write-Host "───────────────────────────────────────────────────────────" -ForegroundColor DarkGray
+
+        Write-Host " ✔️  Kết nối GitHub thành công!" -ForegroundColor Green
+        Write-Divider '─' DarkGray
 
         # Ensure target folder exists
         if (!(Test-Path -LiteralPath $targetDir)) {
@@ -122,21 +167,21 @@ function Run-ConsoleUpdate($targetDir) {
 
         Write-Host " 📊 Thống kê: Tìm thấy $($repoMods.Count) mod trên Server | $($localFiles.Count) mod ở máy bạn." -ForegroundColor Green
         Write-Host " 📥 Cần tải thêm: $($toDownload.Count) mod | ❌ Cần xóa bỏ: $($toDelete.Count) mod." -ForegroundColor Yellow
-        Write-Host "───────────────────────────────────────────────────────────" -ForegroundColor DarkGray
+        Write-Divider '─' DarkGray
 
         # Delete old mods
         if ($toDelete.Count -gt 0) {
-            Write-Host " [ XÓA MOD CŨ KHÔNG SỬ DỤNG ]" -ForegroundColor Red
+            Write-Section "XÓA MOD CŨ KHÔNG SỬ DỤNG" Red
             foreach ($df in $toDelete) {
                 Write-Host "  - Đang xóa: $($df.Name)" -ForegroundColor DarkRed
                 Remove-Item -LiteralPath $df.FullName -Force
             }
-            Write-Host " ───────────────────────────────────────────────────────────" -ForegroundColor DarkGray
+            Write-Divider '─' DarkGray
         }
 
         # Download missing/modified mods
         if ($toDownload.Count -gt 0) {
-            Write-Host " [ TẢI CÁC MOD MỚI CẬP NHẬT ]" -ForegroundColor Green
+            Write-Section "TẢI CÁC MOD MỚI CẬP NHẬT" Green
             $client = New-Object System.Net.WebClient
             $count = 0
             foreach ($rm in $toDownload) {
@@ -156,36 +201,40 @@ function Run-ConsoleUpdate($targetDir) {
                     if (Test-Path -LiteralPath $tempDestPath) { Remove-Item -LiteralPath $tempDestPath -Force }
                 }
             }
-            Write-Host " ───────────────────────────────────────────────────────────" -ForegroundColor DarkGray
+            Write-Divider '─' DarkGray
         }
 
         # Reload local file list after sync for accurate mod counting
         $finalLocalFiles = Get-ChildItem -Path $targetDir -File | Where-Object { $_.Extension -eq ".jar" -or $_.Name.EndsWith(".jar.disabled") } | Sort-Object Name
-        
-        Write-Host " 📦 DANH SÁCH MOD HIỆN TẠI TRÊN MÁY BẠN ($($finalLocalFiles.Count) mods):" -ForegroundColor Green
-        
-        # Display in a beautiful two-column list
+
+        Write-Section "DANH SÁCH MOD HIỆN TẠI TRÊN MÁY BẠN ($($finalLocalFiles.Count) mods)" Green
+
+        # Two-column list — bề rộng cột tự tính theo chiều rộng terminal
+        $w = Get-ConsoleWidth
+        $colWidth = [Math]::Max(20, [int](($w - 9) / 2))   # "   • " + col1 + " • " + col2
         for ($idx = 0; $idx -lt $finalLocalFiles.Count; $idx += 2) {
             $file1 = $finalLocalFiles[$idx].Name
             $file2 = ""
             if ($idx + 1 -lt $finalLocalFiles.Count) {
                 $file2 = $finalLocalFiles[$idx + 1].Name
             }
-            
-            # Format display strings
+
+            # Cắt bớt nếu dài hơn bề rộng cột
             $col1 = $file1
-            if ($col1.Length -gt 38) { $col1 = $col1.Substring(0, 35) + "..." }
-            $col1 = $col1.PadRight(40)
-            
+            if ($col1.Length -gt $colWidth) { $col1 = $col1.Substring(0, $colWidth - 3) + "..." }
+            $col1 = $col1.PadRight($colWidth)
+
             $col2 = $file2
-            if ($col2.Length -gt 38) { $col2 = $col2.Substring(0, 35) + "..." }
-            
+            if ($col2.Length -gt $colWidth) { $col2 = $col2.Substring(0, $colWidth - 3) + "..." }
+
             Write-Host "   • $col1 • $col2" -ForegroundColor DarkGray
         }
 
-        Write-Host "`n===========================================================" -ForegroundColor Green
-        Write-Host " 🎉 HOÀN THÀNH ĐỒNG BỘ HÓA MODS - CHÚC BẠN CHƠI GAME VUI VẺ!" -ForegroundColor Green
-        Write-Host "===========================================================" -ForegroundColor Green
+        Write-Host ""
+        Write-Divider '═' Green
+        Write-Centered "🎉  HOÀN THÀNH ĐỒNG BỘ HÓA MODS  🎉" Green
+        Write-Centered "Chúc bạn chơi game vui vẻ!" Green
+        Write-Divider '═' Green
 
     } catch {
         Write-Host " ❌ [LỖI NGHIÊM TRỌNG] $_" -ForegroundColor Red
