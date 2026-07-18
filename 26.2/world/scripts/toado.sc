@@ -1,22 +1,33 @@
 // ==============================================================================
-//              ✦ TOẠ ĐỘ MINEPOINT SYSTEM ✦
-//   Đánh dấu tọa độ và gửi lên Discord qua Webhook (Viết bằng Scarpet)
+//              ✦ TOẠ ĐỘ MINEPOINT SYSTEM ✦  (viết lại v2)
+//   Đánh dấu tọa độ và gửi lên Discord qua Webhook (Scarpet)
 //   Dùng http_request() từ mod "scarpet-additions" (raw JSON POST)
 //   Kênh: 🧭┃𝐌𝐢𝐧𝐞𝐩𝐨𝐢𝐧𝐭
+//
+//   FIX LỖI filter(): app_data lưu bằng NBT. Một LIST RỖNG khi lưu rồi nạp lại
+//   có thể MẤT KIỂU (trả về null / compound rỗng) -> filter() nhận đối số không
+//   phải list -> văng lỗi "filter should be applied to a list". Bản này ÉP KIỂU
+//   mọi giá trị về list qua _L() ngay trước khi filter, và khi nạp dữ liệu chỉ
+//   nhận giá trị nếu type() == 'list'. Nhờ vậy không bao giờ filter trên non-list.
 // ==============================================================================
 
 global_webhook_url = 'https://discord.com/api/webhooks/1470974798115901680/4gmg-np0yFvdrrCrZShs-1OtllaeQGSzevTRZHEMPc9CUjBMnV-NpReexOKUzvNAdhbh';
 
-// saved/all lưu dạng list các map {uuid,name,x,y,z,dim,by} để tránh lỗi
-// NBT khi khóa map chứa dấu cách hoặc dấu gạch ngang (uuid, tên địa điểm).
-// Luôn khởi tạo một map SẠCH rồi mới nạp dữ liệu cũ vào. Nếu file app_data cũ
-// bị hỏng (không phải map, saved/all không phải list) thì try() sẽ nuốt lỗi và
-// ta giữ map rỗng -> tránh lỗi "filter should be a list" khi chạy lệnh.
+// ── Helper an toàn kiểu ───────────────────────────────────────────────────────
+// _L(v): trả về v nếu là list, ngược lại trả list rỗng. Dùng trước MỌI filter().
+_L(v) -> if(type(v) == 'list', v, []);
+// _saved()/_all(): luôn đọc ra list sạch từ global_toado.
+_saved() -> _L(global_toado:'saved');
+_all()   -> _L(global_toado:'all');
+
+// Khởi tạo map SẠCH rồi mới nạp dữ liệu cũ. Chỉ nhận khi đúng kiểu 'list'.
 global_toado = {'saved' -> [], 'all' -> []};
 try(
   _loaded = load_app_data();
-  if (_loaded != null && _loaded:'saved' != null, global_toado:'saved' = _loaded:'saved');
-  if (_loaded != null && _loaded:'all'   != null, global_toado:'all'   = _loaded:'all');
+  if (type(_loaded) == 'map',
+    if (type(_loaded:'saved') == 'list', global_toado:'saved' = _loaded:'saved');
+    if (type(_loaded:'all')   == 'list', global_toado:'all'   = _loaded:'all');
+  );
 ,
   print('§e[MinePoint] Dữ liệu cũ không đọc được, đã khởi tạo lại danh sách trống.');
 );
@@ -24,12 +35,12 @@ try(
 __config() -> {
   'scope' -> 'global',
   'commands' -> {
-    ''              -> _()    -> cmd_help(),
-    '<loc_text>'    -> _(loc) -> cmd_mark(loc),
-    'list'          -> _()    -> cmd_list_self(),
-    'list all'      -> _()    -> cmd_list_all(),
-    'del <loc_text>'-> _(loc) -> cmd_del(loc),
-    'clearall'      -> _()    -> cmd_clearall()
+    ''               -> _()    -> cmd_help(),
+    '<loc_text>'     -> _(loc) -> cmd_mark(loc),
+    'list'           -> _()    -> cmd_list_self(),
+    'list all'       -> _()    -> cmd_list_all(),
+    'del <loc_text>' -> _(loc) -> cmd_del(loc),
+    'clearall'       -> _()    -> cmd_clearall()
   },
   'arguments' -> {
     'loc_text' -> {'type' -> 'text'}
@@ -39,10 +50,7 @@ __config() -> {
 
 print(format('d [MinePoint] ', 'w Hệ thống tọa độ Discord đã sẵn sàng!'));
 
-// Gửi tin nhắn cho toàn bộ server
-// (KHÔNG gọi print(message) không mục tiêu ở đây: khi hàm này chạy trong lúc
-// xử lý lệnh của một người chơi, print() không mục tiêu sẽ gửi phản hồi lệnh
-// về lại chính người chơi đó, gây ra tin nhắn bị lặp lại 2 lần cho họ.)
+// ── Gửi tin cho toàn server (không dùng print() không mục tiêu để tránh lặp) ──
 _broadcast(message) -> (
   for (player('all'), print(_, message));
 );
@@ -53,21 +61,10 @@ _dim_name(dim) -> if(
   'Overworld'
 );
 
-// ── Avatar/nhân vật cho embed ─────────────────────────────────────────────────
-// VẤN ĐỀ CŨ: dùng thẳng texture ely.by (http://skinsystem.ely.by/skins/<tên>.png)
-// -> đó là "tấm da" 2D phẳng, Discord hiển thị thành mớ pixel lộn xộn chứ không
-// phải nhân vật.
-//
-// GIẢI PHÁP: render NHÂN VẬT 3D. Chỉ Starlight Skins nhận được skin URL tuỳ ý
-// (nên mới ghép được skin ely.by lậu), còn mc-heads/NMSR/Crafatar chỉ tra theo
-// Mojang -> luôn ra Steve với account offline. Vì Starlight hay sập (502), ta
-// làm cơ chế TỰ HỒI: thử ping Starlight, sống thì render skin ely.by thật của
-// bạn thành nhân vật 3D; sập thì fallback sang nhân vật MẶC ĐỊNH của mc-heads
-// (đẹp, luôn chạy) thay vì tấm da phẳng xấu xí.
-_ely_skin(pname)  -> str('http://skinsystem.ely.by/skins/%s.png', pname);
+// ── Avatar/nhân vật 3D cho embed (Starlight + skin ely.by, fallback mc-heads) ──
+_ely_skin(pname)     -> str('http://skinsystem.ely.by/skins/%s.png', pname);
 _sl_url(pname, crop) -> str('https://starlightskins.lunareclipse.studio/render/default/%s/%s?skinUrl=%s', pname, crop, _ely_skin(pname));
 
-// Trả về {face, body}. Ping Starlight (crop 'head') 1 lần; 200 -> dùng skin thật.
 _render_urls(pname) -> (
   alive = false;
   try(
@@ -78,7 +75,6 @@ _render_urls(pname) -> (
   );
   if (alive,
     {'face' -> _sl_url(pname, 'head'), 'body' -> _sl_url(pname, 'full')},
-    // Fallback: nhân vật mặc định (mc-heads) — mặt cho icon nhỏ, cả người cho thumbnail.
     {'face' -> str('https://mc-heads.net/avatar/%s/64', pname),
      'body' -> str('https://mc-heads.net/body/%s', pname)}
   )
@@ -90,26 +86,19 @@ _dim_color(dimname) -> if(
   5763719
 );
 
-// Chú thích bản đồ đổi theo từng thế giới (Overworld không hiện Nether/End...)
 _legend(dimname) -> if(
   dimname == 'Nether',  '🟥 Nether/Crimson/Basalt · 🟪 Warped · 🔴 Bạn',
   dimname == 'The End', '🟪 The End · 🔴 Bạn',
   '🟩 Đồng bằng/Rừng · 🟨 Cát/Sa mạc · 🟦 Nước · ⬜ Tuyết · 🟫 Đầm lầy · 🔴 Bạn'
 );
 
-// ── Biome helpers (dùng cho bản đồ mini + hiển thị biome trong embed) ──────────
-// Lấy khóa biome VIẾT HOA tại một toạ độ bất kỳ trong dimension của người chơi.
-// VD: 'minecraft:snowy_plains' -> 'SNOWY_PLAINS'
+// ── Biome helpers ─────────────────────────────────────────────────────────────
 _biome_short(p, x, y, z) -> (
   b = str(in_dimension(p, biome(x, y, z)));
   parts = split(':', b);
   upper(parts:(length(parts) - 1))
 );
-
-// Tên biome dễ đọc: 'SNOWY_PLAINS' -> 'snowy plains'
 _biome_pretty(key) -> lower(replace(key, '_', ' '));
-
-// Phân loại biome -> emoji ô màu (đồng đều 1 ô để bản đồ thẳng hàng trên Discord)
 _biome_emoji(key) -> if(
   key ~ 'OCEAN|RIVER',                     '🟦',
   key ~ 'NETHER|CRIMSON|BASALT|SOUL',      '🟥',
@@ -120,9 +109,7 @@ _biome_emoji(key) -> if(
   '🟩'
 );
 
-// Quét biome trong lưới quanh người chơi và dựng bản đồ top-down bằng emoji.
-// radius 5, bước 12 khối -> lưới 11x11 phủ ±60 khối. Chỉ chạy khi gõ lệnh nên
-// không ảnh hưởng hiệu năng tick. Muốn rộng/hẹp hơn thì chỉnh radius & step.
+// Bản đồ biome top-down 11x11 (±60 khối). Chỉ chạy khi gõ lệnh.
 _build_minimap(p, px, py, pz) -> (
   radius = 5;
   step = 12;
@@ -214,11 +201,12 @@ cmd_mark(loc) -> (
   bname = _biome_pretty(bkey);
   minimap = _build_minimap(p, x, y, z);
 
-  saved = filter(global_toado:'saved', !(_:'uuid' == uuid && _:'name' == loc));
+  // Ép kiểu list rồi mới filter -> không bao giờ filter trên non-list.
+  saved = filter(_saved(), !(_:'uuid' == uuid && _:'name' == loc));
   saved = put(saved, null, {'uuid' -> uuid, 'name' -> loc, 'x' -> x, 'y' -> y, 'z' -> z, 'dim' -> dimname});
   global_toado:'saved' = saved;
 
-  all_list = filter(global_toado:'all', _:'name' != loc);
+  all_list = filter(_all(), _:'name' != loc);
   all_list = put(all_list, null, {'name' -> loc, 'x' -> x, 'y' -> y, 'z' -> z, 'dim' -> dimname, 'by' -> pname});
   global_toado:'all' = all_list;
 
@@ -243,9 +231,7 @@ cmd_mark(loc) -> (
   _broadcast('§8§m                                                  ');
   _broadcast('');
 
-  // Dựng embed + gửi trong task riêng: _render_urls() ping Starlight (có thể mất
-  // vài giây / timeout khi sập) nên KHÔNG được chạy trên luồng chính -> tránh
-  // giật server. Toàn bộ biến dùng để dựng embed được đóng gói qua outer().
+  // Dựng embed + gửi trong task riêng (ping Starlight có thể chậm -> không chặn tick).
   task( _(outer(pname), outer(loc), outer(x), outer(y), outer(z),
           outer(dimname), outer(bemoji), outer(bname), outer(minimap)) -> (
     urls = _render_urls(pname);
@@ -261,7 +247,7 @@ cmd_mark(loc) -> (
 cmd_list_self() -> (
   p = player();
   uuid = p ~ 'uuid';
-  mine = filter(global_toado:'saved', _:'uuid' == uuid);
+  mine = filter(_saved(), _:'uuid' == uuid);
   print(p, '');
   print(p, '§8§m                                                  ');
   print(p, '');
@@ -287,7 +273,7 @@ cmd_list_self() -> (
 
 cmd_list_all() -> (
   p = player();
-  all_list = global_toado:'all';
+  all_list = _all();
   print(p, '');
   print(p, '§8§m                                                  ');
   print(p, '');
@@ -313,10 +299,10 @@ cmd_del(loc) -> (
   p = player();
   uuid = p ~ 'uuid';
   pname = str(p);
-  existing = filter(global_toado:'saved', _:'uuid' == uuid && _:'name' == loc);
+  existing = filter(_saved(), _:'uuid' == uuid && _:'name' == loc);
   if (length(existing) > 0,
-    global_toado:'saved' = filter(global_toado:'saved', !(_:'uuid' == uuid && _:'name' == loc));
-    global_toado:'all' = filter(global_toado:'all', !(_:'name' == loc && _:'by' == pname));
+    global_toado:'saved' = filter(_saved(), !(_:'uuid' == uuid && _:'name' == loc));
+    global_toado:'all'   = filter(_all(),   !(_:'name' == loc && _:'by' == pname));
     store_app_data(global_toado);
     print(p, '');
     print(p, '§8§m                                                  ');

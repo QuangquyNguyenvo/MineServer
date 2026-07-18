@@ -1,0 +1,94 @@
+# ---------------------------------------------------------
+# ClickVillagers Config
+# NOTE: RELOAD/RESTART SERVER FOR CHANGES TO TAKE EFFECT
+# ---------------------------------------------------------
+
+_version: 5
+
+# Whether to check for updates on server start.
+# Recommended!
+# Default: true
+check_updates: true
+
+# Whether claimed villagers can take damage.
+# Default: false
+claimed_damage: false
+
+# Whether claimed villagers are immune to the /kill command.
+# Won't do anything if "claimed-villagers-take-damage" is enabled.
+# Default: true
+claimed_immune_kill_command: true
+
+# Whether players can reset trades of villagers inside
+# the trading menu.
+# Default: false
+allow_resetting_trades: false
+
+# ---------------------------------------------------------
+# Hopper Settings
+# ---------------------------------------------------------
+
+# Whether villager hoppers should be enabled.
+# Default: true
+enable_hoppers: true
+
+# Whether baby villagers should be ignored by villager hoppers.
+# Default: true
+ignore_baby_villagers: true
+
+# Whether claimed villagers should be ignored by villager hoppers.
+# Default: true
+ignore_claimed_villagers: true
+
+# ---------------------------------------------------------
+# Partner Settings
+# ---------------------------------------------------------
+
+# Maximum number of partners per player.
+# Default: 10
+partner_limit_per_player: 10
+
+# ---------------------------------------------------------
+# Trade Settings
+# ---------------------------------------------------------
+
+# Whether to show the trades of villagers when they are picked up.
+# Only relevant trades are shown.
+# Default: true
+show_trades: true
+
+# Format relevant trades on picked up villagers.
+# This will hide trades that are most likely not useful,
+# and highlight important trades
+# with custom formatting and emojis.
+# Default: true
+format_trades: true
+
+# ---------------------------------------------------------
+# Other
+# ---------------------------------------------------------
+
+# Cooldown for picking up and claiming villagers in seconds.
+# This is useful to prevent players from collecting villagers very quickly.
+# Claimed villagers will not be affected by the cooldown.
+# Default: 0
+cooldown: 0
+
+# Whether to allow zombie villagers to be picked up.
+# If this is disabled, zombie villagers will not be picked up by villager hoppers.
+# Default: true
+allow_zombie_villagers: true
+
+# Whether players can pick up villagers.
+# Already picked up villagers will not be affected by this setting.
+# Default: true
+enable_pickup: true
+
+# Whether players can claim villagers.
+# Already claimed villagers will not be affected by this setting.
+# Default: true
+enable_claims: true
+
+# Whether players can anchor villagers.
+# Default: true
+enable_anchors: true

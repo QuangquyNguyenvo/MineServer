@@ -1,0 +1,133 @@
+MyAnimation1:
+  change-interval: 100
+  texts:
+    - '&d-&3--------------'
+    - '&3-&d-&3-------------'
+    - '&3--&d-&3------------'
+    - '&3---&d-&3-----------'
+    - '&3----&d-&3----------'
+    - '&3-----&d-&3---------'
+    - '&3------&d-&3--------'
+    - '&3-------&d-&3-------'
+    - '&3--------&d-&3------'
+    - '&3---------&d-&3-----'
+    - '&3----------&d-&3----'
+    - '&3-----------&d-&3---'
+    - '&3------------&d-&3--'
+    - '&3-------------&d-&3-'
+    - '&3--------------&d-'
+    - '&3-------------&d-&3-'
+    - '&3------------&d-&3--'
+    - '&3-----------&d-&3---'
+    - '&3----------&d-&3----'
+    - '&3---------&d-&3-----'
+    - '&3--------&d-&3------'
+    - '&3-------&d-&3-------'
+    - '&3------&d-&3--------'
+    - '&3-----&d-&3---------'
+    - '&3----&d-&3----------'
+    - '&3---&d-&3-----------'
+    - '&3--&d-&3------------'
+    - '&3-&d-&3-------------'
+    - '&d-&3--------------'
+ServerName:
+  change-interval: 100
+  texts:
+  - '&3&lO&b&llongbell SMP'
+  - '&b&lO&3&ll&b&longbell SMP'
+  - '&b&lOl&3&lo&b&lngbell SMP'
+  - '&b&lOlo&3&ln&b&lgbell SMP'
+  - '&b&lOlon&3&lg&b&lbell SMP'
+  - '&b&lOlong&3&lb&b&lell SMP'
+  - '&b&lOlongb&3&le&b&llll SMP'
+  - '&b&lOlongbe&3&ll&b&ll SMP'
+  - '&b&lOlongbel&3&ll&b&l SMP'
+  - '&b&lOlongbell&3&l &b&lSMP'
+  - '&b&lOlongbell &3&lS&b&lMP'
+  - '&b&lOlongbell S&3&lM&b&lP'
+  - '&b&lOlongbell SM&3&lP'
+  - '&b&lOlongbell SMP'
+  - '&3&lOlongbell SMP'
+  - '&b&lOlongbell SMP'
+web:
+  change-interval: 200
+  texts:
+  - '&ewww.domain.com'
+  - '&ewww.domain.com'
+  - '&ewww.domain.com'
+  - '&ewww.domain.com'
+  - '&ewww.domain.com'
+  - '&ewww.domain.com'
+  - '&6w&eww.domain.com'
+  - '&ew&6w&ew.domain.com'
+  - '&eww&6w&e.domain.com'
+  - '&ewww&6.&edomain.com'
+  - '&ewww.&6d&eomain.com'
+  - '&ewww.d&6o&emain.com'
+  - '&ewww.do&6m&eain.com'
+  - '&ewww.dom&6a&ein.com'
+  - '&ewww.doma&6i&en.com'
+  - '&ewww.domai&6n&e.com'
+  - '&ewww.domain&6.&ecom'
+  - '&ewww.domain.&6c&eom'
+  - '&ewww.domain.c&6o&em'
+  - '&ewww.domain.co&6m'
+  - '&ewww.domain.com'
+  - '&ewww.domain.com'
+  - '&ewww.domain.com'
+  - '&ewww.domain.com'
+  - '&ewww.domain.com'
+  - '&ewww.domain.com'
+vote:
+  change-interval: 1000
+  texts:
+  - '&avote.domain.com'
+  - '&a&nvote.domain.com'
+  - '&5vote.domain.com'
+  - '&5&nvote.domain.com'
+Welcome:
+  change-interval: 400
+  texts:
+  - '&7&lC_'
+  - '&7&lCh_'
+  - '&7&lCha_'
+  - '&7&lChao_'
+  - '&7&lChào_'
+  - '&7&lChào _'
+  - '&7&lChào m_'
+  - '&7&lChào mừ_'
+  - '&7&lChào mừn_'
+  - '&7&lChào mừng_'
+  - '&7&lChào mừng_'
+  - '&7&lChào mừng_'
+  - '&7&lChào mừng_'
+  - '&7&lChào mừn_'
+  - '&7&lChào mừ_'
+  - '&7&lChào m_'
+  - '&7&lChào _'
+  - '&7&lChào_'
+  - '&7&lChao_'
+  - '&7&lCha_'
+  - '&7&lCh_'
+  - '&7&lC_'
+time:
+  change-interval: 3000
+  texts:
+    - '&7Time &b%time%'
+    - '&7Date &b%date%'
+barcolors:
+  change-interval: 1000
+  texts:
+    - RED
+    - BLUE
+    - GREEN
+    - YELLOW
+divider:
+  change-interval: 100
+  texts:
+  - '<#ff0055>&m                                                </#0055ff>'
+  - '<#ffaa00>&m                                                </#ff0055>'
+  - '<#55ff55>&m                                                </#ffaa00>'
+  - '<#00ffcc>&m                                                </#55ff55>'
+  - '<#0055ff>&m                                                </#00ffcc>'
+  - '<#ff0055>&m                                                </#0055ff>'
