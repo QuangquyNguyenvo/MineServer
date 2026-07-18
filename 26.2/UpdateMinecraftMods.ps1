@@ -22,6 +22,14 @@ $tlauncherPath = Join-Path $env:APPDATA ".minecraft\mods"
 
 $defaultPath = $legacyPath
 
+# -- Mod name helper to prevent deleting custom player mods --
+function Get-ModBaseName($name) {
+    if ($name -match '^([a-zA-Z_\-]+?)(?:-?\d|\sv\d|\bv\d)') {
+        return $Matches[1].TrimEnd('-').TrimEnd('_').ToLower()
+    }
+    return $name.ToLower()
+}
+
 # -- Console UI helpers (tu dong co gian theo chieu rong terminal) --
 
 # Lay chieu rong terminal hien tai (fallback 80 neu bi redirect)
@@ -74,25 +82,25 @@ function Run-ConsoleUpdate($targetDir) {
     Write-Host " [DIR] Thu muc dich: " -ForegroundColor Yellow -NoNewline
     Write-Host $targetDir -ForegroundColor White
     Write-Divider '-' DarkGray
-
+    
     try {
         [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
         $apiUrl = "https://api.github.com/repos/QuangquyNguyenvo/MineServer/contents/26.2/mods"
-
+        
         # Load list of files asynchronously using a Runspace to show a smooth loading spinner
         $iss = [system.management.automation.runspaces.initialsessionstate]::CreateDefault()
         $runspace = [runspacefactory]::CreateRunspace($iss)
         $runspace.Open()
-
+        
         $ps = [powershell]::Create().AddScript({
             param($url)
             $headers = @{ "User-Agent" = "PowerShell-Minecraft-Updater" }
             Invoke-RestMethod -Uri $url -Headers $headers -Method Get | Write-Output
         }).AddArgument($apiUrl)
-
+        
         $ps.Runspace = $runspace
         $asyncResult = $ps.BeginInvoke()
-
+        
         # ASCII loading spinner animation
         $spinner = @('|', '/', '-', '\')
         $i = 0
@@ -101,25 +109,25 @@ function Run-ConsoleUpdate($targetDir) {
             $i = ($i + 1) % $spinner.Length
             Start-Sleep -Milliseconds 100
         }
-
+        
         $repoFiles = $ps.EndInvoke($asyncResult)
-
+        
         # Safely unroll nested array if wrapped by pipeline output
         if ($repoFiles -and $repoFiles.Count -eq 1 -and $repoFiles[0] -is [System.Array]) {
             $repoFiles = $repoFiles[0]
         }
-
+        
         $ps.Dispose()
         $runspace.Close()
-
+        
         # Clear spinner line
         Write-Host -NoNewline "`r                                                                           `r"
-
+        
         if ($null -eq $repoFiles -or $repoFiles.Count -eq 0) {
             Write-Host " [LOI] Khong the doc danh sach mod tu GitHub hoac thu muc trong." -ForegroundColor Red
             return
         }
-
+        
         Write-Host " [OK] Ket noi GitHub thanh cong!" -ForegroundColor Green
         Write-Divider '-' DarkGray
 
@@ -131,20 +139,26 @@ function Run-ConsoleUpdate($targetDir) {
 
         # Scan local mods
         $localFiles = Get-ChildItem -Path $targetDir -File | Where-Object { $_.Extension -eq ".jar" -or $_.Name.EndsWith(".jar.disabled") }
-
+        
         # Build map of repo mods
         $repoMods = @{}
+        $repoBaseNames = @{}
         foreach ($file in $repoFiles) {
             if ($file.name.EndsWith(".jar") -or $file.name.EndsWith(".jar.disabled")) {
                 $repoMods[$file.name] = $file
+                $base = Get-ModBaseName $file.name
+                $repoBaseNames[$base] = $true
             }
         }
 
-        # Calculate deletion list
+        # Calculate deletion list (Only delete if it is an old version of a server mod)
         $toDelete = @()
         foreach ($lf in $localFiles) {
             if (!$repoMods.ContainsKey($lf.Name)) {
-                $toDelete += $lf
+                $localBase = Get-ModBaseName $lf.Name
+                if ($repoBaseNames.ContainsKey($localBase)) {
+                    $toDelete += $lf
+                }
             }
         }
 
@@ -154,7 +168,7 @@ function Run-ConsoleUpdate($targetDir) {
             $rmName = "$key"
             $rm = $repoMods[$rmName]
             $localFilePath = Join-Path $targetDir $rmName
-
+            
             if (!(Test-Path -LiteralPath $localFilePath)) {
                 $toDownload += $rm
             } else {
@@ -166,7 +180,7 @@ function Run-ConsoleUpdate($targetDir) {
         }
 
         Write-Host " [STATS] Tim thay $($repoMods.Count) mod tren Server | $($localFiles.Count) mod o may ban." -ForegroundColor Green
-        Write-Host " [SYNC] Can tai them: $($toDownload.Count) mod | Can xoa bo: $($toDelete.Count) mod." -ForegroundColor Yellow
+        Write-Host " [SYNC] Can tai them: $($toDownload.Count) mod | Can xoa bo (mod cu): $($toDelete.Count) mod." -ForegroundColor Yellow
         Write-Divider '-' DarkGray
 
         # Delete old mods
@@ -187,10 +201,10 @@ function Run-ConsoleUpdate($targetDir) {
             foreach ($rm in $toDownload) {
                 $count++
                 Write-Host "  -> Tai ($count/$($toDownload.Count)): $($rm.name) ($([Math]::Round($rm.size / 1MB, 2)) MB)..." -ForegroundColor White
-
+                
                 $destPath = Join-Path $targetDir $rm.name
                 $tempDestPath = $destPath + ".tmp"
-
+                
                 try {
                     $client.DownloadFile($rm.download_url, $tempDestPath)
                     if (Test-Path -LiteralPath $destPath) { Remove-Item -LiteralPath $destPath -Force }
@@ -206,9 +220,9 @@ function Run-ConsoleUpdate($targetDir) {
 
         # Reload local file list after sync for accurate mod counting
         $finalLocalFiles = Get-ChildItem -Path $targetDir -File | Where-Object { $_.Extension -eq ".jar" -or $_.Name.EndsWith(".jar.disabled") } | Sort-Object Name
-
+        
         Write-Section "DANH SACH MOD HIEN TAI TREN MAY BAN ($($finalLocalFiles.Count) mods)" Green
-
+        
         # Two-column list -- be rong cot tu tinh theo chieu rong terminal
         $w = Get-ConsoleWidth
         $colWidth = [Math]::Max(20, [int](($w - 9) / 2))   # "   - " + col1 + " - " + col2
@@ -218,15 +232,15 @@ function Run-ConsoleUpdate($targetDir) {
             if ($idx + 1 -lt $finalLocalFiles.Count) {
                 $file2 = $finalLocalFiles[$idx + 1].Name
             }
-
+            
             # Cat bot neu dai hon be rong cot
             $col1 = $file1
             if ($col1.Length -gt $colWidth) { $col1 = $col1.Substring(0, $colWidth - 3) + "..." }
             $col1 = $col1.PadRight($colWidth)
-
+            
             $col2 = $file2
             if ($col2.Length -gt $colWidth) { $col2 = $col2.Substring(0, $colWidth - 3) + "..." }
-
+            
             Write-Host "   - $col1 - $col2" -ForegroundColor DarkGray
         }
 
@@ -265,7 +279,7 @@ if ($guiSupported -and !$NoGui -and [System.Environment]::UserInteractive) {
             <Setter Property="Margin" Value="0,5,15,5"/>
         </Style>
     </Window.Resources>
-
+    
     <Grid Margin="25">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/> <!-- Title -->
@@ -311,10 +325,13 @@ if ($guiSupported -and !$NoGui -and [System.Environment]::UserInteractive) {
         <Grid Grid.Row="4" Margin="0,0,0,15">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="Auto"/>
-            </Grid.ColumnDefinitions>
-            <ProgressBar Name="progress" Grid.Column="0" Height="15" Background="#27272A" Foreground="#10B981" BorderThickness="0"/>
-            <TextBlock Name="txtProgressVal" Grid.Column="1" Text="0/0" VerticalAlignment="Center" Margin="10,0,0,0" FontWeight="Bold" Foreground="#10B981"/>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <ProgressBar Name="progress" Grid.Column="0" Height="15" Background="#27272A" Foreground="#10B981" BorderThickness="0"/>
+                <TextBlock Name="txtProgressVal" Grid.Column="1" Text="0/0" VerticalAlignment="Center" Margin="10,0,0,0" FontWeight="Bold" Foreground="#10B981"/>
+            </Grid.Row>
         </Grid>
 
         <!-- Action Buttons -->
@@ -377,6 +394,7 @@ if ($guiLoaded) {
         [System.Windows.Threading.Dispatcher]::CurrentDispatcher.Invoke([System.Action] {}, [System.Windows.Threading.DispatcherPriority]::Background)
     }
 
+    # Helper function to get UI responsive
     function Reset-UI {
         $btnStart.IsEnabled = $true
         $radLegacy.IsEnabled = $true
@@ -406,9 +424,9 @@ if ($guiLoaded) {
             [Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12
             $apiUrl = "https://api.github.com/repos/QuangquyNguyenvo/MineServer/contents/26.2/mods"
             $headers = @{ "User-Agent" = "PowerShell-Minecraft-Updater" }
-
+            
             $repoFiles = Invoke-RestMethod -Uri $apiUrl -Headers $headers -Method Get
-
+            
             if ($null -eq $repoFiles -or $repoFiles.Count -eq 0) {
                 $txtLog.AppendText("[LOI] Khong the doc danh sach mod tu GitHub hoac thu muc trong.`r`n")
                 $txtStatus.Text = "Loi ket noi GitHub API."
@@ -425,20 +443,26 @@ if ($guiLoaded) {
 
             # Scan local mods
             $localFiles = Get-ChildItem -Path $targetDir -File | Where-Object { $_.Extension -eq ".jar" -or $_.Name.EndsWith(".jar.disabled") }
-
+            
             # Build map of repo mods
             $repoMods = @{}
+            $repoBaseNames = @{}
             foreach ($file in $repoFiles) {
                 if ($file.name.EndsWith(".jar") -or $file.name.EndsWith(".jar.disabled")) {
                     $repoMods[$file.name] = $file
+                    $base = Get-ModBaseName $file.name
+                    $repoBaseNames[$base] = $true
                 }
             }
 
-            # Calculate deletion list
+            # Calculate deletion list (Only delete if it is an old version of a server mod)
             $toDelete = @()
             foreach ($lf in $localFiles) {
                 if (!$repoMods.ContainsKey($lf.Name)) {
-                    $toDelete += $lf
+                    $localBase = Get-ModBaseName $lf.Name
+                    if ($repoBaseNames.ContainsKey($localBase)) {
+                        $toDelete += $lf
+                    }
                 }
             }
 
@@ -448,7 +472,7 @@ if ($guiLoaded) {
                 $rmName = "$key"
                 $rm = $repoMods[$rmName]
                 $localFilePath = Join-Path $targetDir $rmName
-
+                
                 if (!(Test-Path -LiteralPath $localFilePath)) {
                     $toDownload += $rm
                 } else {
@@ -461,7 +485,7 @@ if ($guiLoaded) {
 
             $txtLog.AppendText("Tim thay: $($repoMods.Count) mod tren Repo, $($localFiles.Count) mod o may.`r`n")
             $txtLog.AppendText("Can tai them: $($toDownload.Count) mod.`r`n")
-            $txtLog.AppendText("Can xoa bo: $($toDelete.Count) mod.`r`n")
+            $txtLog.AppendText("Can xoa bo (mod cu): $($toDelete.Count) mod.`r`n")
             Update-UI
 
             # Delete old mods
@@ -480,10 +504,10 @@ if ($guiLoaded) {
                 $progress.Maximum = $toDownload.Count
                 $progress.Value = 0
                 $txtProgressVal.Text = "0/$($toDownload.Count)"
-
+                
                 $client = New-Object System.Net.WebClient
                 $count = 0
-
+                
                 foreach ($rm in $toDownload) {
                     $count++
                     $txtStatus.Text = "Dang tai: $($rm.name) ($count/$($toDownload.Count))"
@@ -491,10 +515,10 @@ if ($guiLoaded) {
                     $progress.Value = $count
                     $txtLog.AppendText("Tai ($count/$($toDownload.Count)): $($rm.name) ($([Math]::Round($rm.size / 1MB, 2)) MB)...`r`n")
                     Update-UI
-
+                    
                     $destPath = Join-Path $targetDir $rm.name
                     $tempDestPath = $destPath + ".tmp"
-
+                    
                     try {
                         $client.DownloadFile($rm.download_url, $tempDestPath)
                         if (Test-Path -LiteralPath $destPath) { Remove-Item -LiteralPath $destPath -Force }
