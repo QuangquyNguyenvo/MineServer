@@ -11,7 +11,7 @@
 	#Can the enchanting infuser repair items using levels in addition to enchanting.
 	#Default Value: TOOLS_AND_ARMOR
 	#Allowed Values: EVERYTHING, TOOLS_AND_ARMOR, NOTHING
-	allow_repairing = "NOTHING"
+	allow_repairing = "TOOLS_AND_ARMOR"
 	#Allow enchantments on an already enchanted item to be increased / removed.
 	#Default Value: ALL
 	#Allowed Values: UNENCHANTED, ALL, FULL_DURABILITY
@@ -35,7 +35,7 @@
 		#Default Value: 2.0
 		# Default: 2.0
 		# Range: 0.0 ~ 1.7976931348623157E308
-		repair_step_multiplier = 2.0
+		repair_step_multiplier = 3.0
 
 	[advanced_infuser.costs]
 		#Global scale for all enchantment prices. Represents the maximum total cost when the most expensive combination of enchantments for a given item is applied at once.
@@ -43,7 +43,7 @@
 		#Default Value: 30
 		# Default: 30
 		# Range: > 1
-		maximum_cost = 60
+		maximum_cost = 40
 		#When scaling costs, only account for vanilla enchantments. Otherwise enchanting costs will become ludicrously cheap with many modded enchantments present.
 		#Default Value: true
 		scale_costs_by_vanilla_only = true
