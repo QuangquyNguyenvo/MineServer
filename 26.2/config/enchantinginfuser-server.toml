@@ -1,21 +1,21 @@
 [advanced_infuser]
 	#Allow enchantments that can normally not be obtained from an enchanting table, but can be put on the item in an anvil (e.g. sharpness on an axe).
 	#Default Value: true
-	allow_anvil_enchantments = true
+	allow_anvil_enchantments = false
 	#Working an item in an infuser increases the prior work penalty stat used by anvils for that item, meaning future anvil repairs will become more expensive, possibly even too expensive.
 	#Default Value: false
-	increase_anvil_repair_cost = false
+	increase_anvil_repair_cost = true
 	#Allow books to be enchanted in an infuser.
 	#Default Value: true
 	allow_books = true
 	#Can the enchanting infuser repair items using levels in addition to enchanting.
 	#Default Value: TOOLS_AND_ARMOR
 	#Allowed Values: EVERYTHING, TOOLS_AND_ARMOR, NOTHING
-	allow_repairing = "TOOLS_AND_ARMOR"
+	allow_repairing = "NOTHING"
 	#Allow enchantments on an already enchanted item to be increased / removed.
 	#Default Value: ALL
 	#Allowed Values: UNENCHANTED, ALL, FULL_DURABILITY
-	allow_modifying_enchantments = "ALL"
+	allow_modifying_enchantments = "FULL_DURABILITY"
 	#How many bookshelves you need around the infuser to be able to apply maximum level enchantments.
 	#Filling in corners is important to reach higher values.
 	#Setting very high values may require modded bookshelves that provide more than one enchanting power per block (such as Apotheosis' bookshelves).
@@ -43,7 +43,7 @@
 		#Default Value: 30
 		# Default: 30
 		# Range: > 1
-		maximum_cost = 30
+		maximum_cost = 60
 		#When scaling costs, only account for vanilla enchantments. Otherwise enchanting costs will become ludicrously cheap with many modded enchantments present.
 		#Default Value: true
 		scale_costs_by_vanilla_only = true
