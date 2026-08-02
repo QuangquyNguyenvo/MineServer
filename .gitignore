@@ -1,0 +1,37 @@
+# Minecraft Server Runtime & Temporary files
+*.rar
+*.zip
+logs/
+cache/
+libraries/
+versions/
+debug/
+.console_history
+.fabric/
+.mixin.out/
+scratch/
+
+# Runtime data files
+banned-ips.json
+banned-players.json
+ops.json
+usercache.json
+whitelist.json
+eula.txt
+fabric-server-*.jar
+paper-*.jar
+server.jar
+world_gen_settings.dat
+
+# Embedded extra repos
+26.2/mods/VBC/
+
+# World save data (except datapacks and scripts)
+26.2/world/data/
+26.2/world/dimensions/
+26.2/world/entities/
+26.2/world/poi/
+26.2/world/region/
+26.2/world/players/
+26.2/world/level.dat*
+26.2/world/session.lock
