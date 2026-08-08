@@ -23,15 +23,12 @@ paper-*.jar
 server.jar
 world_gen_settings.dat
 
-# Embedded extra repos
-26.2/mods/VBC/
-
 # World save data (except datapacks and scripts)
-26.2/world/data/
-26.2/world/dimensions/
-26.2/world/entities/
-26.2/world/poi/
-26.2/world/region/
-26.2/world/players/
-26.2/world/level.dat*
-26.2/world/session.lock
+world/data/
+world/dimensions/
+world/entities/
+world/poi/
+world/region/
+world/players/
+world/level.dat*
+world/session.lock
