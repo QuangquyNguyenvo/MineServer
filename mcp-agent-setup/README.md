@@ -13,17 +13,16 @@ http://ancient.pikamc.vn:25240/mcp
 ## Yêu cầu
 
 - Đã cài [Claude Code](https://claude.com/claude-code)
-- Có token xác thực — **xin trực tiếp người quản trị server qua chat riêng, không đăng công khai ở
-  đây hay bất kỳ đâu khác**. Token không được ghi trong repo này.
+- Repo này là **private** — token bên dưới chỉ nên còn nằm trong repo private này. Nếu ai đó fork/clone
+  ra ngoài hoặc repo bị chuyển sang public, coi như token đã lộ và cần đổi ngay.
 
 ## Cài đặt
 
 ```bash
-claude mcp add --transport http pikamc-agent http://ancient.pikamc.vn:25240/mcp --scope local -H "Authorization: Bearer <TOKEN>"
+claude mcp add --transport http pikamc-agent http://ancient.pikamc.vn:25240/mcp --scope local -H "Authorization: Bearer toiyeufembi"
 ```
 
-Thay `<TOKEN>` bằng token bạn được cấp riêng. Dùng `--scope local` để MCP chỉ hiện trong project bạn
-đang mở, không áp dụng toàn máy.
+Dùng `--scope local` để MCP chỉ hiện trong project bạn đang mở, không áp dụng toàn máy.
 
 Sau khi thêm, mở **session Claude Code mới** (MCP server chỉ được nạp lúc khởi động session) rồi thử
 gọi tool `ping` để xác nhận kết nối thành công.
