@@ -1,4 +1,4 @@
-[CmdletBinding()]
+﻿[CmdletBinding()]
 param(
     [switch]$NoGui
 )
@@ -76,10 +76,76 @@ function Write-Section {
     Write-Host ($prefix + ('-' * $tail)) -ForegroundColor $Color
 }
 
+# Logo ASCII "OLONGBELL" nhieu mau, tu dong bo qua neu terminal qua hep de khong bi vo dong
+function Show-Logo {
+    $logo = @(
+        ' ██████╗ ██╗      ██████╗ ███╗   ██╗ ██████╗ ██████╗ ███████╗██╗     ██╗     ',
+        '██╔═══██╗██║     ██╔═══██╗████╗  ██║██╔════╝ ██╔══██╗██╔════╝██║     ██║     ',
+        '██║   ██║██║     ██║   ██║██╔██╗ ██║██║  ███╗██████╔╝█████╗  ██║     ██║     ',
+        '██║   ██║██║     ██║   ██║██║╚██╗██║██║   ██║██╔══██╗██╔══╝  ██║     ██║     ',
+        '╚██████╔╝███████╗╚██████╔╝██║ ╚████║╚██████╔╝██████╔╝███████╗███████╗███████╗',
+        ' ╚═════╝ ╚══════╝ ╚═════╝ ╚═╝  ╚═══╝ ╚═════╝ ╚═════╝ ╚══════╝╚══════╝╚══════╝'
+    )
+    $colors = @('Blue', 'Cyan', 'Green', 'Yellow', 'Red', 'Magenta')
+    $maxLen = ($logo | Measure-Object -Property Length -Maximum).Maximum
+
+    Write-Host ""
+    if ((Get-ConsoleWidth) -lt $maxLen) {
+        Write-Centered "OLONGBELL" Cyan
+    } else {
+        for ($i = 0; $i -lt $logo.Count; $i++) {
+            Write-Centered $logo[$i] $colors[$i % $colors.Count]
+        }
+    }
+    Write-Centered "May Chu OlongBell" DarkGray
+    Write-Host ""
+}
+
+# Tai file co retry (mac dinh 3 lan) + xac minh dung dung luong sau khi tai, tranh file loi/dut giua chung
+# $Log la scriptblock nhan (message, mau) de ghi log ra console hoac GUI tuy noi goi
+function Invoke-ModDownloadWithRetry {
+    param(
+        [string]$Url,
+        [string]$TargetDir,
+        [string]$FileName,
+        [long]$ExpectedSize,
+        [System.Net.WebClient]$Client,
+        [scriptblock]$Log,
+        [int]$MaxRetries = 3
+    )
+
+    $destPath = Join-Path $TargetDir $FileName
+    $tempPath = "$destPath.tmp"
+
+    for ($attempt = 1; $attempt -le $MaxRetries; $attempt++) {
+        try {
+            if ($attempt -gt 1) {
+                & $Log "     [RETRY] Thu lai lan $attempt/$MaxRetries..." 'DarkYellow'
+                Start-Sleep -Seconds ([Math]::Min(2 * ($attempt - 1), 5))
+            }
+            $Client.DownloadFile($Url, $tempPath)
+
+            $actualSize = (Get-Item -LiteralPath $tempPath).Length
+            if ($ExpectedSize -gt 0 -and $actualSize -ne $ExpectedSize) {
+                throw "Kich thuoc file khong khop (tai duoc $actualSize byte, can $ExpectedSize byte) - co the do loi mang giua chung."
+            }
+
+            if (Test-Path -LiteralPath $destPath) { Remove-Item -LiteralPath $destPath -Force }
+            Rename-Item -LiteralPath $tempPath -NewName $FileName
+            return @{ Success = $true; Bytes = $actualSize }
+        } catch {
+            & $Log "     [LOI] Lan $attempt That bai: $_" 'Red'
+            if (Test-Path -LiteralPath $tempPath) { Remove-Item -LiteralPath $tempPath -Force -ErrorAction SilentlyContinue }
+        }
+    }
+    return @{ Success = $false; Bytes = 0 }
+}
+
 # Function to run update in console mode (Fallback)
 function Run-ConsoleUpdate($targetDir) {
-    Write-Banner "MINESERVER v26.2 MOD UPDATER" "Cong cu dong bo & cap nhat Mod tu dong (Console)" Cyan
-    
+    Write-Banner "MOD UPDATER v26.2" "Cong cu dong bo & cap nhat Mod tu dong (Console)" Cyan
+    $swTotal = [System.Diagnostics.Stopwatch]::StartNew()
+
     if ($null -eq $targetDir -or $targetDir -eq "") {
         # Prompt for Launcher choice in Console mode
         Write-Host " Chon launcher game cua ban:" -ForegroundColor Yellow
@@ -225,6 +291,8 @@ function Run-ConsoleUpdate($targetDir) {
         }
 
         # Download missing/modified mods
+        $failedDownloads = @()
+        $totalBytesDownloaded = 0
         if ($toDownload.Count -gt 0) {
             Write-Section "TAI CAC MOD MOI CAP NHAT" Green
             $client = New-Object System.Net.WebClient
@@ -232,18 +300,14 @@ function Run-ConsoleUpdate($targetDir) {
             foreach ($rm in $toDownload) {
                 $count++
                 Write-Host "  -> Tai ($count/$($toDownload.Count)): $($rm.name) ($([Math]::Round($rm.size / 1MB, 2)) MB)..." -ForegroundColor White
-                
-                $destPath = Join-Path $targetDir $rm.name
-                $tempDestPath = $destPath + ".tmp"
-                
-                try {
-                    $client.DownloadFile($rm.download_url, $tempDestPath)
-                    if (Test-Path -LiteralPath $destPath) { Remove-Item -LiteralPath $destPath -Force }
-                    Rename-Item -LiteralPath $tempDestPath -NewName $rm.name
+
+                $result = Invoke-ModDownloadWithRetry -Url $rm.download_url -TargetDir $targetDir -FileName $rm.name -ExpectedSize $rm.size -Client $client -Log { param($msg, $color) Write-Host $msg -ForegroundColor $color }
+                if ($result.Success) {
+                    $totalBytesDownloaded += $result.Bytes
                     Write-Host "     [OK] Da tai xong!" -ForegroundColor Green
-                } catch {
-                    Write-Host "     [X] That bai khi tai: $($rm.name)" -ForegroundColor Red
-                    if (Test-Path -LiteralPath $tempDestPath) { Remove-Item -LiteralPath $tempDestPath -Force }
+                } else {
+                    Write-Host "     [X] That bai han sau nhieu lan thu: $($rm.name)" -ForegroundColor Red
+                    $failedDownloads += $rm.name
                 }
             }
             Write-Divider '-' DarkGray
@@ -275,9 +339,24 @@ function Run-ConsoleUpdate($targetDir) {
             Write-Host "   - $col1 - $col2" -ForegroundColor DarkGray
         }
 
+        $swTotal.Stop()
+        Write-Host ""
+        Write-Section "TONG KET" Cyan
+        Write-Host "   Da tai       : $([Math]::Round($totalBytesDownloaded / 1MB, 2)) MB" -ForegroundColor White
+        Write-Host "   Thoi gian    : $([Math]::Round($swTotal.Elapsed.TotalSeconds, 1))s" -ForegroundColor White
+        if ($failedDownloads.Count -gt 0) {
+            Write-Host "   That bai     : $($failedDownloads.Count) mod -> $($failedDownloads -join ', ')" -ForegroundColor Red
+            Write-Host "   -> Chay lai script de thu tai lai cac mod tren." -ForegroundColor Yellow
+        }
+        Write-Divider '-' DarkGray
+
         Write-Host ""
         Write-Divider '=' Green
-        Write-Centered "HOAN THANH DONG BO HOA MODS" Green
+        if ($failedDownloads.Count -gt 0) {
+            Write-Centered "DONG BO HOAN TAT (CO $($failedDownloads.Count) MOD LOI)" Yellow
+        } else {
+            Write-Centered "HOAN THANH DONG BO HOA MODS" Green
+        }
         Write-Centered "Chuc ban choi game vui ve!" Green
         Write-Divider '=' Green
 
@@ -286,6 +365,9 @@ function Run-ConsoleUpdate($targetDir) {
     }
 }
 
+# In logo ngay khi script bat dau chay, du sau do mo GUI hay fallback console
+Show-Logo
+
 # Determine if GUI should run
 $guiLoaded = $false
 if ($guiSupported -and !$NoGui -and [System.Environment]::UserInteractive) {
@@ -293,7 +375,7 @@ if ($guiSupported -and !$NoGui -and [System.Environment]::UserInteractive) {
         [xml]$xaml = @'
 <Window xmlns="http://schemas.microsoft.com/winfx/2000/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2000/xaml"
-        Title="MineServer v26.2 Mod Updater" Height="500" Width="650"
+        Title="OlongBell - Mod Updater" Height="500" Width="650"
         Background="#18181B" Foreground="#F4F4F5"
         WindowStartupLocation="CenterScreen" ResizeMode="NoResize" FontFamily="Segoe UI">
     <Window.Resources>
@@ -323,8 +405,13 @@ if ($guiSupported -and !$NoGui -and [System.Environment]::UserInteractive) {
 
         <!-- Title -->
         <StackPanel Grid.Row="0" Margin="0,0,0,15">
-            <TextBlock Text="MINESERVER v26.2 MOD UPDATER" FontSize="20" FontWeight="Bold" Foreground="#3B82F6"/>
-            <TextBlock Text="Cong cu tu dong dong bo va cap nhat Mod 1-Click" FontSize="12" Foreground="#A1A1AA" Margin="0,2,0,0"/>
+            <StackPanel Orientation="Horizontal">
+                <Border Background="#3B82F6" Width="4" Margin="0,0,10,0"/>
+                <StackPanel>
+                    <TextBlock Text="OLONGBELL" FontSize="22" FontWeight="Bold" Foreground="#3B82F6"/>
+                    <TextBlock Text="MOD UPDATER v26.2 - Dong bo &amp; cap nhat mod 1-Click" FontSize="12" Foreground="#A1A1AA" Margin="0,2,0,0"/>
+                </StackPanel>
+            </StackPanel>
         </StackPanel>
 
         <!-- Launcher Option -->
@@ -393,6 +480,17 @@ if ($guiLoaded) {
 
     $txtPath.Text = $legacyPath
 
+    $asciiLogo = @'
+ ██████╗ ██╗      ██████╗ ███╗   ██╗ ██████╗ ██████╗ ███████╗██╗     ██╗
+██╔═══██╗██║     ██╔═══██╗████╗  ██║██╔════╝ ██╔══██╗██╔════╝██║     ██║
+██║   ██║██║     ██║   ██║██╔██╗ ██║██║  ███╗██████╔╝█████╗  ██║     ██║
+██║   ██║██║     ██║   ██║██║╚██╗██║██║   ██║██╔══██╗██╔══╝  ██║     ██║
+╚██████╔╝███████╗╚██████╔╝██║ ╚████║╚██████╔╝██████╔╝███████╗███████╗███████╗
+ ╚═════╝ ╚══════╝ ╚═════╝ ╚═╝  ╚═══╝ ╚═════╝ ╚═════╝ ╚══════╝╚══════╝╚══════╝
+'@
+    $divider = "=" * 78
+    $txtLog.Text = "$asciiLogo`r`n$divider`r`nSan sang cap nhat mod... Click 'Kiem tra & Cap nhat' de bat dau.`r`n$divider`r`n"
+
     # Radio button actions
     $radLegacy.add_Checked({
         $txtPath.Text = $legacyPath
@@ -450,6 +548,7 @@ if ($guiLoaded) {
         $txtLog.Text = "--- BAT DAU CAP NHAT ---`r`n"
         $txtLog.AppendText("Dang ket noi toi GitHub API...`r`n")
         Update-UI
+        $swTotal = [System.Diagnostics.Stopwatch]::StartNew()
 
         try {
             [Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12
@@ -530,15 +629,17 @@ if ($guiLoaded) {
             }
 
             # Download missing/modified mods
+            $failedDownloads = @()
+            $totalBytesDownloaded = 0
             if ($toDownload.Count -gt 0) {
                 $txtLog.AppendText("--- DANG TAI CAC MOD MOI ---`r`n")
                 $progress.Maximum = $toDownload.Count
                 $progress.Value = 0
                 $txtProgressVal.Text = "0/$($toDownload.Count)"
-                
+
                 $client = New-Object System.Net.WebClient
                 $count = 0
-                
+
                 foreach ($rm in $toDownload) {
                     $count++
                     $txtStatus.Text = "Dang tai: $($rm.name) ($count/$($toDownload.Count))"
@@ -546,18 +647,14 @@ if ($guiLoaded) {
                     $progress.Value = $count
                     $txtLog.AppendText("Tai ($count/$($toDownload.Count)): $($rm.name) ($([Math]::Round($rm.size / 1MB, 2)) MB)...`r`n")
                     Update-UI
-                    
-                    $destPath = Join-Path $targetDir $rm.name
-                    $tempDestPath = $destPath + ".tmp"
-                    
-                    try {
-                        $client.DownloadFile($rm.download_url, $tempDestPath)
-                        if (Test-Path -LiteralPath $destPath) { Remove-Item -LiteralPath $destPath -Force }
-                        Rename-Item -LiteralPath $tempDestPath -NewName $rm.name
+
+                    $result = Invoke-ModDownloadWithRetry -Url $rm.download_url -TargetDir $targetDir -FileName $rm.name -ExpectedSize $rm.size -Client $client -Log { param($msg, $color) $txtLog.AppendText("$msg`r`n"); Update-UI }
+                    if ($result.Success) {
+                        $totalBytesDownloaded += $result.Bytes
                         $txtLog.AppendText("-> Hoan thanh!`r`n")
-                    } catch {
-                        $txtLog.AppendText("[LOI] That bai khi tai: $($rm.name). Chi tiet: $_ `r`n")
-                        if (Test-Path -LiteralPath $tempDestPath) { Remove-Item -LiteralPath $tempDestPath -Force }
+                    } else {
+                        $txtLog.AppendText("[LOI] That bai han sau nhieu lan thu: $($rm.name)`r`n")
+                        $failedDownloads += $rm.name
                     }
                     Update-UI
                 }
@@ -567,10 +664,19 @@ if ($guiLoaded) {
                 $txtProgressVal.Text = "Xong"
             }
 
-            $txtLog.AppendText("`r`n--- HOAN THANH CAP NHAT ---`r`n")
-            $txtLog.AppendText("Dong bo hoa thu muc mod thanh cong!`r`n")
-            $txtStatus.Text = "Cap nhat thanh cong!"
-            [System.Windows.MessageBox]::Show("Dong bo hoa mods Minecraft thanh cong!", "Thong bao", [System.Windows.MessageBoxButton]::OK, [System.Windows.MessageBoxImage]::Information)
+            $swTotal.Stop()
+            $txtLog.AppendText("`r`n--- TONG KET ---`r`n")
+            $txtLog.AppendText("Da tai: $([Math]::Round($totalBytesDownloaded / 1MB, 2)) MB trong $([Math]::Round($swTotal.Elapsed.TotalSeconds, 1))s`r`n")
+            if ($failedDownloads.Count -gt 0) {
+                $txtLog.AppendText("That bai: $($failedDownloads.Count) mod -> $($failedDownloads -join ', ')`r`n")
+                $txtLog.AppendText("-> Nhan 'Kiem tra & Cap nhat' lan nua de thu tai lai.`r`n")
+                $txtStatus.Text = "Hoan tat, con $($failedDownloads.Count) mod loi."
+                [System.Windows.MessageBox]::Show("Dong bo xong nhung con $($failedDownloads.Count) mod tai loi. Xem log de biet chi tiet, roi thu lai.", "Hoan tat co loi", [System.Windows.MessageBoxButton]::OK, [System.Windows.MessageBoxImage]::Warning)
+            } else {
+                $txtLog.AppendText("Dong bo hoa thu muc mod thanh cong!`r`n")
+                $txtStatus.Text = "Cap nhat thanh cong!"
+                [System.Windows.MessageBox]::Show("Dong bo hoa mods Minecraft thanh cong!", "Thong bao", [System.Windows.MessageBoxButton]::OK, [System.Windows.MessageBoxImage]::Information)
+            }
 
         } catch {
             $txtLog.AppendText("[LOI NGHIEM TRONG] $_ `r`n")
