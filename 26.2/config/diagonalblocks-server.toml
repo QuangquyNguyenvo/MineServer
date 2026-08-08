@@ -1,3 +1,0 @@
-#Swap between diagonal and non-diagonal block types via sneak+right-clicking with an empty hand.
-#Default Value: true
-swap_blocks_by_interacting = true
