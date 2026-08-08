@@ -1,4 +1,4 @@
-﻿[CmdletBinding()]
+[CmdletBinding()]
 param(
     [switch]$NoGui
 )
@@ -76,16 +76,33 @@ function Write-Section {
     Write-Host ($prefix + ('-' * $tail)) -ForegroundColor $Color
 }
 
+# Logo "OLONGBELL" ma hoa bang ky tu ASCII (B=block, g/c/v/d/k/h=cac net box-drawing, .=space)
+# roi giai ma bang [char] code-point luc chay, thay vi go thang ky tu Unicode vao source.
+# Ly do: file .ps1 chua ky tu Unicode phai co BOM thi Windows PowerShell 5.1 (-File) moi doc
+# dung, nhung khi chay qua "irm URL | iex" thi BOM lai lam Invoke-Expression bao loi parse
+# (BOM khong tu bi Invoke-RestMethod strip khoi chuoi). Giu source thuan ASCII de dung duoc
+# ca 2 cach chay ma khong can quan tam BOM.
+function Get-LogoLines {
+    $map = @{
+        'B' = [char]0x2588; 'g' = [char]0x2557; 'c' = [char]0x2554; 'v' = [char]0x2551
+        'd' = [char]0x255D; 'k' = [char]0x255A; 'h' = [char]0x2550; '.' = ' '
+    }
+    $encoded = @(
+        '.BBBBBBg.BBg......BBBBBBg.BBBg...BBg.BBBBBBg.BBBBBBg.BBBBBBBgBBg.....BBg.....',
+        'BBchhhBBgBBv.....BBchhhBBgBBBBg..BBvBBchhhhd.BBchhBBgBBchhhhdBBv.....BBv.....',
+        'BBv...BBvBBv.....BBv...BBvBBcBBg.BBvBBv..BBBgBBBBBBcdBBBBBg..BBv.....BBv.....',
+        'BBv...BBvBBv.....BBv...BBvBBvkBBgBBvBBv...BBvBBchhBBgBBchhd..BBv.....BBv.....',
+        'kBBBBBBcdBBBBBBBgkBBBBBBcdBBv.kBBBBvkBBBBBBcdBBBBBBcdBBBBBBBgBBBBBBBgBBBBBBBg',
+        '.khhhhhd.khhhhhhd.khhhhhd.khd..khhhd.khhhhhd.khhhhhd.khhhhhhdkhhhhhhdkhhhhhhd'
+    )
+    return $encoded | ForEach-Object {
+        -join ($_.ToCharArray() | ForEach-Object { $map[[string]$_] })
+    }
+}
+
 # Logo ASCII "OLONGBELL" nhieu mau, tu dong bo qua neu terminal qua hep de khong bi vo dong
 function Show-Logo {
-    $logo = @(
-        ' ██████╗ ██╗      ██████╗ ███╗   ██╗ ██████╗ ██████╗ ███████╗██╗     ██╗     ',
-        '██╔═══██╗██║     ██╔═══██╗████╗  ██║██╔════╝ ██╔══██╗██╔════╝██║     ██║     ',
-        '██║   ██║██║     ██║   ██║██╔██╗ ██║██║  ███╗██████╔╝█████╗  ██║     ██║     ',
-        '██║   ██║██║     ██║   ██║██║╚██╗██║██║   ██║██╔══██╗██╔══╝  ██║     ██║     ',
-        '╚██████╔╝███████╗╚██████╔╝██║ ╚████║╚██████╔╝██████╔╝███████╗███████╗███████╗',
-        ' ╚═════╝ ╚══════╝ ╚═════╝ ╚═╝  ╚═══╝ ╚═════╝ ╚═════╝ ╚══════╝╚══════╝╚══════╝'
-    )
+    $logo = Get-LogoLines
     $colors = @('Blue', 'Cyan', 'Green', 'Yellow', 'Red', 'Magenta')
     $maxLen = ($logo | Measure-Object -Property Length -Maximum).Maximum
 
@@ -480,14 +497,7 @@ if ($guiLoaded) {
 
     $txtPath.Text = $legacyPath
 
-    $asciiLogo = @'
- ██████╗ ██╗      ██████╗ ███╗   ██╗ ██████╗ ██████╗ ███████╗██╗     ██╗
-██╔═══██╗██║     ██╔═══██╗████╗  ██║██╔════╝ ██╔══██╗██╔════╝██║     ██║
-██║   ██║██║     ██║   ██║██╔██╗ ██║██║  ███╗██████╔╝█████╗  ██║     ██║
-██║   ██║██║     ██║   ██║██║╚██╗██║██║   ██║██╔══██╗██╔══╝  ██║     ██║
-╚██████╔╝███████╗╚██████╔╝██║ ╚████║╚██████╔╝██████╔╝███████╗███████╗███████╗
- ╚═════╝ ╚══════╝ ╚═════╝ ╚═╝  ╚═══╝ ╚═════╝ ╚═════╝ ╚══════╝╚══════╝╚══════╝
-'@
+    $asciiLogo = (Get-LogoLines) -join "`r`n"
     $divider = "=" * 78
     $txtLog.Text = "$asciiLogo`r`n$divider`r`nSan sang cap nhat mod... Click 'Kiem tra & Cap nhat' de bat dau.`r`n$divider`r`n"
 
