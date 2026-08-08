@@ -1,43 +1,55 @@
-# PikaMC MCP Agent — setup
+# ⚡ PikaMC MCP Agent Setup
 
-Server này chạy sẵn 1 MCP (Model Context Protocol) agent qua HTTP, cho phép các tool hỗ trợ MCP
-(Claude Code, Antigravity, ...) kết nối và thao tác trực tiếp với VPS (đọc trạng thái, sau này mở
-rộng thêm quản lý file/console tuỳ theo mức độ tin cậy được cấp).
-
-## Endpoint
-
-```
-http://ancient.pikamc.vn:25240/mcp
-```
-
-## Yêu cầu chung
-
-- Repo này là **private** — token bên dưới chỉ nên còn nằm trong repo private này. Nếu ai đó fork/clone
-  ra ngoài hoặc repo bị chuyển sang public, coi như token đã lộ và cần đổi ngay.
+<p align="center">
+  <img src="https://img.shields.io/badge/Protocol-Model%20Context%20Protocol-8A2BE2?style=for-the-badge&logo=anthropic" alt="MCP Protocol">
+  <img src="https://img.shields.io/badge/Client-Claude%20Code%20%7C%20Antigravity-blue?style=for-the-badge" alt="Clients">
+  <img src="https://img.shields.io/badge/Security-Private%20Bearer%20Auth-red?style=for-the-badge" alt="Security">
+</p>
 
 ---
 
-## Cài đặt cho Claude Code
+## 📌 Tổng Quan (Overview)
 
-- Đã cài [Claude Code](https://claude.com/claude-code)
+Server này chạy dịch vụ **MCP (Model Context Protocol) Agent** qua HTTP cho phép các AI Assistant & Dev tools (chẳng hạn như **Claude Code**, **Antigravity**) kết nối trực tiếp đến VPS **PikaMC** để truy vấn thông tin hệ thống, giám sát trạng thái và mở rộng điều khiển tự động.
+
+### 🌐 Endpoint Dịch Vụ
+
+| Thông số | Giá trị |
+| :--- | :--- |
+| **Endpoint URL** | `http://ancient.pikamc.vn:25240/mcp` |
+| **Transport Mode** | HTTP (`StreamHTTP` / `HTTP SSE`) |
+| **Authentication** | Bearer Token (`Authorization: Bearer <TOKEN>`) |
+
+> [!IMPORTANT]
+> **Yêu cầu bảo mật Repo**: Repo này chứa thông tin kết nối nội bộ. Nếu repo bị fork/clone ra bên ngoài hoặc chuyển sang Public, token truy cập phải được thu hồi và đổi ngay lập tức.
+
+---
+
+## 🛠️ Hướng Dẫn Cài Đặt (Quick Setup)
+
+### 1️⃣ Cài đặt cho Claude Code
+
+Yêu cầu: Đã cài đặt CLI [`Claude Code`](https://claude.com/claude-code).
+
+Chạy lệnh bên dưới trong terminal tại thư mục dự án của bạn:
 
 ```bash
-claude mcp add --transport http pikamc-agent http://ancient.pikamc.vn:25240/mcp --scope local -H "Authorization: Bearer toiyeufembi"
+claude mcp add --transport http pikamc-agent http://ancient.pikamc.vn:25240/mcp \
+  --scope local \
+  -H "Authorization: Bearer toiyeufembi"
 ```
 
-Dùng `--scope local` để MCP chỉ hiện trong project bạn đang mở, không áp dụng toàn máy.
-
-Sau khi thêm, mở **session Claude Code mới** (MCP server chỉ được nạp lúc khởi động session) rồi thử
-gọi tool `ping` để xác nhận kết nối thành công.
+> [!TIP]
+> - Cờ `--scope local` đảm bảo MCP server chỉ kích hoạt riêng cho project hiện tại, tránh ảnh hưởng đến các môi trường làm việc khác.
+> - Sau khi thêm thành công, hãy **khởi động session mới** của Claude Code và gõ lệnh `ping` (hoặc kiểm tra bằng `claude mcp list`) để xác nhận kết nối.
 
 ---
 
-## Cài đặt cho Antigravity
+### 2️⃣ Cài đặt cho Antigravity
 
-- Đã cài [Antigravity](https://antigravity.google/)
+Yêu cầu: Đã cài đặt [`Antigravity`](https://antigravity.google/).
 
-Mở phần cấu hình MCP servers của Antigravity (Settings → MCP Servers, hoặc file cấu hình MCP tương ứng)
-và thêm entry sau:
+Mở mục cấu hình MCP Servers trong Antigravity (**Settings** → **MCP Servers**, hoặc chỉnh sửa trực tiếp file cấu hình MCP) và chèn khối cấu hình sau:
 
 ```json
 {
@@ -52,40 +64,37 @@ và thêm entry sau:
 }
 ```
 
-Lưu lại rồi khởi động lại session/reload MCP servers trong Antigravity, sau đó thử gọi tool `ping`
-để xác nhận kết nối thành công.
+> [!NOTE]
+> Sau khi lưu file cấu hình, thực hiện **Reload MCP Servers** hoặc khởi động lại Antigravity session. Gọi thử tool `ping` để xác nhận agent phản hồi bình thường.
 
 ---
 
-## Setup tự động qua startup command (.sh)
+## 🚀 Setup Tự Động Qua Startup Script (`setup.sh`)
 
-Nếu môi trường dev/cloud sandbox của bạn có ô cấu hình **startup command** (chạy mỗi lần khởi động
-môi trường, ví dụ: Claude Code cloud sandbox, devcontainer `postCreateCommand`, GitHub Codespaces...),
-dùng script có sẵn để MCP tự đăng ký mà không cần add tay:
+Đối với các môi trường Sandbox, Cloud IDE, DevContainer, hoặc GitHub Codespaces có hỗ trợ chạy **Startup Command** (`postCreateCommand`), bạn có thể dùng script tự động để đăng ký MCP không cần gõ thủ công.
 
-```
-mcp-agent-setup/setup.sh
-```
+### 📋 Tính Năng Script:
+- ✅ **Kiểm tra môi trường**: Tự động phát hiện CLI `claude`, nếu không có sẽ bỏ qua an toàn mà không làm hỏng tiến trình startup.
+- 🔁 **Tính Idempotent**: Kiểm tra `pikamc-agent` đã tồn tại chưa trước khi thêm, tránh lặp lại hoặc ghi đè lỗi.
+- 🔐 **Đăng ký tự động**: Thêm cấu hình MCP với scope local và token Bearer.
 
-Script này:
+### 🖥️ Cách Sử Dụng:
 
-- Kiểm tra lệnh `claude` có tồn tại không, không có thì bỏ qua (không làm fail startup).
-- Kiểm tra MCP `pikamc-agent` đã được add chưa (idempotent — chạy lại nhiều lần không lỗi).
-- Nếu chưa có thì chạy `claude mcp add` với endpoint + token y hệt phần "Cài đặt cho Claude Code" ở trên.
-
-Set làm startup command:
+Chỉ cần thêm lệnh sau vào **Startup Command** của môi trường:
 
 ```bash
 bash mcp-agent-setup/setup.sh
 ```
 
-> Script chỉ đăng ký cho Claude Code (dùng lệnh CLI `claude mcp add`). Antigravity cấu hình qua file
-> JSON, không có bước CLI tương ứng — làm theo mục "Cài đặt cho Antigravity" ở trên.
+> [!WARNING]
+> Script `setup.sh` hiện tại tự động đăng ký cho **Claude Code CLI**. Đối với **Antigravity**, do sử dụng cấu hình định dạng JSON độc lập, bạn vẫn cần làm theo hướng dẫn thủ công ở trên.
 
 ---
 
-## Lưu ý bảo mật
+## 🔒 Quy Tắc Bảo Mật (Security Guidelines)
 
-- Không commit token vào bất kỳ repo/file nào (kể cả repo private).
-- Không chia sẻ token qua kênh công khai (Discord public channel, forum, v.v.) — chỉ chat riêng 1-1.
-- Nếu nghi ngờ token bị lộ, báo ngay để đổi token mới.
+> [!CAUTION]
+> 1. **Tuyệt đối không push token công khai**: Không commit token vào bất kỳ repository hay forum/channel công khai nào.
+> 2. **Phạm vi trao đổi**: Chỉ chia sẻ thông tin token qua kênh liên lạc nội bộ 1-1 khi thực sự cần thiết.
+> 3. **Xử lý sự cố**: Khi phát hiện hoặc nghi ngờ token bị rò rỉ, phải thông báo cho quản trị viên ngay lập tức để revoke & cấp token mới.
+
