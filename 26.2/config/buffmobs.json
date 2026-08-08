@@ -1,0 +1,203 @@
+{
+  "enabled": true,
+  "visualEffects": true,
+  "dayScaling": {
+    "enabled": false,
+    "interval": 7,
+    "multiplier": 0.1,
+    "showNotifications": true,
+    "notificationMode": "EVERY_DAY",
+    "maxMultiplier": 5.0
+  },
+  "attributes": {
+    "healthMultiplier": 1.5,
+    "damageMultiplier": 1.5,
+    "speedMultiplier": 1.0,
+    "attackSpeedMultiplier": 1.0,
+    "armorAddition": 5.0,
+    "armorToughnessAddition": 0.0
+  },
+  "effects": {
+    "duration": -1,
+    "strengthAmplifier": 0,
+    "speedAmplifier": 0,
+    "resistanceAmplifier": 0,
+    "regenerationAmplifier": 0,
+    "absorptionAmplifier": 0
+  },
+  "harmfulEffects": {
+    "enabled": true,
+    "chance": 0.15,
+    "poisonDuration": 5,
+    "slownessDuration": 3,
+    "witherDuration": 3
+  },
+  "dimensionScaling": {
+    "slot1": {
+      "dimensionName": "minecraft:the_nether",
+      "healthMultiplier": 200,
+      "damageMultiplier": 130,
+      "speedMultiplier": 100,
+      "attackSpeedMultiplier": 100,
+      "armorAddition": 0,
+      "armorToughnessAddition": 0
+    },
+    "slot2": {
+      "dimensionName": "",
+      "healthMultiplier": 100,
+      "damageMultiplier": 100,
+      "speedMultiplier": 100,
+      "attackSpeedMultiplier": 100,
+      "armorAddition": 0,
+      "armorToughnessAddition": 0
+    },
+    "slot3": {
+      "dimensionName": "",
+      "healthMultiplier": 100,
+      "damageMultiplier": 100,
+      "speedMultiplier": 100,
+      "attackSpeedMultiplier": 100,
+      "armorAddition": 0,
+      "armorToughnessAddition": 0
+    },
+    "slot4": {
+      "dimensionName": "",
+      "healthMultiplier": 100,
+      "damageMultiplier": 100,
+      "speedMultiplier": 100,
+      "attackSpeedMultiplier": 100,
+      "armorAddition": 0,
+      "armorToughnessAddition": 0
+    },
+    "slot5": {
+      "dimensionName": "",
+      "healthMultiplier": 100,
+      "damageMultiplier": 100,
+      "speedMultiplier": 100,
+      "attackSpeedMultiplier": 100,
+      "armorAddition": 0,
+      "armorToughnessAddition": 0
+    }
+  },
+  "mobFilter": {
+    "useWhitelist": false,
+    "whitelist": [],
+    "blacklist": [
+      "minecraft:warden",
+      "minecraft:wither",
+      "minecraft:ender_dragon"
+    ]
+  },
+  "modidFilter": {
+    "useWhitelist": false,
+    "whitelist": [],
+    "blacklist": []
+  },
+  "dimensionFilter": {
+    "useWhitelist": false,
+    "whitelist": [
+      "minecraft:overworld",
+      "minecraft:the_nether",
+      "minecraft:the_end"
+    ],
+    "blacklist": []
+  },
+  "rangedMeleeSwitching": {
+    "enabled": true,
+    "behaviorMode": "RANDOM",
+    "switchDistance": 4.0,
+    "meleeSpeedMultiplier": 0.9,
+    "customRangedMobs": [],
+    "stoneSwordUnlockDay": 0,
+    "ironSwordUnlockDay": 7,
+    "diamondSwordUnlockDay": 21,
+    "netheriteSwordUnlockDay": 60,
+    "goldenAxeUnlockDay": 0,
+    "diamondAxeUnlockDay": 14,
+    "netheriteAxeUnlockDay": 45,
+    "enchantmentsEnabled": true,
+    "maxEnchantmentsPerWeapon": 2,
+    "daysPerEnchantmentLevel": 7,
+    "sharpnessUnlockDay": 0,
+    "sharpnessMaxLevel": 5,
+    "fireAspectUnlockDay": 14,
+    "fireAspectMaxLevel": 2,
+    "knockbackUnlockDay": 7,
+    "knockbackMaxLevel": 2,
+    "sweepingEdgeUnlockDay": 21,
+    "sweepingEdgeMaxLevel": 3
+  },
+  "combatDraft": {
+    "enabled": true,
+    "healthThreshold": 0.2,
+    "regenAmplifier": 4,
+    "regenDuration": 10,
+    "cooldownTicks": 600,
+    "maxUses": 0,
+    "useWhitelist": false,
+    "whitelist": [],
+    "blacklist": []
+  },
+  "mobPresets": {
+    "enabled": false,
+    "preset1": {
+      "presetName": "",
+      "healthMultiplier": 1.0,
+      "damageMultiplier": 1.0,
+      "speedMultiplier": 1.0,
+      "attackSpeedMultiplier": 1.0,
+      "armorAddition": 0.0,
+      "armorToughnessAddition": 0.0
+    },
+    "preset2": {
+      "presetName": "",
+      "healthMultiplier": 3.0,
+      "damageMultiplier": 2.5,
+      "speedMultiplier": 1.2,
+      "attackSpeedMultiplier": 1.5,
+      "armorAddition": 10.0,
+      "armorToughnessAddition": 5.0
+    },
+    "preset3": {
+      "presetName": "",
+      "healthMultiplier": 2.0,
+      "damageMultiplier": 1.8,
+      "speedMultiplier": 1.1,
+      "attackSpeedMultiplier": 1.2,
+      "armorAddition": 5.0,
+      "armorToughnessAddition": 2.0
+    },
+    "preset4": {
+      "presetName": "",
+      "healthMultiplier": 0.5,
+      "damageMultiplier": 0.5,
+      "speedMultiplier": 0.9,
+      "attackSpeedMultiplier": 0.8,
+      "armorAddition": 0.0,
+      "armorToughnessAddition": 0.0
+    },
+    "preset5": {
+      "presetName": "",
+      "healthMultiplier": 1.0,
+      "damageMultiplier": 1.0,
+      "speedMultiplier": 1.0,
+      "attackSpeedMultiplier": 1.0,
+      "armorAddition": 0.0,
+      "armorToughnessAddition": 0.0
+    },
+    "mobMapping": [
+      "minecraft:zombie:default",
+      "minecraft:skeleton:default",
+      "minecraft:ender_dragon:boss",
+      "minecraft:wither:boss"
+    ]
+  },
+  "passiveMobAggression": {
+    "enabled": false,
+    "baseDamage": 3.0,
+    "scaleWithHealth": false,
+    "healthScaleFactor": 0.1,
+    "whitelist": [],
+    "blacklist": []
+  }
+}
