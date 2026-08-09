@@ -30,6 +30,28 @@ function Get-ModBaseName($name) {
     return $name.ToLower()
 }
 
+# -- Doc danh sach base-name mod da bi go HAN khoi server (xem mods/_removed.txt) --
+# Get-ModBaseName chi cho phep xoa mod cu KHI con tim thay ban thay the cung ten trong
+# repo (tranh xoa nham mod rieng nguoi choi tu them). Nhung khi 1 mod bi go han (khong
+# co ban thay the) thi base-name do bien mat khoi repo luon, nen logic tren se khong bao
+# gio xoa duoc file cu -> no nam lai vinh vien tren may nguoi choi. _removed.txt la danh
+# sach tuong minh (commit-mods.ps1 tu ghi) de bu cho truong hop nay.
+function Get-RemovedModBaseNames($repoFiles) {
+    $result = @{}
+    $entry = $repoFiles | Where-Object { $_.name -eq "_removed.txt" } | Select-Object -First 1
+    if ($null -eq $entry) { return $result }
+    try {
+        $content = Invoke-RestMethod -Uri $entry.download_url -Headers @{ "User-Agent" = "PowerShell-Minecraft-Updater" }
+        foreach ($line in ($content -split "`n")) {
+            $t = $line.Trim()
+            if ($t -and -not $t.StartsWith("#")) { $result[$t.ToLower()] = $true }
+        }
+    } catch {
+        # Khong tai duoc _removed.txt thi bo qua, khong chan qua trinh cap nhat mod chinh
+    }
+    return $result
+}
+
 # -- Console UI helpers (tu dong co gian theo chieu rong terminal) --
 
 # Lay chieu rong terminal hien tai (fallback 80 neu bi redirect)
@@ -265,12 +287,15 @@ function Run-ConsoleUpdate($targetDir) {
             }
         }
 
-        # Calculate deletion list (Only delete if it is an old version of a server mod)
+        # Cac base-name bi go han (khong co ban thay the) -> vao thang toDelete du repo khong con nhac ten
+        $removedBaseNames = Get-RemovedModBaseNames $repoFiles
+
+        # Calculate deletion list (old version of a server mod, OR a mod removed entirely)
         $toDelete = @()
         foreach ($lf in $localFiles) {
             if (!$repoMods.ContainsKey($lf.Name)) {
                 $localBase = Get-ModBaseName $lf.Name
-                if ($repoBaseNames.ContainsKey($localBase)) {
+                if ($repoBaseNames.ContainsKey($localBase) -or $removedBaseNames.ContainsKey($localBase)) {
                     $toDelete += $lf
                 }
             }
@@ -595,12 +620,15 @@ if ($guiLoaded) {
                 }
             }
 
-            # Calculate deletion list (Only delete if it is an old version of a server mod)
+            # Cac base-name bi go han (khong co ban thay the) -> vao thang toDelete du repo khong con nhac ten
+            $removedBaseNames = Get-RemovedModBaseNames $repoFiles
+
+            # Calculate deletion list (old version of a server mod, OR a mod removed entirely)
             $toDelete = @()
             foreach ($lf in $localFiles) {
                 if (!$repoMods.ContainsKey($lf.Name)) {
                     $localBase = Get-ModBaseName $lf.Name
-                    if ($repoBaseNames.ContainsKey($localBase)) {
+                    if ($repoBaseNames.ContainsKey($localBase) -or $removedBaseNames.ContainsKey($localBase)) {
                         $toDelete += $lf
                     }
                 }

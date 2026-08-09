@@ -5,6 +5,17 @@ param(
 
 $repoDir = $PSScriptRoot
 $modsDir = Join-Path $repoDir "mods"
+$removedListPath = Join-Path $modsDir "_removed.txt"
+
+# -- PHAI giong het Get-ModBaseName trong UpdateMinecraftMods.ps1 --
+# Dung de tinh base-name ghi vao _removed.txt, phia client doi chieu bang chinh
+# ham nay o ben do. Sua 1 ben thi phai sua ca 2 ben, khong thi tombstone se sai lech.
+function Get-ModBaseName($name) {
+    if ($name -match '^([a-zA-Z_\-]+?)(?:-?\d|\sv\d|\bv\d)') {
+        return $Matches[1].TrimEnd('-').TrimEnd('_').ToLower()
+    }
+    return $name.ToLower()
+}
 
 # -- Chuan hoa ten mod de nhom cac phien ban cua cung 1 mod lai voi nhau --
 # Bo phan mo rong .jar/.jar.disabled, bo chu so/dau cham/dau cong (thuong la phan version),
@@ -55,6 +66,49 @@ if (Test-Path -LiteralPath $modsDir) {
         Write-Host "Da tu dong xoa $($removedOld.Count) mod ban cu truoc khi commit: $($removedOld -join ', ')" -ForegroundColor Yellow
     } else {
         Write-Host "Khong phat hien mod nao bi trung ban cu/moi." -ForegroundColor DarkGray
+    }
+}
+
+# -- Phat hien mod bi go HAN khoi mods/ (khong phai doi version, khong con ban thay the) --
+# So sanh base-name cua mods/ o commit HEAD voi base-name con lai tren dia (sau buoc dedup
+# o tren). Base-name nao bien mat hoan toan -> ghi vao _removed.txt de UpdateMinecraftMods.ps1
+# biet ma xoa cuong che ben client, vi logic doan base-name o do chi xoa duoc khi con tim thay
+# ban thay the cung ten trong repo (dung de tranh xoa nham mod rieng nguoi choi tu them).
+if (Test-Path -LiteralPath $modsDir) {
+    $headFiles = git -C $repoDir ls-tree -r --name-only HEAD -- mods 2>$null |
+        ForEach-Object { Split-Path $_ -Leaf } |
+        Where-Object { $_ -and $_ -ne "_removed.txt" -and ($_ -like "*.jar" -or $_ -like "*.jar.disabled") }
+
+    $currentBaseNames = @{}
+    Get-ChildItem -Path $modsDir -File |
+        Where-Object { $_.Extension -eq ".jar" -or $_.Name -like "*.jar.disabled" } |
+        ForEach-Object { $currentBaseNames[(Get-ModBaseName $_.Name)] = $true }
+
+    $existingRemoved = @{}
+    if (Test-Path -LiteralPath $removedListPath) {
+        Get-Content -LiteralPath $removedListPath | ForEach-Object {
+            $line = $_.Trim()
+            if ($line -and -not $line.StartsWith("#")) { $existingRemoved[$line.ToLower()] = $true }
+        }
+    }
+
+    $newlyRemoved = @($headFiles | ForEach-Object { Get-ModBaseName $_ } |
+        Where-Object { -not $currentBaseNames.ContainsKey($_) -and -not $existingRemoved.ContainsKey($_) } |
+        Select-Object -Unique)
+
+    if ($newlyRemoved.Count -gt 0) {
+        Write-Host "Phat hien $($newlyRemoved.Count) mod bi go han (khong con ban thay the): $($newlyRemoved -join ', ')" -ForegroundColor Yellow
+        Write-Host "  -> Ghi vao _removed.txt de client tu dong xoa ban cu tren may nguoi choi." -ForegroundColor Yellow
+
+        $allRemoved = @($existingRemoved.Keys) + $newlyRemoved | Select-Object -Unique | Sort-Object
+        $header = @(
+            "# Danh sach base-name cua cac mod da bi go HAN khoi server (khong phai doi version)."
+            "# Moi dong 1 base-name (chu thuong, tinh theo cung thuat toan Get-ModBaseName ben"
+            "# UpdateMinecraftMods.ps1). File nay duoc commit-mods.ps1 tu dong cap nhat khi phat"
+            "# hien mod bien mat hoan toan khoi mods/ - khong can sua tay, tru khi muon xoa cuong"
+            "# che 1 mod ma script tu dong chua kip ghi nhan."
+        )
+        ($header + $allRemoved) | Set-Content -LiteralPath $removedListPath -Encoding UTF8
     }
 }
 
