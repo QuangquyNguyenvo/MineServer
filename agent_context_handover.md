@@ -40,11 +40,11 @@ Tài liệu này ghi lại toàn bộ bối cảnh dự án, trạng thái hệ 
 
 ---
 
-### 👾 3. Boss Tối Thượng Warden (Đại Tu Toàn Diện)
+### 👾 3. Boss Tối Thượng Warden (Đại Tu Toàn Diện & Phase 2)
 Toàn bộ logic được lập trình bằng Scarpet tại file [`world/scripts/custom_mob_effects.sc`](file:///C:/Users/ADMIN/MineServer/world/scripts/custom_mob_effects.sc):
 
 1. **Máu tối đa:** Tăng lên **1000 HP** khi spawn.
-2. **Kháng sát thương vật lý động theo ngưỡng máu:**
+2. **Kháng sát thương vật lý động theo ngưỡng máu (Phase 1):**
    * Kháng **30%** khi máu $> 70\%$ (> 700 HP).
    * Kháng **50%** khi máu $< 50\%$ (< 500 HP).
 3. **Kháng 80% Instant Damage / Phép thuật:**
@@ -52,7 +52,8 @@ Toàn bộ logic được lập trình bằng Scarpet tại file [`world/scripts
 4. **Miễn nhiễm ngạt nước (Drown Immunity):**
    * Hoàn toàn triệt tiêu sát thương ngạt nước (`drown`), không thể bị dìm chết.
 5. **Sonic Boom True Damage:**
-   * Tia sóng âm luôn gây sát thương chuẩn bằng **33% máu tối đa của người chơi** (bỏ qua mọi giáp/kháng cự).
+   * **Phase 1 (> 30% HP):** Gây sát thương chuẩn bằng **33% máu tối đa** của người chơi.
+   * **Phase 2 (<= 30% HP):** Gây sát thương chuẩn tăng vọt lên **45% máu tối đa** của người chơi.
 6. **Giảm hồi máu 50% (Healing Debuff):**
    * Trúng Sonic Boom sẽ dính debuff giảm 50% khả năng hồi máu từ mọi nguồn trong **5 giây (100 ticks)**.
 7. **Trọng Lực Cực Đại (Anti-Flight Zone):**
@@ -63,9 +64,18 @@ Toàn bộ logic được lập trình bằng Scarpet tại file [`world/scripts
    * Quét vùng 3x4x3 quanh Warden mỗi 5 ticks và phá hủy các block rắn (kể cả Obsidian) bằng `/fill air destroy` để chống bị người chơi nhốt.
 10. **Phản hiệu ứng xấu (Effect Reflection):**
     * Khi đánh trúng người chơi, Warden quét các hiệu ứng tiêu cực nó đang dính (Slowness, Poison, Weakness, Blindness...) và phản ngược lại người chơi trong tối đa 5 giây.
-11. **Thanh máu Boss (Boss Health Bar):**
-    * Bossbar vanilla mang tên **Warden** màu `dark_aqua` (Code: `§3`, Hex: `#00AAAA`), thanh màu `blue`.
-    * Tự động cập nhật máu và chỉ hiển thị cho người chơi trong bán kính 40m quanh Warden; tự ẩn khi không có Warden.
+11. **🔥 Cơ chế Phase 2 - Cuồng Nộ (Kích hoạt khi <= 30% Máu / <= 300 HP):**
+    * **Tăng tốc độ:** Tăng **50% tốc độ di chuyển** (`movement_speed` base set 0.45).
+    * **Kháng 100% Sát thương tầm xa (Projectile Immunity):** Kháng tuyệt đối 100% mọi vật thể bắn (Cung tên, Đinh ba, Bình thuốc ném/kéo dài, Cầu lửa, Sọ Wither, Wind Charge, Pháo hoa...), buộc người chơi phải cận chiến bằng kiếm.
+    * **Sonic Boom Thăng Hoa:** Sát thương chuẩn tăng lên **45% Max HP** của người chơi.
+    * **Hiệu ứng & Âm thanh:** Gầm rú chuyển dạng (`warden.roar` + `ender_dragon.growl`), bung hạt linh hồn Sculk và Lửa linh hồn; thông báo Title cảnh báo toàn khu vực 40m.
+12. **🩸 Cơ chế Huyết Tế Tối Thượng (Emergency Heal khi < 10% Máu trong Phase 2):**
+    * Khi máu Warden tụt xuống dưới **10%** (< 100 HP) trong Phase 2, Warden kích hoạt cơ chế hồi sinh khẩn cấp 1 lần duy nhất: hấp thụ linh hồn Sculk và **hồi phục ngay lập tức về 30% Máu tối đa (300 HP)**.
+    * Kèm hiệu ứng bảo hiểm chống chết sốc trong tick, nổ hạt Totem, tiếng đập tim dồn dập và thông báo Title `[HUYẾT TẾ TỐI THƯỢNG]`.
+13. **Thanh máu Boss (Boss Health Bar):**
+    * **Phase 1:** Tên **Warden** màu `dark_aqua` (`§3`), thanh màu `blue`.
+    * **Phase 2:** Tên **Warden (Phase 2 - Cuồng Nộ)** màu `red` (`§c`), thanh chuyển sang màu `red`.
+    * Tự động hiển thị/ẩn trong bán kính 40m quanh Warden.
 
 ---
 

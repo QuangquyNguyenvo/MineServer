@@ -30,12 +30,13 @@ Chỉ số máu, sát thương và hiệu ứng của quái vật thay đổi ph
 
 ## 2. Chỉ số và Sát thương Boss
 
-Các Boss không bị ảnh hưởng bởi bội số máu của thế giới (Dimension multipliers) mà được khóa máu cố định, nhưng được tăng sát thương ở Nether/End:
+Các Boss được điều khiển bởi hệ thống Scarpet tùy chỉnh với lượng máu, kháng cự và bộ kỹ năng đặc thù:
 
-| Tên Boss | Máu cơ bản (Max Health) | Địa điểm áp dụng | Hiệu ứng tăng sát thương |
-| :--- | :--- | :--- | :--- |
-| **Wither** | **400 HP** | Mọi thế giới | Khi ở **Nether** hoặc **The End**, mọi đòn đánh (cận chiến, nổ, đạn đầu lâu) gây thêm **+1.0 sát thương** trực tiếp (0.5 tim). |
-| **Ender Dragon** | **700 HP** | Mọi thế giới | Khi ở **The End** hoặc **Nether**, mọi đòn đánh (va chạm, cầu lửa) gây thêm **+1.0 sát thương** trực tiếp (0.5 tim). |
+| Tên Boss | Máu tối đa (Max HP) | Cơ chế sát thương & Kỹ năng đặc biệt |
+| :--- | :--- | :--- |
+| **Wither** | **600 HP** | Mọi đòn đánh trực tiếp và đạn sọ `wither_skull` gây thêm **+2.0 True Damage (1 tim)** trừ thẳng vào máu người chơi, xuyên qua giáp/enchantment. |
+| **Ender Dragon** | **700 HP** | Ở The End/Nether, mọi đòn đánh gây thêm **+1.0 sát thương** trực tiếp (0.5 tim). |
+| **Warden (Boss Tối Thượng)** | **1000 HP** | **Phase 1 (> 30% HP):** Kháng 30-50% vật lý, 80% Magic, miễn nhiễm ngạt nước, Anti-Flight (40m), Sculk Vacuum (kéo mục tiêu >16m), phá block 3x4x3, Sonic Boom gây 33% Max HP True Damage + giảm 50% hồi máu.<br>**Phase 2 (<= 30% HP):** Tăng **50% tốc độ**, Sonic Boom gây **45% Max HP**, **Kháng 100% sát thương tầm xa (cung, đinh ba, thuốc ném, đạn bắn...)** - buộc cận chiến.<br>**Huyết Tế (< 10% HP):** Hồi sinh khẩn cấp về **30% Máu (300 HP)** một lần duy nhất. |
 
 ---
 

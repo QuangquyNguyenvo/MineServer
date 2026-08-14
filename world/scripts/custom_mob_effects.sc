@@ -10,6 +10,8 @@ global_was_blood_moon_notified = false;
 global_sonic_debuff = {};
 global_player_last_health = {};
 global_warden_pull_cooldown = {};
+global_warden_phase2 = {};
+global_warden_emergency_healed = {};
 
 // Danh sách các hiệu ứng xấu để phản ngược lại người chơi
 global_negative_effects = {
@@ -124,6 +126,7 @@ entity_load_handler('ender_dragon', _(e, new) -> (
 entity_load_handler('warden', _(e, new) -> (
     if (new,
         run(str('attribute %s minecraft:generic.max_health base set 1000', e ~ 'uuid'));
+        run(str('attribute %s minecraft:generic.movement_speed base set 0.30', e ~ 'uuid'));
         modify(e, 'health', 1000.0);
     )
 ));
@@ -148,9 +151,9 @@ _warden_break_blocks(w) -> (
     )
 );
 
-// Hook xử lý sát thương (Kháng sát thương của Warden & Sát thương chuẩn Sonic Boom)
+// Hook xử lý sát thương (Kháng sát thương của Warden, Phase 2 & Sát thương chuẩn Sonic Boom)
 __on_damaged(entity, amount, source, attacking_entity) -> (
-    // 1. Xử lý kháng sát thương và miễn ngạt của Warden
+    // 1. Xử lý kháng sát thương, miễn ngạt và Phase 2 của Warden
     if (entity ~ 'type' == 'warden',
         if (source == 'drown',
             schedule(0, _(outer(entity), outer(amount)) -> (
@@ -164,11 +167,47 @@ __on_damaged(entity, amount, source, attacking_entity) -> (
         hp = entity ~ 'health';
         max_hp = attribute(entity, 'generic.max_health');
         if (max_hp == null, max_hp = 1000.0);
+        w_uuid = entity ~ 'uuid';
+        w_pos = pos(entity);
+        
+        // Kiểm tra trạng thái Phase 2 (< 30% Max HP = < 300 HP)
+        is_phase2 = global_warden_phase2:w_uuid || (hp / max_hp <= 0.30);
+        
+        // Kích hoạt Phase 2 nếu vừa chạm mốc
+        if (is_phase2 && !global_warden_phase2:w_uuid,
+            global_warden_phase2:w_uuid = true;
+            run(str('attribute %s minecraft:generic.movement_speed base set 0.45', w_uuid));
+            
+            sound('minecraft:entity.warden.roar', w_pos, 2.0, 0.8);
+            sound('minecraft:entity.ender_dragon.growl', w_pos, 2.0, 0.6);
+            run(str('particle minecraft:sculk_soul %f %f %f 1.0 1.0 1.0 0.2 60', w_pos:0, w_pos:1 + 1.5, w_pos:2));
+            run(str('particle minecraft:soul_fire_flame %f %f %f 1.5 1.5 1.5 0.1 80', w_pos:0, w_pos:1 + 1.0, w_pos:2));
+            
+            run(str('title @a[x=%f,y=%f,z=%f,distance=..40] title {"text":"§c§lWARDEN PHASE 2: CUỒNG NỘ!","bold":true}', w_pos:0, w_pos:1, w_pos:2));
+            run(str('title @a[x=%f,y=%f,z=%f,distance=..40] subtitle {"text":"§4Tăng 50%% Tốc độ | Kháng 100%% Tầm xa | Sonic Boom 45%% HP"}', w_pos:0, w_pos:1, w_pos:2));
+            for(player('all'),
+                if (distance(pos(_), w_pos) <= 40,
+                    print(_, '§c§l[CẢNH BÁO] Warden đã tiến vào PHASE 2: Cuồng Nộ! Miễn nhiễm toàn bộ sát thương tầm xa!');
+                )
+            );
+        );
+
+        // Kiểm tra loại sát thương từ vật thể bắn (Projectile)
+        att_type = if(attacking_entity != null, attacking_entity ~ 'type', null);
+        is_projectile_entity = (att_type == 'arrow' || att_type == 'spectral_arrow' || att_type == 'trident' || att_type == 'potion' || att_type == 'small_fireball' || att_type == 'fireball' || att_type == 'dragon_fireball' || att_type == 'wither_skull' || att_type == 'shulker_bullet' || att_type == 'wind_charge' || att_type == 'breeze_wind_charge' || att_type == 'egg' || att_type == 'snowball' || att_type == 'firework_rocket');
+        is_projectile_source = (source == 'arrow' || source == 'trident' || source == 'thrown' || source == 'fireball' || source == 'small_fireball' || source == 'wither_skull' || source == 'wind_charge' || source == 'breeze_wind_charge' || source == 'fireworks');
+        is_projectile = is_projectile_entity || is_projectile_source || (is_phase2 && source == 'indirect_magic');
         
         is_magic = (source == 'magic' || source == 'indirect_magic');
         resistance = 0.0;
         
-        if (is_magic,
+        if (is_phase2 && is_projectile,
+            // Phase 2: Kháng 100% sát thương từ vật thể bắn
+            resistance = 1.0;
+            sound('minecraft:item.shield.block', w_pos, 1.2, 0.8);
+            run(str('particle minecraft:crit %f %f %f 0.5 0.5 0.5 0.2 15', w_pos:0, w_pos:1 + 1.5, w_pos:2));
+            run(str('title @a[x=%f,y=%f,z=%f,distance=..35] actionbar {"text":"§c§l[Phase 2] Warden miễn nhiễm 100%% với vật thể bắn! Hãy cận chiến!"}', w_pos:0, w_pos:1, w_pos:2));
+        , is_magic,
             resistance = 0.8; // Kháng 80% thuốc instant damage / phép thuật
         ,
             ratio = hp / max_hp;
@@ -179,8 +218,45 @@ __on_damaged(entity, amount, source, attacking_entity) -> (
             )
         );
         
+        // Tính toán sát thương thực tế
+        actual_damage = amount * (1 - resistance);
+        remaining_hp = hp - actual_damage;
+        
+        // Kiểm tra cơ chế Hồi máu khẩn cấp Phase 2 (< 10% HP -> hồi về 30% Max HP)
+        if (is_phase2 && remaining_hp < (max_hp * 0.10) && !global_warden_emergency_healed:w_uuid,
+            global_warden_emergency_healed:w_uuid = true;
+            heal_target = max_hp * 0.30;
+            
+            // Chống chết sốc ở tick hiện tại: buff tạm máu để sống sót
+            temp_health = hp + amount + heal_target;
+            run(str('attribute %s minecraft:generic.max_health base set %f', w_uuid, temp_health));
+            modify(entity, 'health', temp_health);
+            
+            schedule(0, _(outer(entity), outer(max_hp), outer(heal_target), outer(w_uuid)) -> (
+                if (entity && !query(entity, 'removed'),
+                    run(str('attribute %s minecraft:generic.max_health base set %f', w_uuid, max_hp));
+                    modify(entity, 'health', heal_target);
+                    
+                    p_pos = pos(entity);
+                    sound('minecraft:item.totem.use', p_pos, 2.0, 0.8);
+                    sound('minecraft:entity.warden.heartbeat', p_pos, 2.0, 1.2);
+                    sound('minecraft:entity.wither.spawn', p_pos, 1.5, 1.2);
+                    run(str('particle minecraft:totem_of_undying %f %f %f 1.0 1.5 1.0 0.5 120', p_pos:0, p_pos:1 + 1.5, p_pos:2));
+                    
+                    run(str('title @a[x=%f,y=%f,z=%f,distance=..40] title {"text":"§4§l[HUYẾT TẾ TỐI THƯỢNG]","bold":true}', p_pos:0, p_pos:1, p_pos:2));
+                    run(str('title @a[x=%f,y=%f,z=%f,distance=..40] subtitle {"text":"§cWarden hấp thụ linh hồn Sculk, hồi phục về 30%% Máu!"}', p_pos:0, p_pos:1, p_pos:2));
+                    for(player('all'),
+                        if (distance(pos(_), p_pos) <= 40,
+                            print(_, '§4§l[Warden] Hấp thụ linh hồn Sculk, hồi phục sinh lực về 30% Máu!');
+                        )
+                    );
+                )
+            ));
+            return();
+        );
+        
+        // Xử lý giảm trừ sát thương thông thường
         if (resistance > 0.0,
-            actual_damage = amount * (1 - resistance);
             if (amount >= hp,
                 if (actual_damage < hp,
                     temp_health = hp + amount;
@@ -214,14 +290,39 @@ __on_damaged(entity, amount, source, attacking_entity) -> (
         max_hp = attribute(player, 'generic.max_health');
         if (max_hp == null, max_hp = 20.0);
         
-        // 33% máu tối đa làm sát thương chuẩn
-        true_damage = max_hp * 0.33;
+        // Kiểm tra xem Warden gây ra Sonic Boom có đang ở Phase 2 không
+        is_phase2 = false;
+        if (attacking_entity != null && attacking_entity ~ 'type' == 'warden',
+            w_uuid = attacking_entity ~ 'uuid';
+            is_phase2 = (global_warden_phase2:w_uuid || (attacking_entity ~ 'health') <= 300);
+        ,
+            // Quét tìm Warden gần player trong phạm vi 40m
+            p_pos = pos(player);
+            for(entity_list('warden'),
+                w = _;
+                if (distance(p_pos, pos(w)) <= 40,
+                    w_uuid = w ~ 'uuid';
+                    if (global_warden_phase2:w_uuid || (w ~ 'health') <= 300,
+                        is_phase2 = true;
+                        break();
+                    )
+                )
+            )
+        );
+        
+        // Phase 2: 45% máu tối đa | Phase 1: 33% máu tối đa
+        sonic_ratio = if(is_phase2, 0.45, 0.33);
+        true_damage = max_hp * sonic_ratio;
         target_hp = max(0, hp - true_damage);
         
         // Áp dụng debuff giảm hồi máu 50% trong 5 giây (100 ticks)
         global_sonic_debuff:p_name = 100;
-        run(str('title %s actionbar {"text":"§c§lBị trúng Sóng Âm: Nhận sát thương chuẩn & Giảm hồi máu 50%%!"}', p_name));
-        sound('minecraft:entity.warden.sonic_boom', pos(player), 1.0, 1.0);
+        if (is_phase2,
+            run(str('title %s actionbar {"text":"§4§lTrúng Sonic Boom Phase 2: Nhận 45%% Sát thương chuẩn & Giảm hồi máu 50%%!"}', p_name));
+        ,
+            run(str('title %s actionbar {"text":"§c§lBị trúng Sóng Âm: Nhận sát thương chuẩn & Giảm hồi máu 50%%!"}', p_name));
+        );
+        sound('minecraft:entity.warden.sonic_boom', pos(player), 1.0, if(is_phase2, 1.2, 1.0));
         
         if (target_hp <= 0,
             return();
@@ -467,6 +568,18 @@ __on_tick() -> (
     players = player('all');
     wardens = entity_list('warden');
     
+    // Dọn dẹp bộ nhớ UUID của Warden đã biến mất
+    if (global_tick_count % 100 == 0,
+        living_uuids = {};
+        for(wardens, living_uuids:( _ ~ 'uuid' ) = true);
+        for(keys(global_warden_phase2),
+            if (!living_uuids:_, delete(global_warden_phase2:_));
+        );
+        for(keys(global_warden_emergency_healed),
+            if (!living_uuids:_, delete(global_warden_emergency_healed:_));
+        );
+    );
+    
     // 3. Phá block xung quanh Warden mỗi 5 ticks để tránh bị nhốt
     if (global_tick_count % 5 == 0,
         for(wardens,
@@ -474,12 +587,68 @@ __on_tick() -> (
         )
     );
     
-    // 4. Quản lý Boss Health Bar cho Warden mỗi 5 ticks
+    // 4. Quản lý Boss Health Bar và Phase 2 cho Warden mỗi 5 ticks
     if (global_tick_count % 5 == 0,
         if (length(wardens) > 0,
             w = wardens:0;
+            w_uuid = w ~ 'uuid';
             w_hp = w ~ 'health';
             w_pos = pos(w);
+            w_max = attribute(w, 'generic.max_health');
+            if (w_max == null, w_max = 1000.0);
+            
+            // Check kích hoạt Phase 2 nếu máu <= 30% (<= 300 HP)
+            if (w_hp <= (w_max * 0.30) && !global_warden_phase2:w_uuid,
+                global_warden_phase2:w_uuid = true;
+                // Tăng 50% tốc độ di chuyển (Base 0.3 -> 0.45)
+                run(str('attribute %s minecraft:generic.movement_speed base set 0.45', w_uuid));
+                
+                sound('minecraft:entity.warden.roar', w_pos, 2.0, 0.8);
+                sound('minecraft:entity.ender_dragon.growl', w_pos, 2.0, 0.6);
+                run(str('particle minecraft:sculk_soul %f %f %f 1.0 1.0 1.0 0.2 60', w_pos:0, w_pos:1 + 1.5, w_pos:2));
+                run(str('particle minecraft:soul_fire_flame %f %f %f 1.5 1.5 1.5 0.1 80', w_pos:0, w_pos:1 + 1.0, w_pos:2));
+                
+                run(str('title @a[x=%f,y=%f,z=%f,distance=..40] title {"text":"§c§lWARDEN PHASE 2: CUỒNG NỘ!","bold":true}', w_pos:0, w_pos:1, w_pos:2));
+                run(str('title @a[x=%f,y=%f,z=%f,distance=..40] subtitle {"text":"§4Tăng 50%% Tốc độ | Kháng 100%% Tầm xa | Sonic Boom 45%% HP"}', w_pos:0, w_pos:1, w_pos:2));
+                for(player('all'),
+                    if (distance(pos(_), w_pos) <= 40,
+                        print(_, '§c§l[CẢNH BÁO] Warden đã tiến vào PHASE 2: Cuồng Nộ! Miễn nhiễm toàn bộ sát thương tầm xa!');
+                    )
+                );
+            );
+            
+            is_p2 = global_warden_phase2:w_uuid;
+            
+            // Check Emergency Heal nếu máu < 10% trong Phase 2
+            if (is_p2 && w_hp < (w_max * 0.10) && w_hp > 0 && !global_warden_emergency_healed:w_uuid,
+                global_warden_emergency_healed:w_uuid = true;
+                heal_amount = w_max * 0.30;
+                modify(w, 'health', heal_amount);
+                
+                sound('minecraft:item.totem.use', w_pos, 2.0, 0.8);
+                sound('minecraft:entity.warden.heartbeat', w_pos, 2.0, 1.2);
+                sound('minecraft:entity.wither.spawn', w_pos, 1.5, 1.2);
+                run(str('particle minecraft:totem_of_undying %f %f %f 1.0 1.5 1.0 0.5 120', w_pos:0, w_pos:1 + 1.5, w_pos:2));
+                
+                run(str('title @a[x=%f,y=%f,z=%f,distance=..40] title {"text":"§4§l[HUYẾT TẾ TỐI THƯỢNG]","bold":true}', w_pos:0, w_pos:1, w_pos:2));
+                run(str('title @a[x=%f,y=%f,z=%f,distance=..40] subtitle {"text":"§cWarden hấp thụ linh hồn Sculk, hồi phục về 30%% Máu!"}', w_pos:0, w_pos:1, w_pos:2));
+                for(player('all'),
+                    if (distance(pos(_), w_pos) <= 40,
+                        print(_, '§4§l[Warden] Hấp thụ linh hồn Sculk, hồi phục sinh lực về 30% Máu!');
+                    )
+                );
+                w_hp = heal_amount;
+            );
+            
+            // Cập nhật Bossbar
+            if (is_p2,
+                run('bossbar set minecraft:warden_boss name {"text":"Warden (Phase 2 - Cuồng Nộ)","color":"red","bold":true}');
+                run('bossbar set minecraft:warden_boss color red');
+            ,
+                run('bossbar set minecraft:warden_boss name {"text":"Warden","color":"dark_aqua","bold":true}');
+                run('bossbar set minecraft:warden_boss color blue');
+            );
+            
             run(str('bossbar set minecraft:warden_boss value %d', floor(w_hp)));
             run('bossbar set minecraft:warden_boss visible true');
             run(str('bossbar set minecraft:warden_boss players @a[x=%f,y=%f,z=%f,distance=..40]', w_pos:0, w_pos:1, w_pos:2));
@@ -625,7 +794,6 @@ __on_tick() -> (
 __command() -> status();
 
 // Lệnh: /custom_mob_effects trigger_blood_moon
-// Cưỡng bức trăng máu diễn ra hôm nay và chuyển thời gian về tối
 trigger_blood_moon() -> (
     p = player();
     if (query(p, 'permission_level') < 2,
@@ -638,6 +806,44 @@ trigger_blood_moon() -> (
     _save_blood_moon_data();
     run('time set 12000');
     print(p, '§4§l[Trăng Máu] Đã kích hoạt Trăng Máu cho hôm nay và chuyển giờ về Hoàng Hôn!');
+);
+
+// Lệnh: /custom_mob_effects test_warden_p2
+// Đặt máu của Warden gần nhất về 310 HP để kiểm tra Phase 2
+test_warden_p2() -> (
+    p = player();
+    if (query(p, 'permission_level') < 2,
+        print(p, '§cBạn không có quyền sử dụng lệnh này!');
+        return()
+    );
+    wardens = entity_list('warden');
+    if (length(wardens) == 0,
+        print(p, '§cKhông tìm thấy Warden nào trong tầm!');
+        return();
+    );
+    w = wardens:0;
+    modify(w, 'health', 310.0);
+    print(p, '§aĐã đặt máu Warden về 310 HP (chuẩn bị kích hoạt Phase 2 khi xuống <= 300 HP)!');
+);
+
+// Lệnh: /custom_mob_effects test_warden_heal
+// Đặt máu của Warden gần nhất về 95 HP trong Phase 2 để kiểm tra Hồi máu
+test_warden_heal() -> (
+    p = player();
+    if (query(p, 'permission_level') < 2,
+        print(p, '§cBạn không có quyền sử dụng lệnh này!');
+        return()
+    );
+    wardens = entity_list('warden');
+    if (length(wardens) == 0,
+        print(p, '§cKhông tìm thấy Warden nào trong tầm!');
+        return();
+    );
+    w = wardens:0;
+    global_warden_phase2:(w ~ 'uuid') = true;
+    delete(global_warden_emergency_healed:(w ~ 'uuid'));
+    modify(w, 'health', 95.0);
+    print(p, '§aĐã đặt Warden vào Phase 2 với 95 HP để kiểm tra cơ chế Huyết Tế (< 10%)!');
 );
 
 // Lệnh: /custom_mob_effects status
