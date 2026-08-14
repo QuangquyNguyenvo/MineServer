@@ -3,10 +3,20 @@
 //   Gây hiệu ứng bất lợi, buff quái Overworld/Nether/End và Đêm Trăng Máu
 // ==============================================================================
 
-// Khóa quyền thực thi lệnh: Cấp 4 (Chỉ Server Console / RCON / Admin tối cao), Scope: Global
+// Cấu hình App: Quyền cấp 4, nạp lệnh con, giữ app luôn chạy
 __config() -> {
     'scope' -> 'global',
-    'command_permission' -> 4
+    'stay_loaded' -> true,
+    'command_permission' -> 4,
+    'commands' -> {
+        ''                      -> _() -> status(),
+        'status'                -> _() -> status(),
+        'trigger_blood_moon'    -> _() -> trigger_blood_moon(),
+        'test_warden_phase_two' -> _() -> test_warden_p2(),
+        'test_warden_heal'      -> _() -> test_warden_heal(),
+        'test_warden_drop'      -> _() -> test_warden_drop()
+    },
+    'allow_command_conflicts' -> true
 };
 
 global_blood_moon_day = null;
@@ -310,236 +320,6 @@ _warden_break_blocks(w) -> (
     )
 );
 
-// Hook xử lý sát thương (Kháng sát thương của Warden, Phase 2 & Sát thương chuẩn Sonic Boom)
-__on_damaged(entity, amount, source, attacking_entity) -> (
-    // 1. Xử lý kháng sát thương, miễn ngạt và Phase 2 của Warden
-    if (entity ~ 'type' == 'warden',
-        if (source == 'drown',
-            schedule(0, _(outer(entity), outer(amount)) -> (
-                if (entity && !query(entity, 'removed'),
-                    modify(entity, 'health', min(1500.0, (entity ~ 'health') + amount));
-                )
-            ));
-            return();
-        );
-
-        hp = entity ~ 'health';
-        max_hp = _get_attribute(entity, 'generic.max_health', 1500.0);
-        w_uuid = entity ~ 'uuid';
-        w_pos = pos(entity);
-        
-        // ── MIỄN NHIỄM SÁT THƯƠNG TRONG QUÁ TRÌNH HUYẾT TẾ HỒI MÁU (150 -> 600 HP) ──
-        is_channeling_heal = (global_warden_healing_ticks:w_uuid != null && global_warden_healing_ticks:w_uuid > 0);
-        if (is_channeling_heal,
-            if (amount >= hp,
-                temp_health = hp + amount;
-                run(str('attribute %s minecraft:generic.max_health base set %f', w_uuid, max(max_hp, temp_health)));
-                modify(entity, 'health', temp_health);
-                schedule(0, _(outer(entity), outer(hp), outer(max_hp), outer(w_uuid)) -> (
-                    if (entity && !query(entity, 'removed'),
-                        run(str('attribute %s minecraft:generic.max_health base set %f', w_uuid, max_hp));
-                        modify(entity, 'health', hp);
-                    )
-                ));
-            ,
-                schedule(0, _(outer(entity), outer(amount), outer(max_hp)) -> (
-                    if (entity && !query(entity, 'removed'),
-                        curr_hp = entity ~ 'health';
-                        modify(entity, 'health', min(max_hp, curr_hp + amount));
-                    )
-                ));
-            );
-            sound('minecraft:item.shield.block', w_pos, 1.2, 0.8);
-            run(str('particle minecraft:enchanted_hit %f %f %f 0.5 0.8 0.5 0.2 20', w_pos:0, w_pos:1 + 1.5, w_pos:2));
-            run(str('title @a[x=%f,y=%f,z=%f,distance=..35] actionbar {"text":"§4§l[Bất Tử] Warden đang Huyết Tế (150-600 HP), miễn nhiễm mọi sát thương!"}', w_pos:0, w_pos:1, w_pos:2));
-            return();
-        );
-        
-        // Kiểm tra trạng thái Phase 2 (< 30% Max HP = < 450 HP)
-        is_phase2 = global_warden_phase2:w_uuid || (hp / max_hp <= 0.30);
-        
-        // Kích hoạt Phase 2 (RAGE) nếu vừa chạm mốc
-        if (is_phase2 && !global_warden_phase2:w_uuid,
-            _trigger_warden_rage(entity, w_pos, w_uuid);
-        );
-
-        // Kiểm tra loại sát thương từ vật thể bắn (Projectile)
-        att_type = if(attacking_entity != null, attacking_entity ~ 'type', null);
-        is_projectile_entity = (att_type == 'arrow' || att_type == 'spectral_arrow' || att_type == 'trident' || att_type == 'potion' || att_type == 'small_fireball' || att_type == 'fireball' || att_type == 'dragon_fireball' || att_type == 'wither_skull' || att_type == 'shulker_bullet' || att_type == 'wind_charge' || att_type == 'breeze_wind_charge' || att_type == 'egg' || att_type == 'snowball' || att_type == 'firework_rocket');
-        is_projectile_source = (source == 'arrow' || source == 'trident' || source == 'thrown' || source == 'fireball' || source == 'small_fireball' || source == 'wither_skull' || source == 'wind_charge' || source == 'breeze_wind_charge' || source == 'fireworks');
-        is_projectile = is_projectile_entity || is_projectile_source || (is_phase2 && source == 'indirect_magic');
-        
-        is_magic = (source == 'magic' || source == 'indirect_magic');
-        resistance = 0.0;
-        
-        if (is_phase2 && is_projectile,
-            // Phase 2: Kháng 100% sát thương từ vật thể bắn
-            resistance = 1.0;
-            sound('minecraft:item.shield.block', w_pos, 1.2, 0.8);
-            run(str('particle minecraft:crit %f %f %f 0.5 0.5 0.5 0.2 15', w_pos:0, w_pos:1 + 1.5, w_pos:2));
-            run(str('title @a[x=%f,y=%f,z=%f,distance=..35] actionbar {"text":"§c§l[Phase 2] Warden miễn nhiễm 100%% với vật thể bắn! Hãy cận chiến!"}', w_pos:0, w_pos:1, w_pos:2));
-        , is_magic,
-            resistance = 0.8; // Kháng 80% thuốc instant damage / phép thuật
-        ,
-            ratio = hp / max_hp;
-            if (ratio > 0.7,
-                resistance = 0.3;
-            , ratio < 0.5,
-                resistance = 0.5;
-            )
-        );
-        
-        // Tính toán sát thương thực tế
-        actual_damage = amount * (1 - resistance);
-        remaining_hp = hp - actual_damage;
-        
-        // Kiểm tra cơ chế Hồi máu khẩn cấp Phase 2 (< 10% HP -> kích hoạt Huyết Tế Tối Thượng hồi lên 600 HP trong 10s)
-        if (is_phase2 && remaining_hp < (max_hp * 0.10) && !global_warden_emergency_healed:w_uuid,
-            global_warden_emergency_healed:w_uuid = true;
-            global_warden_healing_ticks:w_uuid = 200; // Hồi máu dần trong 10 giây (200 ticks)
-            
-            // Đặt máu khởi điểm (tối thiểu 150 HP để bắt đầu quá trình hồi máu 10s)
-            start_hp = max(150.0, remaining_hp);
-            
-            // Chống chết sốc ở tick hiện tại: buff tạm máu để sống sót
-            temp_health = hp + amount + start_hp;
-            run(str('attribute %s minecraft:generic.max_health base set %f', w_uuid, temp_health));
-            modify(entity, 'health', temp_health);
-            
-            schedule(0, _(outer(entity), outer(max_hp), outer(start_hp), outer(w_uuid)) -> (
-                if (entity && !query(entity, 'removed'),
-                    run(str('attribute %s minecraft:generic.max_health base set %f', w_uuid, max_hp));
-                    modify(entity, 'health', start_hp);
-                    
-                    p_pos = pos(entity);
-                    sound('minecraft:item.totem.use', p_pos, 2.0, 0.8);
-                    sound('minecraft:entity.warden.heartbeat', p_pos, 2.0, 1.2);
-                    sound('minecraft:entity.wither.spawn', p_pos, 1.5, 1.2);
-                    run(str('particle minecraft:totem_of_undying %f %f %f 1.0 1.5 1.0 0.5 150', p_pos:0, p_pos:1 + 1.5, p_pos:2));
-                    
-                    run(str('title @a[x=%f,y=%f,z=%f,distance=..40] title {"text":"§4§l[HUYẾT TẾ TỐI THƯỢNG]","bold":true}', p_pos:0, p_pos:1, p_pos:2));
-                    run(str('title @a[x=%f,y=%f,z=%f,distance=..40] subtitle {"text":"§cWarden giải phóng chướng khí (10s) & Hồi phục về 600 HP (40%% Máu)!"}', p_pos:0, p_pos:1, p_pos:2));
-                    
-                    // Gây hiệu ứng Nausea II, Blindness, Poison II trong 10s (40 blocks)
-                    _apply_warden_blood_sacrifice_debuffs(p_pos);
-                    
-                    // Chuyển sang nhạc Huyết Tế ngay lập tức cho người chơi trong 40m
-                    for(player('all'),
-                        p = _;
-                        p_name = p ~ 'name';
-                        if (_distance(pos(p), p_pos) <= 40,
-                            run(str('stopsound %s record', p_name));
-                            run(str('playsound minecraft:custom.warden_sacrifice record %s ~ ~ ~ 1.0 1.0', p_name));
-                            global_player_warden_music:p_name = 'sacrifice';
-                            global_player_music_timer:p_name = 3500;
-                            print(p, '§4§l[Warden] Kích hoạt Huyết Tế Tối Thượng! Chướng khí độc lan tỏa 40m và bắt đầu hấp thụ sinh lực về 600 HP (40% Máu)!');
-                        )
-                    );
-                )
-            ));
-            return();
-        );
-        
-        // Kiểm tra xem Warden có chết do đòn đánh này không để kích hoạt phần thưởng
-        if (remaining_hp <= 0 && global_warden_emergency_healed:w_uuid && !global_warden_loot_dropped:w_uuid,
-            global_warden_loot_dropped:w_uuid = true;
-            killer_entity = if(attacking_entity ~ 'type' == 'player', attacking_entity, null);
-            _drop_warden_loot(w_pos, killer_entity);
-        );
-        
-        // Xử lý giảm trừ sát thương thông thường
-        if (resistance > 0.0,
-            if (amount >= hp,
-                if (actual_damage < hp,
-                    temp_health = hp + amount;
-                    run(str('attribute %s minecraft:generic.max_health base set %f', entity ~ 'uuid', max(max_hp, temp_health)));
-                    modify(entity, 'health', temp_health);
-                    
-                    schedule(0, _(outer(entity), outer(hp), outer(actual_damage), outer(max_hp)) -> (
-                        if (entity && !query(entity, 'removed'),
-                            run(str('attribute %s minecraft:generic.max_health base set %f', entity ~ 'uuid', max_hp));
-                            modify(entity, 'health', max(0.5, hp - actual_damage));
-                        )
-                    ));
-                )
-            ,
-                heal_back = amount * resistance;
-                schedule(0, _(outer(entity), outer(heal_back), outer(max_hp)) -> (
-                    if (entity && !query(entity, 'removed'),
-                        curr_hp = entity ~ 'health';
-                        modify(entity, 'health', min(max_hp, curr_hp + heal_back));
-                    )
-                ));
-            )
-        )
-    );
-
-    // 2. Xử lý sát thương Sonic Boom của Warden lên Player
-    if (entity ~ 'type' == 'player' && source == 'sonic_boom',
-        player = entity;
-        p_name = player ~ 'name';
-        hp = player ~ 'health';
-        max_hp = _get_attribute(player, 'generic.max_health', 20.0);
-        
-        // Kiểm tra xem Warden gây ra Sonic Boom có đang ở Phase 2 không
-        is_phase2 = false;
-        if (attacking_entity != null && attacking_entity ~ 'type' == 'warden',
-            w_uuid = attacking_entity ~ 'uuid';
-            is_phase2 = (global_warden_phase2:w_uuid || (attacking_entity ~ 'health') <= 450);
-        ,
-            // Quét tìm Warden gần player trong phạm vi 40m
-            p_pos = pos(player);
-            for(entity_list('warden'),
-                w = _;
-                if (_distance(p_pos, pos(w)) <= 40,
-                    w_uuid = w ~ 'uuid';
-                    if (global_warden_phase2:w_uuid || (w ~ 'health') <= 450,
-                        is_phase2 = true;
-                        break();
-                    )
-                )
-            )
-        );
-        
-        // Phase 2: 45% máu tối đa | Phase 1: 33% máu tối đa
-        sonic_ratio = if(is_phase2, 0.45, 0.33);
-        true_damage = max_hp * sonic_ratio;
-        target_hp = max(0, hp - true_damage);
-        
-        // Áp dụng debuff giảm hồi máu 50% trong 5 giây (100 ticks)
-        global_sonic_debuff:p_name = 100;
-        if (is_phase2,
-            run(str('title %s actionbar {"text":"§4§lTrúng Sonic Boom Phase 2: Nhận 45%% Sát thương chuẩn & Giảm hồi máu 50%%!"}', p_name));
-        ,
-            run(str('title %s actionbar {"text":"§c§lBị trúng Sóng Âm: Nhận sát thương chuẩn & Giảm hồi máu 50%%!"}', p_name));
-        );
-        sound('minecraft:entity.warden.sonic_boom', pos(player), 1.0, if(is_phase2, 1.2, 1.0));
-        
-        if (target_hp <= 0,
-            return();
-        );
-        
-        if (amount >= hp,
-            temp_health = hp + amount;
-            run(str('attribute %s minecraft:generic.max_health base set %f', player ~ 'uuid', max(max_hp, temp_health)));
-            modify(player, 'health', temp_health);
-            
-            schedule(0, _(outer(player), outer(target_hp), outer(max_hp)) -> (
-                if (player && !query(player, 'removed'),
-                    run(str('attribute %s minecraft:generic.max_health base set %f', player ~ 'uuid', max_hp));
-                    modify(player, 'health', target_hp);
-                )
-            ));
-        ,
-            schedule(0, _(outer(player), outer(target_hp)) -> (
-                if (player && !query(player, 'removed'),
-                    modify(player, 'health', target_hp);
-                )
-            ));
-        )
-    );
-);
-
 // Register handler cho quái thường spawn ở Overworld (để phục vụ Trăng Máu)
 entity_load_handler('monster', _(e, new) -> (
     if (new && e ~ 'dimension' == 'minecraft:overworld' && e ~ 'type' != 'wither' && e ~ 'type' != 'ender_dragon',
@@ -562,15 +342,73 @@ entity_load_handler('monster', _(e, new) -> (
     )
 ));
 
-// Event hook khi người chơi nhận sát thương
+// ── SỰ KIỆN KHI NGƯỜI CHƠI NHẬN SÁT THƯƠNG ──
 __on_player_takes_damage(player, amount, source, source_entity) -> (
-    if (source_entity == null, return());
+    if (player == null || (player ~ 'health') <= 0, return());
+    p_name = player ~ 'name';
     
+    // ── XỬ LÝ SÁT THƯƠNG SONIC BOOM CỦA WARDEN (33% Max HP Phase 1 / 45% Max HP Phase 2) ──
+    if (source == 'sonic_boom' || (source_entity != null && source_entity ~ 'type' == 'warden' && source ~ 'sonic'),
+        hp = player ~ 'health';
+        max_hp = _get_attribute(player, 'generic.max_health', 20.0);
+        
+        // Kiểm tra xem Warden gây Sonic Boom có đang ở Phase 2 không
+        is_phase2 = false;
+        if (source_entity != null && source_entity ~ 'type' == 'warden',
+            w_uuid = source_entity ~ 'uuid';
+            is_phase2 = (global_warden_phase2:w_uuid || (source_entity ~ 'health') <= 450);
+        ,
+            p_pos = pos(player);
+            for(entity_list('warden'),
+                w = _;
+                if (_distance(p_pos, pos(w)) <= 40,
+                    w_uuid = w ~ 'uuid';
+                    if (global_warden_phase2:w_uuid || (w ~ 'health') <= 450,
+                        is_phase2 = true;
+                        break();
+                    )
+                )
+            );
+        );
+        
+        sonic_ratio = if(is_phase2, 0.45, 0.33);
+        true_damage = max_hp * sonic_ratio;
+        target_hp = max(0.5, hp - true_damage);
+        
+        // Áp dụng debuff giảm hồi máu 50% trong 5 giây (100 ticks)
+        global_sonic_debuff:p_name = 100;
+        if (is_phase2,
+            run(str('title %s actionbar {"text":"§4§lTrúng Sonic Boom Phase 2: Nhận 45%% Sát thương chuẩn & Giảm hồi máu 50%%!"}', p_name));
+        ,
+            run(str('title %s actionbar {"text":"§c§lBị trúng Sóng Âm: Nhận sát thương chuẩn & Giảm hồi máu 50%%!"}', p_name));
+        );
+        sound('minecraft:entity.warden.sonic_boom', pos(player), 1.0, if(is_phase2, 1.2, 1.0));
+        
+        if (amount >= hp,
+            temp_health = hp + amount;
+            run(str('attribute %s minecraft:generic.max_health base set %f', player ~ 'uuid', max(max_hp, temp_health)));
+            modify(player, 'health', temp_health);
+            schedule(0, _(outer(player), outer(target_hp), outer(max_hp)) -> (
+                if (player && !query(player, 'removed'),
+                    run(str('attribute %s minecraft:generic.max_health base set %f', player ~ 'uuid', max_hp));
+                    modify(player, 'health', target_hp);
+                )
+            ));
+        ,
+            schedule(0, _(outer(player), outer(target_hp)) -> (
+                if (player && !query(player, 'removed'),
+                    modify(player, 'health', target_hp);
+                )
+            ));
+        );
+        return();
+    );
+    
+    if (source_entity == null, return());
     type = source_entity ~ 'type';
     
-    // --- CƠ CHẾ PHẢN HIỆU ỨNG XẤU CỦA WARDEN ---
-    is_warden_source = (type == 'warden');
-    if (is_warden_source,
+    // ── CƠ CHẾ PHẢN HIỆU ỨNG XẤU CỦA WARDEN ──
+    if (type == 'warden',
         effects = query(source_entity, 'effect');
         if (effects != null,
             for(effects,
@@ -579,110 +417,233 @@ __on_player_takes_damage(player, amount, source, source_entity) -> (
                 amp = effect_info:1;
                 dur = effect_info:2;
                 
-                // Nếu là hiệu ứng xấu
                 if (global_negative_effects:effect_name,
-                    // Phản lại hiệu ứng xấu với duration max 5 giây (100 ticks) hoặc bằng thời gian còn lại của Warden
                     apply_dur = min(100, if(dur == -1, 100, dur));
                     modify(player, 'effect', effect_name, apply_dur, amp);
-                    
                     if (rand(1.0) < 0.3,
-                        run(str('title %s actionbar {"text":"§c§lWarden phản lại hiệu ứng xấu: %s!"}', player ~ 'name', effect_name));
+                        run(str('title %s actionbar {"text":"§c§lWarden phản lại hiệu ứng xấu: %s!"}', p_name, effect_name));
                     );
                 )
             )
         )
     );
-
+    
     is_mob = query(source_entity, 'category') == 'hostile' || type == 'wither' || type == 'ender_dragon';
     is_bullet = (type == 'shulker_bullet');
     is_boss_attack = (type == 'wither' || type == 'wither_skull' || type == 'ender_dragon' || type == 'dragon_fireball');
     is_wither_attack = (type == 'wither' || type == 'wither_skull');
     
     if (!is_mob && !is_bullet && !is_boss_attack, return());
-
     dim = player ~ 'dimension';
     
     // ── TĂNG SÁT THƯƠNG BOSS TẠI NETHER VÀ THE END (+1 damage = -1 HP trực tiếp) ──
     if (is_boss_attack && !is_wither_attack && (dim == 'minecraft:the_nether' || dim == 'minecraft:the_end'),
-        modify(player, 'health', max(0, (player ~ 'health') - 1.0))
+        modify(player, 'health', max(0.5, (player ~ 'health') - 1.0));
     );
-
+    
     // ── SÁT THƯƠNG CHUẨN WITHER (2 HP = 1 tim trực tiếp) ──
     if (is_wither_attack,
-        modify(player, 'health', max(0, (player ~ 'health') - 2.0));
-        run(str('title %s actionbar {"text":"§4§lBị tấn công bởi Wither: Nhận 2 sát thương chuẩn! (Bỏ qua giáp)"}', player ~ 'name'));
+        modify(player, 'health', max(0.5, (player ~ 'health') - 2.0));
+        run(str('title %s actionbar {"text":"§4§lBị tấn công bởi Wither: Nhận 2 sát thương chuẩn! (Bỏ qua giáp)"}', p_name));
     );
-
+    
     // ── XỬ LÝ TẠI OVERWORLD ──
     if (dim == 'minecraft:overworld' && is_mob && !is_boss_attack,
         day = floor(time() / 24000);
         daytime = time() % 24000;
         is_night = (daytime >= 12000 && daytime < 23000);
-        
         is_blood_moon = (day == global_blood_moon_day && is_night);
         
         if (is_blood_moon,
-            // Đêm Trăng Máu: tăng 2 sát thương (-2 HP trực tiếp)
-            modify(player, 'health', max(0, (player ~ 'health') - 2.0));
-            
-            // 50% gây mù Blindness II (3s = 60 ticks)
+            modify(player, 'health', max(0.5, (player ~ 'health') - 2.0));
             if (rand(1.0) < 0.50,
-                entity_status_effect(player, 'blindness', 60, 1, true, true);
-                run(str('title %s actionbar {"text":"§4§lTrăng Máu: Bạn bị mù quáng (Blindness II)!"}', player ~ 'name'));
+                modify(player, 'effect', 'blindness', 60, 1);
+                run(str('title %s actionbar {"text":"§4§lTrăng Máu: Bạn bị mù quáng (Blindness II)!"}', p_name));
             )
         );
         
-        // Giữ nguyên hiệu ứng poison & slow bình thường (Day: 15%, Night: 30%)
         chance = if(is_night, 0.30, 0.15);
         if (rand(1.0) < chance,
-            entity_status_effect(player, 'poison', 100, 0, true, true);
-            entity_status_effect(player, 'slowness', 60, 0, true, true);
-            if (!is_blood_moon, // Tránh đè chữ actionbar trăng máu
-                run(str('title %s actionbar {"text":"§cBạn bị nhiễm độc và làm chậm!"}', player ~ 'name'));
-            );
+            modify(player, 'effect', 'poison', 100, 0);
+            modify(player, 'effect', 'slowness', 60, 0);
+            if (!is_blood_moon,
+                run(str('title %s actionbar {"text":"§cBạn bị nhiễm độc và làm chậm!"}', p_name));
+            )
         )
     );
-
+    
     // ── XỬ LÝ TẠI NETHER ──
     if (dim == 'minecraft:the_nether' && is_mob && !is_boss_attack,
         if (rand(1.0) < 0.30,
-            entity_status_effect(player, 'poison', 100, 0, true, true);
-            entity_status_effect(player, 'slowness', 60, 0, true, true);
-            entity_status_effect(player, 'wither', 60, 0, true, true);
+            modify(player, 'effect', 'poison', 100, 0);
+            modify(player, 'effect', 'slowness', 60, 0);
+            modify(player, 'effect', 'wither', 60, 0);
             modify(player, 'fire', 100);
-            run(str('title %s actionbar {"text":"§4§lCảnh báo: Bạn bị thiêu đốt và nguyền rủa bởi quái Nether!"}', player ~ 'name'));
+            run(str('title %s actionbar {"text":"§4§lCảnh báo: Bạn bị thiêu đốt và nguyền rủa bởi quái Nether!"}', p_name));
         )
     );
-
+    
     // ── XỬ LÝ TẠI THE END ──
     if (dim == 'minecraft:the_end',
         if (is_mob && !is_boss_attack && rand(1.0) < 0.30,
-            entity_status_effect(player, 'slowness', 60, 1, true, true);
-            run(str('title %s actionbar {"text":"§5Bạn bị làm chậm cực độ (Slowness II)!"}', player ~ 'name'));
+            modify(player, 'effect', 'slowness', 60, 1);
+            run(str('title %s actionbar {"text":"§5Bạn bị làm chậm cực độ (Slowness II)!"}', p_name));
         );
-        
         if (is_bullet,
-            modify(player, 'health', max(0, (player ~ 'health') - 1.0))
+            modify(player, 'health', max(0.5, (player ~ 'health') - 1.0));
         )
     );
 );
 
-// Event hook khi người chơi gây sát thương (dùng để bắt khoảnh khắc quái chết)
+// ── SỰ KIỆN KHI NGƯỜI CHƠI TẤN CÔNG / GÂY SÁT THƯƠNG CHO QUÁI ──
 __on_player_deals_damage(player, amount, entity) -> (
-    // Kiểm tra xem quái có bị chết do đòn đánh này không
-    if (entity ~ 'health' <= amount,
-        type = entity ~ 'type';
+    if (entity == null, return());
+    type = entity ~ 'type';
+    
+    // ── XỬ LÝ TOÀN DIỆN CƠ CHẾ BOSS WARDEN KHI BỊ NGƯỜI CHƠI TẤN CÔNG ──
+    if (type == 'warden',
+        hp = entity ~ 'health';
+        max_hp = _get_attribute(entity, 'generic.max_health', 1500.0);
+        w_uuid = entity ~ 'uuid';
+        w_pos = pos(entity);
+        p_pos = pos(player);
+        dist = _distance(p_pos, w_pos);
         
-        // ── XỬ LÝ DROP CHO BOSS WARDEN ──
-        if (type == 'warden',
-            w_uuid = entity ~ 'uuid';
-            if (!global_warden_loot_dropped:w_uuid,
-                global_warden_loot_dropped:w_uuid = true;
-                _drop_warden_loot(pos(entity), player);
-            );
-            return();
+        // 1. Kiểm tra trạng thái Huyết Tế Bất Tử (10s)
+        is_channeling_heal = (global_warden_healing_ticks:w_uuid != null && global_warden_healing_ticks:w_uuid > 0);
+        if (is_channeling_heal,
+            schedule(0, _(outer(entity), outer(hp), outer(max_hp)) -> (
+                if (entity && !query(entity, 'removed'),
+                    modify(entity, 'health', min(max_hp, hp));
+                )
+            ));
+            sound('minecraft:item.shield.block', w_pos, 1.2, 0.8);
+            run(str('particle minecraft:enchanted_hit %f %f %f 0.5 0.8 0.5 0.2 20', w_pos:0, w_pos:1 + 1.5, w_pos:2));
+            run(str('title %s actionbar {"text":"§4§l[Bất Tử] Warden đang Huyết Tế (150-600 HP), miễn nhiễm mọi sát thương!"}', player ~ 'name'));
+            return('cancel');
         );
         
+        // 2. Kiểm tra kích hoạt Phase 2 (<= 30% Max HP / <= 450 HP)
+        is_phase2 = global_warden_phase2:w_uuid || (hp / max_hp <= 0.30);
+        if (is_phase2 && !global_warden_phase2:w_uuid,
+            _trigger_warden_rage(entity, w_pos, w_uuid);
+            is_phase2 = true;
+        );
+        
+        // 3. Kiểm tra sát thương từ vật thể bắn / cung tên trong Phase 2
+        holds = query(player, 'holds');
+        held_item = if(holds != null && holds:0 != null, str(holds:0), '');
+        is_ranged_item = (held_item ~ 'bow' || held_item ~ 'crossbow' || held_item ~ 'trident' || held_item ~ 'potion' || held_item ~ 'wind_charge');
+        is_projectile = (is_ranged_item || dist > 6.5);
+        
+        resistance = 0.0;
+        if (is_phase2 && is_projectile,
+            // Phase 2: Kháng 100% sát thương từ vật thể bắn
+            schedule(0, _(outer(entity), outer(hp), outer(max_hp)) -> (
+                if (entity && !query(entity, 'removed'),
+                    modify(entity, 'health', min(max_hp, hp));
+                )
+            ));
+            sound('minecraft:item.shield.block', w_pos, 1.2, 0.8);
+            run(str('particle minecraft:crit %f %f %f 0.5 0.5 0.5 0.2 15', w_pos:0, w_pos:1 + 1.5, w_pos:2));
+            run(str('title %s actionbar {"text":"§c§l[Phase 2] Warden miễn nhiễm 100%% với vật thể bắn! Hãy cận chiến!"}', player ~ 'name'));
+            return('cancel');
+        , held_item ~ 'potion',
+            resistance = 0.80; // Kháng 80% phép thuật / thuốc
+        ,
+            // Kháng vật lý động theo lượng máu hiện tại
+            ratio = hp / max_hp;
+            if (ratio > 0.70,
+                resistance = 0.30;
+            , ratio < 0.50,
+                resistance = 0.50;
+            );
+        );
+        
+        actual_damage = amount * (1.0 - resistance);
+        remaining_hp = hp - actual_damage;
+        
+        // 4. Kích hoạt Huyết Tế Tối Thượng (< 10% Max HP / < 150 HP trong Phase 2)
+        if (is_phase2 && remaining_hp < (max_hp * 0.10) && !global_warden_emergency_healed:w_uuid,
+            global_warden_emergency_healed:w_uuid = true;
+            global_warden_healing_ticks:w_uuid = 200; // Hồi máu dần trong 10 giây (200 ticks)
+            start_hp = max(150.0, remaining_hp);
+            
+            // Buff tạm máu để chống chết sốc ở tick hiện tại
+            temp_health = hp + amount + start_hp;
+            run(str('attribute %s minecraft:generic.max_health base set %f', w_uuid, temp_health));
+            modify(entity, 'health', temp_health);
+            
+            schedule(0, _(outer(entity), outer(max_hp), outer(start_hp), outer(w_uuid)) -> (
+                if (entity && !query(entity, 'removed'),
+                    run(str('attribute %s minecraft:generic.max_health base set %f', w_uuid, max_hp));
+                    modify(entity, 'health', start_hp);
+                    
+                    p_pos = pos(entity);
+                    sound('minecraft:item.totem.use', p_pos, 2.0, 0.8);
+                    sound('minecraft:entity.warden.heartbeat', p_pos, 2.0, 1.2);
+                    sound('minecraft:entity.wither.spawn', p_pos, 1.5, 1.2);
+                    run(str('particle minecraft:totem_of_undying %f %f %f 1.0 1.5 1.0 0.5 150', p_pos:0, p_pos:1 + 1.5, p_pos:2));
+                    
+                    run(str('title @a[x=%f,y=%f,z=%f,distance=..40] title {"text":"§4§l[HUYẾT TẾ TỐI THƯỢNG]","bold":true}', p_pos:0, p_pos:1, p_pos:2));
+                    run(str('title @a[x=%f,y=%f,z=%f,distance=..40] subtitle {"text":"§cWarden giải phóng chướng khí (10s) & Hồi phục về 600 HP (40%% Máu)!"}', p_pos:0, p_pos:1, p_pos:2));
+                    
+                    // Gây hiệu ứng Nausea II, Blindness, Poison II trong 10s (40 blocks)
+                    _apply_warden_blood_sacrifice_debuffs(p_pos);
+                    
+                    // Chuyển sang nhạc Huyết Tế
+                    for(player('all'),
+                        p = _;
+                        p_name = p ~ 'name';
+                        if (_distance(pos(p), p_pos) <= 40,
+                            run(str('stopsound %s record', p_name));
+                            run(str('playsound minecraft:custom.warden_sacrifice record %s ~ ~ ~ 1.0 1.0', p_name));
+                            global_player_warden_music:p_name = 'sacrifice';
+                            global_player_music_timer:p_name = 3500;
+                            print(p, '§4§l[Warden] Kích hoạt Huyết Tế Tối Thượng! Chướng khí độc lan tỏa 40m và bắt đầu hấp thụ sinh lực về 600 HP (40% Máu)!');
+                        )
+                    );
+                )
+            ));
+            return('cancel');
+        );
+        
+        // 5. Kiểm tra rơi phần thưởng khi Warden bị tiêu diệt
+        if (remaining_hp <= 0 && global_warden_emergency_healed:w_uuid && !global_warden_loot_dropped:w_uuid,
+            global_warden_loot_dropped:w_uuid = true;
+            _drop_warden_loot(w_pos, player);
+        );
+        
+        // 6. Áp dụng giảm trừ sát thương thông thường
+        if (resistance > 0.0,
+            if (amount >= hp,
+                if (actual_damage < hp,
+                    temp_health = hp + amount;
+                    run(str('attribute %s minecraft:generic.max_health base set %f', w_uuid, max(max_hp, temp_health)));
+                    modify(entity, 'health', temp_health);
+                    
+                    schedule(0, _(outer(entity), outer(hp), outer(actual_damage), outer(max_hp), outer(w_uuid)) -> (
+                        if (entity && !query(entity, 'removed'),
+                            run(str('attribute %s minecraft:generic.max_health base set %f', w_uuid, max_hp));
+                            modify(entity, 'health', max(0.5, hp - actual_damage));
+                        )
+                    ));
+                )
+            ,
+                heal_back = amount * resistance;
+                schedule(0, _(outer(entity), outer(heal_back), outer(max_hp)) -> (
+                    if (entity && !query(entity, 'removed'),
+                        curr_hp = entity ~ 'health';
+                        modify(entity, 'health', min(max_hp, curr_hp + heal_back));
+                    )
+                ));
+            )
+        );
+        return();
+    );
+    
+    // ── XỬ LÝ DROP CHO CÁC QUÁI VẬT KHÁC (TRĂNG MÁU) ──
+    if (entity ~ 'health' <= amount,
         is_hostile = query(entity, 'category') == 'hostile';
         
         if (is_hostile,
@@ -698,7 +659,6 @@ __on_player_deals_damage(player, amount, entity) -> (
                 extra_xp = _get_additional_xp(type);
                 run(str('summon experience_orb %f %f %f {value:%d}', pos:0, pos:1, pos:2, extra_xp));
                 
-                // Tỉ lệ r cho ngẫu nhiên drop
                 r = rand(1.0);
                 
                 // Zombie: 10% rơi ra 1 Kim cương
@@ -725,7 +685,6 @@ __on_player_deals_damage(player, amount, entity) -> (
                 // Skeleton: 5% rơi ra cung xịn
                 if (type == 'skeleton' || type == 'stray',
                     if (r < 0.05,
-                        // Trong 5% đó, có 10% tỉ lệ có thêm mending
                         has_mending = rand(1.0) < 0.10;
                         if (has_mending,
                             run(str('summon item %f %f %f {Item:{id:"minecraft:bow",count:1,components:{"minecraft:enchantments":{levels:{"minecraft:power":5,"minecraft:punch":2,"minecraft:mending":1}}}}}', pos:0, pos:1, pos:2))
@@ -743,7 +702,7 @@ __on_player_deals_damage(player, amount, entity) -> (
                 );
             )
         )
-    )
+    );
 );
 
 // Quét định kỳ mỗi tick / định kỳ để quản lý Warden, Nhạc nền BGM và Trăng Máu
@@ -774,6 +733,11 @@ __on_tick() -> (
     // 3. Lấy danh sách người chơi online & Warden
     players = player('all');
     wardens = entity_list('warden');
+    
+    // Miễn nhiễm ngạt nước 100% cho Warden bằng cách liên tục hồi phục Air
+    for(wardens,
+        modify(_, 'air', 300);
+    );
     
     // Dọn dẹp bộ nhớ UUID của Warden đã biến mất
     if (global_tick_count % 100 == 0,
@@ -957,10 +921,9 @@ __on_tick() -> (
         
         if (nearby_warden,
             is_flying = query(p, 'flying');
-            is_gliding = query(p, 'fall_flying');
+            is_gliding = (query(p, 'pose') == 'fall_flying');
             if (is_flying || is_gliding,
                 if (is_flying, modify(p, 'flying', false));
-                if (is_gliding, modify(p, 'fall_flying', false));
                 mot = query(p, 'motion');
                 modify(p, 'motion', mot:0, -0.8, mot:2);
                 
@@ -1084,9 +1047,6 @@ _check_permission() -> (
     );
     return(true);
 );
-
-// Lệnh gốc: khi gõ /custom_mob_effects không có tham số
-__command() -> status();
 
 // Lệnh: /custom_mob_effects trigger_blood_moon
 trigger_blood_moon() -> (
