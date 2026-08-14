@@ -163,7 +163,7 @@ Khi cần sửa đổi code script Scarpet hoặc file config:
 
 | Lệnh Minecraft Console / OP | Mô tả chức năng |
 | :--- | :--- |
-| `/custom_mob_effects test_warden_p2` | Đặt máu Warden về 460 HP (sẵn sàng kích hoạt Phase 2 RAGE khi tụt $\le 450$ HP) |
+| `/custom_mob_effects test_warden_phase_two` | Đặt máu Warden về 460 HP (sẵn sàng kích hoạt Phase 2 RAGE khi tụt $\le 450$ HP) |
 | `/custom_mob_effects test_warden_heal` | Đặt Warden vào Phase 2 với 140 HP (kích hoạt ngay Huyết Tế 600 HP, Chướng khí & Nhạc Cuồng Nộ) |
 | `/custom_mob_effects test_warden_drop` | Thử nghiệm rơi gói phần thưởng Thần Thoại của Warden tại vị trí người chơi |
 | `/custom_mob_effects trigger_blood_moon` | Kích hoạt Đêm Trăng Máu ngay lập tức và chuyển giờ về Hoàng Hôn |
