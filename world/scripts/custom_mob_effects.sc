@@ -280,9 +280,9 @@ _on_warden_load(e, new) -> (
     if (new,
         schedule(0, _(outer(e)) -> (
             if (e && !query(e, 'removed'),
-                run(str('attribute %s max_health base set 1024', e ~ 'uuid'));
+                run(str('attribute %s max_health base set 1500', e ~ 'uuid'));
                 run(str('attribute %s movement_speed base set 0.30', e ~ 'uuid'));
-                modify(e, 'health', 1024.0);
+                modify(e, 'health', 1500.0);
                 
                 // Thông báo global toàn server
                 w_pos = pos(e);
