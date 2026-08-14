@@ -1,149 +1,171 @@
-# ✦ AGENT CONTEXT HANDOVER & WORKFLOW GUIDE (CẬP NHẬT MỚI NHẤT) ✦
-
-Tài liệu này ghi lại toàn bộ bối cảnh dự án, trạng thái hệ thống, cấu hình hiện tại, các cơ chế game vừa được nâng cấp và nguyên tắc bảo mật quan trọng dành cho các AI Agent tiếp theo tiếp quản việc quản trị Minecraft Server **Chaos Cubed (Fabric 1.21+ / 26.2)**.
+# ✦ AGENT CONTEXT HANDOVER & SYSTEM MASTER GUIDE ✦
+> **Dành cho AI Agent tiếp theo tiếp quản quản trị hệ thống Minecraft Server Chaos Cubed & Client Test Instance.**
 
 ---
 
-## 1. Thông Tin Chung & Kết Nối Server
+## 1. 🌐 Tổng Quan Kiến Trúc & Thông Tin Kết Nối
 
-* **Server Loader:** Fabric 26.2 (Minecraft 1.21+).
-* **MCP Server kết nối VPS:** `pikamc-agent`
-  * **Công cụ có sẵn:**
-    * `ping`: Kiểm tra trạng thái Agent trên VPS (`PIKAMC_AGENT_OK`).
-    * `minecraft_command`: Chạy các lệnh console qua RCON (Lưu ý: Không dùng dấu `/` ở đầu, ví dụ: `script load custom_mob_effects`, `servercore reload`, `bossbar list`, `tick query`).
-* **Thông tin kết nối SFTP:**
+### 1.1. Server Production (VPS Dedicated Server)
+* **Loader & Phiên bản:** Fabric 26.2 (Minecraft 1.21+).
+* **Kết nối MCP Server:** `pikamc-agent`
+  * `ping`: Kiểm tra agent heartbeat trên VPS (`PIKAMC_AGENT_OK`).
+  * `minecraft_command`: Thực thi lệnh Console/RCON trực tiếp (Không dùng dấu `/` ở đầu, ví dụ: `script unload custom_mob_effects`, `script load custom_mob_effects`, `tick query`).
+* **Kết nối SFTP Quản Trị:**
   * **Host:** `ancient.pikamc.vn` | **Port:** `2022`
-  * **Username:** `ehuiw3vt.770f2c1b` | **Password:** `0ZrcXJHS7J5OuGpV`
+  * **User:** `ehuiw3vt.770f2c1b` | **Password:** `0ZrcXJHS7J5OuGpV`
 * **Kho lưu trữ mã nguồn Local:** [`C:\Users\ADMIN\MineServer`](file:///C:/Users/ADMIN/MineServer)
-  * **GitHub Remote:** `https://github.com/QuangquyNguyenvo/MineServer.git` (nhánh `main`).
-* **Trạng thái thư mục World (Data Thế Giới):**
-  * Đã tải toàn bộ thư mục `world` (dung lượng **9.55 GB**, **8,989 files**) về máy cục bộ tại [`C:\Users\ADMIN\MineServer\world`](file:///C:/Users/ADMIN/MineServer/world).
-  * Đã có sẵn script tải đa luồng và hỗ trợ resume khi đứt mạng tại `download_world.py`.
+* **GitHub Repository:** `https://github.com/QuangquyNguyenvo/MineServer.git` (nhánh `main`).
 
 ---
 
-## 2. Các Cơ Chế Game & Cấu Hình Đã Thiết Lập
-
-### ⚡ 1. Tối Ưu Hóa Hiệu Năng (ServerCore & Carpet)
-* File cấu hình: [`config/servercore/config.yml`](file:///C:/Users/ADMIN/MineServer/config/servercore/config.yml)
-* **View Distance:** `20` chunk.
-* **Simulation Distance:** `7` chunk (Scale động xuống tối thiểu 5 khi quá tải).
-* **Chunk-tick Distance:** `7` chunk (Scale động xuống tối thiểu 5).
-* **Dynamic MSPT Target:** `35ms` (duy trì ổn định 20.0 TPS).
-* **Tối ưu phụ:** `lobotomize-villagers: true` và `prevent-moving-into-unloaded-chunks: true`.
-
----
-
-### 🩸 2. Boss Wither (Buffed)
-* **Máu tối đa:** Tăng từ 300 lên **600 HP** khi spawn.
-* **Sát thương chuẩn (True Damage):** Mọi đòn đánh trực tiếp từ Wither và đạn sọ `wither_skull` luôn gây thêm **2 True Damage (1 tim)** trừ thẳng vào máu người chơi, hoàn toàn bỏ qua mọi lớp giáp/enchantment.
-
----
-
-### 👾 3. Boss Tối Thượng Warden (Đại Tu Toàn Diện & Phase 2)
-Toàn bộ logic được lập trình bằng Scarpet tại file [`world/scripts/custom_mob_effects.sc`](file:///C:/Users/ADMIN/MineServer/world/scripts/custom_mob_effects.sc):
-
-1. **Tăng Máu & Tốc Độ Cơ Bản:**
-   * Máu tối đa: **1500 HP** (`generic.max_health base set 1500`).
-   * Tốc độ di chuyển ban đầu: `0.30` (nhanh hơn vanilla).
-2. **Kháng Sát Thương Thích Ứng (Adaptive Resistance):**
-   * Máu $> 70\%$ ($> 1050$ HP): Kháng **30% sát thương vật lý**.
-   * Máu $< 50\%$ ($< 750$ HP): Kháng **50% sát thương vật lý**.
-3. **Kháng 80% Instant Damage / Phép thuật:**
-   * Sát thương từ `magic` và `indirect_magic` (thuốc Instant Damage Harming I & II) bị giảm 80%.
-4. **Miễn nhiễm ngạt nước (Drown Immunity):**
-   * Hoàn toàn triệt tiêu sát thương ngạt nước (`drown`), không thể bị dìm chết.
-5. **Sonic Boom True Damage:**
-   * **Phase 1 (> 30% HP / > 450 HP):** Gây sát thương chuẩn bằng **33% máu tối đa** của người chơi.
-   * **Phase 2 (<= 30% HP / <= 450 HP):** Gây sát thương chuẩn tăng vọt lên **45% máu tối đa** của người chơi.
-6. **Giảm hồi máu 50% (Healing Debuff):**
-   * Trúng Sonic Boom sẽ dính debuff giảm 50% khả năng hồi máu từ mọi nguồn trong **5 giây (100 ticks)**.
-7. **Trọng Lực Cực Đại (Anti-Flight Zone):**
-   * Trong bán kính **40 blocks** quanh Warden, cấm bay hoàn toàn (Creative fly, Modded fly, Elytra) và kéo người chơi rơi thẳng xuống đất (`motion Y = -0.8`).
-8. **Kéo Mục Tiêu (Sculk Vacuum / Pull):**
-   * Nếu mục tiêu của Warden đứng xa $> 16$ block hoặc cao $> 6$ block, Warden kéo giật người chơi về chân nó kèm hiệu ứng hạt `sculk_soul` và âm thanh shriek (Cooldown **6 giây / 120 ticks**).
-9. **Khả năng phá Block (Anti-Trapping):**
-   * Quét vùng 3x4x3 quanh Warden mỗi 5 ticks và phá hủy các block rắn (kể cả Obsidian) bằng `/fill air destroy` để chống bị người chơi nhốt.
-10. **Phản hiệu ứng xấu (Effect Reflection):**
-    * Khi đánh trúng người chơi, Warden quét các hiệu ứng tiêu cực nó đang dính (Slowness, Poison, Weakness, Blindness...) và phản ngược lại người chơi trong tối đa 5 giây.
-11. **🔥 Cơ chế Phase 2 - Cuồng Nộ / RAGE (Kích hoạt khi <= 30% Máu / <= 450 HP):**
-    * **Tăng tốc độ:** Tăng **50% tốc độ di chuyển** (`movement_speed` base set 0.45).
-    * **Kháng 100% Sát thương tầm xa (Projectile Immunity):** Kháng tuyệt đối 100% mọi vật thể bắn (Cung tên, Đinh ba, Bình thuốc ném/kéo dài, Cầu lửa, Sọ Wither, Wind Charge, Pháo hoa...), buộc người chơi phải cận chiến bằng kiếm.
-    * **Sonic Boom Thăng Hoa:** Sát thương chuẩn tăng lên **45% Max HP** của người chơi.
-    * **Âm thanh & Hiệu ứng:** Gầm rú toàn server (`warden.roar` + `ender_dragon.growl`), bung hạt linh hồn Sculk và Lửa linh hồn.
-    * **Thông báo Title & Chat tellraw:**
-      * **Subtitle:** `Warden đã bùng nổ năng lượng Sculk!` (màu `dark_red`, in nghiêng).
-      * **Tellraw Chat:** `[WARNING] Warden đã rơi vào trạng thái CUỒNG NỘ (RAGE)!\nSức mạnh Sculk bùng nổ, mọi đòn đánh giờ đây bỏ qua giáp!`.
-12. **🩸 Cơ chế Huyết Tế Tối Thượng (Emergency Heal khi < 10% Máu / < 150 HP trong Phase 2):**
-    * Khi máu Warden tụt xuống dưới **10%** (< 150 HP) trong Phase 2, Warden kích hoạt cơ chế hồi sinh khẩn cấp 1 lần duy nhất trong trận đấu.
-    * **Chướng Khí Độc:** Lập tức gieo rắc hiệu ứng tiêu cực lên toàn bộ người chơi trong phạm vi **40 blocks** trong **10 giây (200 ticks)**: **Buồn nôn II (Nausea II)**, **Mù quáng (Blindness)** và **Trúng độc II (Poison II)**.
-    * **Bất Tử & Hồi máu dần trong 10 giây:** Warden được **miễn nhiễm 100% mọi nguồn sát thương (Bất tử)** trong suốt 10 giây vận khí; hấp thụ năng lượng linh hồn và hồi phục từ 150 HP lên **600 HP (40% Max HP)** (+2.25 HP mỗi tick / 45 HP mỗi giây), đi kèm hiệu ứng hạt linh hồn Sculk, Totem và tiếng đập tim dồn dập.
-13. **🎵 Hệ Thống Nhạc Nền Tùy Chỉnh (Custom BGM Looping):**
-    * **Nhạc Giai Đoạn 1 / Spawn:** `minecraft:custom.warden_theme` (Bản nhạc chiến đấu tự động phát và lặp vô tận khi Bossbar Warden xuất hiện cho người chơi trong bán kính 40m).
-    * **Nhạc Huyết Tế / Phase 2:** `minecraft:custom.warden_sacrifice` (Tự động chuyển nhạc từ giây thứ 14 của bản nhạc cuồng nộ khi Warden kích hoạt Huyết Tế, lặp vô tận cho đến khi Warden bị tiêu diệt).
-    * Khi người chơi ra khỏi phạm vi 40m hoặc Warden bị tiêu diệt: Tự động chạy `stopsound` ngắt toàn bộ nhạc nền sạch sẽ.
-    * **Gói Resource Pack:** File [`ChaosCubed_Warden_BGM.zip`](file:///C:/Users/ADMIN/MineServer/ChaosCubed_Warden_BGM.zip) (SHA1: `67b5bce83e97785b6b1ca59d7122485d06b87e8d`) đã được cấu hình tự động tải trong `server.properties`.
-14. **Thanh máu Boss (Boss Health Bar):**
-    * **Phase 1:** Tên **Warden** màu `dark_aqua` (`§3`), thanh màu `blue`.
-    * **Phase 2:** Tên **Warden (Phase 2 - Cuồng Nộ)** màu `red` (`§c`), thanh chuyển sang màu `red`.
-    * Tự động hiển thị/ẩn trong bán kính 40m quanh Warden.
-15. **🎁 Kho Báu & Phần Thưởng Hạ Gục (Warden Mythic Drops):**
-    * **Nhóm 1 (Đảm bảo 100%):** 1x Lõi Nặng (`heavy_core`), 1-2x Sao Địa Ngục (`nether_star`), 1-2x Phôi Nâng Cấp Netherite (`netherite_upgrade_smithing_template`), ~2000 XP Orbs.
-    * **Nhóm 2 (10% Rơi 1 Thần Khí):**
-      * 🗡️ **Lưỡi Đao Hư Không (`Void Reaper`):** Lưỡi hái Netherite (`weaponsexpanded:netherite_scythe`) phù phép **Sharpness VII, Looting IV, Sweeping Edge IV, Unbreaking V, Mending**.
-      * 🛡️ **Giáp Ngực Hư Vô (`Sculk Carapace`):** Giáp ngực Netherite phù phép **Protection VI, Thorns IV, Unbreaking V, Mending**.
-      * 👢 **Ủng Bóng Ma (`Ghost Walker Boots`):** Ủng Netherite phù phép **Protection V, Feather Falling V, Swift Sneak V, Soul Speed III, Depth Strider III, Mending**.
-    * **Nhóm 3 (50% Mỗi Món):**
-      * 2 - 4x Táo Vàng Phù Phép (Enchanted Golden Apple).
-      * 2x Thỏi Netherite (Netherite Ingot).
-      * 2x Totem Bất Tử (Totem of Undying).
-      * 1x Bản mẫu trang trí giáp Silence (`silence_armor_trim_smithing_template`).
-    * **Chiến tích:** Bắn pháo hoa ăn mừng, hiệu ứng âm thanh chiến thắng và thông báo toàn server tên dũng sĩ đã tiêu diệt Warden.
+### 1.2. Client Test Instance (CurseForge Singleplayer)
+* **Đường dẫn thư mục:** [`C:\Users\ADMIN\curseforge\minecraft\Instances\test`](file:///C:/Users/ADMIN/curseforge/minecraft/Instances/test)
+* **Mục đích:** Dùng để người dùng vào game Singleplayer test trực tiếp các cơ chế Boss, sát thương, hiệu ứng và nhạc nền trước khi triển khai hoặc kiểm tra tính năng.
+* **Danh sách 10 mod cốt lõi tối giản (đã dọn dẹp các mod thừa):**
+  1. `fabric-carpet-26.2+v260616.jar` (Engine chạy script Scarpet).
+  2. `scarpet-additions-26.1-1.1.4.jar` (Thư viện mở rộng Carpet).
+  3. `weaponsexpanded_26.2_1.9.2_fabric.jar` (Vũ khí Lưỡi Hái Netherite `Void Reaper`).
+  4. `buffmobs-3.2.0+mc26.2-fabric.jar` (Quản lý chỉ số quái).
+  5. `mob-ai-tweaks-1.11.0-beta.jar` (AI quái vật nâng cao).
+  6. `advancednetherite-fabric-2.4.2-26.2.jar` (Netherite mở rộng).
+  7. `moretotems-fabric-26.2-2.25.0.jar` (Totem mở rộng).
+  8. `fabric-api-0.156.0+26.2.jar` (Thư viện nền tảng).
+  9. `sodium-fabric-0.9.1+mc26.2.jar` (Tối ưu FPS đồ họa Client).
+  10. `modmenu-20.0.1.jar` (Giao diện menu mod).
+* **Vị trí script test:** [`config/carpet/scripts/custom_mob_effects.sc`](file:///C:/Users/ADMIN/curseforge/minecraft/Instances/test/config/carpet/scripts/custom_mob_effects.sc) và [`saves/New World/scripts/custom_mob_effects.sc`](file:///C:/Users/ADMIN/curseforge/minecraft/Instances/test/saves/New%20World/scripts/custom_mob_effects.sc).
 
 ---
 
-### 🌕 4. Các Cơ Chế Khác
-* **Đêm Trăng Máu (Blood Moon):** Xuất hiện chu kỳ 8-15 ngày; quái Overworld nhân 2.5x máu, tăng 30% tốc độ, 50% mù Blindness II và drop thêm vật phẩm hiếm (Diamond, TNT, Eye of Ender, Bow Power V...).
-* **Nether Buffs:** Cấu hình qua BuffMobs tại [`config/buffmobs.json`](file:///C:/Users/ADMIN/MineServer/config/buffmobs.json) (Warden, Wither, Ender Dragon nằm trong blacklist của BuffMobs để tránh xung đột với Scarpet).
+## 2. 👾 Boss Tối Thượng Warden (Đại Tu Toàn Diện & Phase 2)
+
+Toàn bộ logic được lập trình bằng Scarpet độc lập tại file [`world/scripts/custom_mob_effects.sc`](file:///C:/Users/ADMIN/MineServer/world/scripts/custom_mob_effects.sc):
+
+```
+┌──────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+│                                    ✦ THÔNG SỐ CHIẾN ĐẤU BOSS WARDEN ✦                                    │
+├──────────────────────────┬───────────────────────────────────────────────────────────────────────────────┤
+│ Máu tối đa (Max HP)      │ 1,500 HP (generic.max_health base set 1500, thanh Bossbar max 1500)          │
+│ Tốc độ ban đầu           │ 0.30 (nhanh hơn vanilla)                                                     │
+│ Kháng vật lý động        │ Kháng 30% khi máu > 1,050 HP (> 70%); Kháng 50% khi máu < 750 HP (< 50%)      │
+│ Kháng phép thuật         │ Kháng 80% Instant Damage (Harming I/II, Magic, Indirect Magic)               │
+│ Kháng môi trường         │ Miễn nhiễm 100% sát thương ngạt nước (Drown Immunity)                        │
+│ Phản hiệu ứng xấu        │ Phản ngược Slowness, Poison, Weakness, Blindness... lại người chơi trong 5s   │
+│ Trọng lực cực đại        │ Anti-Flight trong 40m (kéo người chơi rơi tự do motion Y = -0.8 nếu bay)     │
+│ Kéo mục tiêu (Vacuum)    │ Kéo giật người chơi cách xa > 16m hoặc cao > 6m về chân Warden (CD: 6s/120t)  │
+│ Phá hủy địa hình         │ Quét phá hủy block rắn vùng 3x4x3 mỗi 5 ticks để chống bị nhốt               │
+│ Thông báo Spawn Global   │ Broadcast chat đỏ toàn server kèm tọa độ X, Y, Z và âm thanh gầm emerge      │
+└──────────────────────────┴───────────────────────────────────────────────────────────────────────────────┘
+```
 
 ---
 
-## 3. Quy Trình Đồng Bộ & Deploy Lên Server VPS
-
-Khi cần sửa đổi file script hoặc cấu hình:
-1. **Chỉnh sửa file tại local:** [`C:\Users\ADMIN\MineServer`](file:///C:/Users/ADMIN/MineServer).
-2. **Upload trực tiếp lên VPS qua SFTP:**
-   * Sử dụng thư viện paramiko để upload file tương ứng vào `/world/scripts/` hoặc `/config/`.
-3. **Reload trên Server Runtime (qua MCP RCON):**
-   * Để reload Scarpet: Chạy `script unload <tên_app>` rồi `script load <tên_app>` (ví dụ: `script unload custom_mob_effects` -> `script load custom_mob_effects`). *Lưu ý: Không có lệnh `script reload` trong bản Carpet hiện tại.*
-   * Để reload ServerCore: Chạy `servercore reload`.
-4. **Kiểm tra Logs & Gỡ lỗi:**
-   * Tải và đọc đuôi file `logs/latest.log` từ VPS để kiểm tra lỗi runtime.
-5. **Đồng bộ Git:**
-   * `git add <file>`, `git commit -m "..."`, `git push origin main`.
-   * *Lưu ý:* Không commit các tệp dữ liệu thế giới (dimensions, playerdata, camerapture...) lên Git.
+### 🔥 2.1. Cơ Chế Phase 2 - Cuồng Nộ / RAGE (Kích hoạt khi $\le 30\%$ Máu / $\le 450$ HP)
+* **Tăng tốc độ:** Tăng **50% tốc độ di chuyển** (`movement_speed` base set `0.45`).
+* **Kháng 100% Vật Thể Bắn (Projectile Immunity):** Miễn nhiễm hoàn toàn với cung tên, đinh ba, thuốc ném, cầu lửa, sọ Wither, Wind Charge, pháo hoa... **bắt buộc người chơi phải cận chiến bằng kiếm/vũ khí**.
+* **Sonic Boom Thăng Hoa:** Gây sát thương chuẩn **45% Max HP** của người chơi (Phase 1 là 33% Max HP) kèm **Debuff giảm 50% hồi máu trong 5s (100 ticks)**.
+* **Âm thanh & Hiệu ứng:** Gầm rú toàn server (`entity.warden.roar` + `entity.ender_dragon.growl`), bùng nổ hạt linh hồn Sculk và lửa xanh.
+* **Thông báo Title & Tellraw Chat:**
+  * **Subtitle:** `Warden đã bùng nổ năng lượng Sculk!` (màu `dark_red`, in nghiêng).
+  * **Tellraw Chat:** `[WARNING] Warden đã rơi vào trạng thái CUỒNG NỘ (RAGE)!\nSức mạnh Sculk bùng nổ, mọi đòn đánh giờ đây bỏ qua giáp!`.
+* **Thanh Bossbar:** Chuyển tên thành `Warden (Phase 2 - Cuồng Nộ)` màu đỏ và thanh máu chuyển sang màu đỏ (`red`).
 
 ---
 
-## 4. ⚠️ Các Bài Học Kinh Nghiệm & Lưu Ý Lập Trình (Crucial Bugfixes)
-
-1. **Lỗi `Unknown entity feature: dead` trong Scarpet:**
-   * Trong Scarpet, thực thể người chơi **không** có thuộc tính `~ 'dead'`. Để kiểm tra người chơi còn sống hay không, chỉ cần kiểm tra máu `p ~ 'health' > 0` và biến lưu máu cũ `prev_hp > 0`.
-2. **Lỗi trả về `'cancel'` trong Event Sát thương của Carpet:**
-   * Việc trả về `'cancel'` trong `__on_damaged` hoặc `__on_player_takes_damage` không thể chặn sát thương hoàn toàn do bug của Carpet.
-   * **Giải pháp chuẩn:** Sử dụng cơ chế hồi máu / điều chỉnh máu tại `schedule(0, ...)` (tick tiếp theo). Nếu sát thương gốc có nguy cơ giết chết thực thể trước khi được giảm trừ, hãy buff máu tạm thời cho thực thể ngay trong event để vượt qua hit đánh, rồi đưa về lượng máu chuẩn ở `schedule(0, ...)`.
-3. **Giới hạn màu của Vanilla Bossbar:**
-   * Lệnh `bossbar set color` của Minecraft chỉ nhận các màu: `pink`, `blue`, `red`, `green`, `yellow`, `purple`, `white`.
-   * Để có màu `dark_aqua` (`§3`), ta định dạng màu này vào phần text của bossbar: `bossbar add warden_boss {"text":"Warden","color":"dark_aqua","bold":true}` và đặt thanh màu `blue`.
+### 🩸 2.2. Cơ Chế Huyết Tế Tối Thượng (Emergency Heal khi $< 10\%$ Máu / $< 150$ HP trong Phase 2)
+* **Kích hoạt duy nhất 1 lần trong trận đấu** khi máu tụt dưới 150 HP.
+* **Chướng Khí Độc (40m Radius):** Áp đặt **Buồn nôn II (Nausea II)**, **Mù quáng (Blindness)** và **Trúng độc II (Poison II)** lên toàn bộ người chơi trong 40m trong **10 giây (200 ticks)**.
+* **Bất Tử 100% (10 Giây):** Warden được miễn nhiễm 100% mọi nguồn sát thương trong suốt 10 giây vận khí hồi phục; liên tục bung hạt Totem, linh hồn Sculk và nhịp tim dồn dập.
+* **Tốc Độ Hồi Phục:** Hồi từ 150 HP lên **600 HP (40% Max HP)** với tốc độ **+2.25 HP/tick** (+45 HP/giây).
 
 ---
 
-## 5. Danh Mục File Quan Trọng
+### 🎵 2.3. Hệ Thống Nhạc Nền BGM Looping & Resource Pack
+* **Giai đoạn 1 (Spawn / Phase 1):** Phát bài `minecraft:custom.warden_theme` (BGM chiến đấu loop vô tận trong bán kính 40m).
+* **Giai đoạn 2 (Huyết Tế / Phase 2):** Khi Huyết Tế kích hoạt, nhạc lập tức dừng bài cũ và chuyển sang `minecraft:custom.warden_sacrifice` (cắt từ giây thứ 14 của bản nhạc cuồng nộ, loop vô tận cho đến khi Warden chết).
+* **Smart Stopsound:** Tự động ngắt nhạc sạch sẽ khi người chơi rời khỏi bán kính 40m hoặc Warden bị tiêu diệt.
+* **Resource Pack Server:** [`ChaosCubed_Warden_BGM.zip`](file:///C:/Users/ADMIN/MineServer/ChaosCubed_Warden_BGM.zip) (5.92 MB, SHA1: `67b5bce83e97785b6b1ca59d7122485d06b87e8d`).
+* **Cấu hình `server.properties` trên VPS:**
+  * `resource-pack=https://raw.githubusercontent.com/QuangquyNguyenvo/MineServer/main/ChaosCubed_Warden_BGM.zip`
+  * `resource-pack-sha1=67b5bce83e97785b6b1ca59d7122485d06b87e8d`
 
-| Đường dẫn File | Mô tả |
+---
+
+### 🎁 2.4. Phần Thưởng Rơi Ra Khi Hạ Gục Warden (Mythic Loot Drops)
+
+| Nhóm phần thưởng | Tỉ lệ rơi | Chi tiết vật phẩm |
+| :--- | :---: | :--- |
+| **Nhóm 1: Đảm bảo (Guaranteed)** | **100%** | • **1x Lõi Nặng (Heavy Core - `minecraft:heavy_core`)**<br>• **1 - 2x Sao Địa Ngục (Nether Star)**<br>• **1 - 2x Phôi Nâng Cấp Netherite (`netherite_upgrade_smithing_template`)**<br>• **~2,000 XP Orbs (4 cụm 500 XP)** |
+| **Nhóm 2: Bảo Khí Thần Thoại (Mythic God Gear)** | **10%** *(Chọn 1 trong 3)* | 1. 🗡️ **Lưỡi Đao Hư Không (`Void Reaper`):** Lưỡi Hái Netherite (`weaponsexpanded:netherite_scythe`) phù phép **Sharpness VII, Looting IV, Sweeping Edge IV, Unbreaking V, Mending**.<br>2. 🛡️ **Giáp Ngực Hư Vô (`Sculk Carapace`):** Giáp ngực Netherite phù phép **Protection VI, Thorns IV, Unbreaking V, Mending**.<br>3. 👢 **Ủng Bóng Ma (`Ghost Walker Boots`):** Giày Netherite phù phép **Protection V, Feather Falling V, Swift Sneak V, Soul Speed III, Depth Strider III, Mending**. |
+| **Nhóm 3: Kho Báu Jackpot** | **50%** *(Độc lập)* | • **2 - 4x Táo Vàng Notch (Enchanted Golden Apple)**<br>• **2x Thỏi Netherite (Netherite Ingot)**<br>• **2x Totem Bất Tử (Totem of Undying)**<br>• **1x Bản Mẫu Trang Trí Áo Giáp Silence (`silence_armor_trim_smithing_template`)** |
+| **Hiệu ứng chiến tích** | **100%** | Bắn pháo hoa ăn mừng, âm thanh `ui.toast.challenge_complete` và vinh danh `[CHIẾN TÍCH] <Tên người chơi> đã tiêu diệt thành công Chúa Tể Bóng Tối Warden!` trên khung chat toàn server. |
+
+---
+
+## 3. 🌕 Đêm Trăng Máu & Các Cơ Chế Mob Khác
+
+1. **Đêm Trăng Máu (Blood Moon):**
+   * Chu kỳ xuất hiện: **8 đến 15 ngày một lần** tại Overworld.
+   * Quái vật Overworld: **x2.5 Max HP**, **+30% tốc độ di chuyển**, đánh gây thêm 2 True Damage (1 tim) và **50% cơ hội gây mù Blindness II trong 3s**.
+   * Phần thưởng rơi thêm: Zombie (10% Diamond), Creeper (10% TNT), Enderman (10% Eye of Ender), Skeleton (5% Bow Power V / Punch II / Mending), Spider (10% Slow Falling Potion).
+2. **Boss Wither:** 600 Max HP, mọi đòn đánh và đạn sọ `wither_skull` gây thêm **+2.0 True Damage (1 tim)** trừ thẳng vào máu người chơi, xuyên qua giáp.
+3. **Boss Ender Dragon:** 700 Max HP, gây thêm +1.0 sát thương trực tiếp ở The End.
+4. **Enderman / Shulker (The End):** Nhân 1.5x Max HP (Enderman 60 HP, Shulker 45 HP), Enderman tăng +1.0 sát thương.
+5. **Nether Mobs:** Cấu hình qua [`config/buffmobs.json`](file:///C:/Users/ADMIN/MineServer/config/buffmobs.json).
+
+---
+
+## 4. 🛠️ Quy Trình Thao Tác & Deploy Chuẩn (SOP)
+
+Khi cần sửa đổi code script Scarpet hoặc file config:
+
+1. **Chỉnh sửa tại local:** [`C:\Users\ADMIN\MineServer\world\scripts\custom_mob_effects.sc`](file:///C:/Users/ADMIN/MineServer/world/scripts/custom_mob_effects.sc).
+2. **Upload lên VPS qua SFTP:**
+   ```python
+   import paramiko
+   transport = paramiko.Transport(('ancient.pikamc.vn', 2022))
+   transport.connect(username='ehuiw3vt.770f2c1b', password='0ZrcXJHS7J5OuGpV')
+   sftp = paramiko.SFTPClient.from_transport(transport)
+   sftp.put(r'C:\Users\ADMIN\MineServer\world\scripts\custom_mob_effects.sc', 'world/scripts/custom_mob_effects.sc')
+   sftp.close(); transport.close()
+   ```
+3. **Reload trên VPS Runtime (qua tool `minecraft_command`):**
+   * Bước 1: `script unload custom_mob_effects`
+   * Bước 2: `script load custom_mob_effects`
+   *(Lưu ý: Không dùng `script reload` vì Carpet phiên bản này không hỗ trợ reload trực tiếp).*
+4. **Đồng bộ sang Instance Test CurseForge:**
+   * Copy sang `C:\Users\ADMIN\curseforge\minecraft\Instances\test\config\carpet\scripts\custom_mob_effects.sc`
+   * Copy sang `C:\Users\ADMIN\curseforge\minecraft\Instances\test\saves\New World\scripts\custom_mob_effects.sc`
+5. **Commit Git:** `git add ...`, `git commit -m "..."`, `git push origin main`.
+
+---
+
+## 5. ⚠️ Các Bài Học Kinh Nghiệm Kỹ Thuật (Crucial Gotchas & Rules)
+
+1. **Không dùng các hàm add-on không thuộc chuẩn Vanilla Scarpet:**
+   * Không dùng `distance(p1, p2)` hoặc `attribute(e, name)` vì chúng phụ thuộc vào mod `scarpet-additions`.
+   * **Luôn dùng hàm helper nội tại:**
+     * `_distance(p1, p2)`: Tự tính khoảng cách Euclid 3D $\sqrt{dx^2 + dy^2 + dz^2}$.
+     * `_get_attribute(e, name, default)`: Sử dụng `query(e, 'max_health')` hoặc `query(e, 'attribute', name)`.
+2. **Quyền hạn lệnh test (`_check_permission`):**
+   * File script cấu hình `__config() -> {'scope' -> 'global', 'command_permission' -> 4}`.
+   * Hàm `_check_permission()` cho phép **Server Console / RCON** (`player() == null`) và người chơi có quyền **Admin OP cấp $\ge 2$ trong Singleplayer/Server** sử dụng lệnh test, đồng thời **chặn 100% người chơi bình thường**.
+3. **Xung đột AI Illusioner trong `mob-ai-tweaks`:**
+   * Trong Minecraft 1.21+, AI bắn cung tùy chỉnh của `mob-ai-tweaks` gây lỗi `IllegalArgumentException: Invalid weapon firing an arrow` làm crash server.
+   * **Quy tắc bắt buộc:** File [`config/mob-ai-tweaks/general_config.txt`](file:///C:/Users/ADMIN/MineServer/config/mob-ai-tweaks/general_config.txt) phải luôn đặt `illusioner_rework=false` và `wardens_have_health_bars=false`.
+4. **Tránh lỗi trả về `'cancel'` trong Event Hook sát thương:**
+   * Carpet không thể hủy hoàn toàn đòn đánh bằng `'cancel'`. Luôn sử dụng cơ chế buff máu đệm và hồi phục trong `schedule(0, ...)`.
+5. **Thực thể Player không có thuộc tính `~ 'dead'`:**
+   * Luôn kiểm tra trạng thái sống của người chơi bằng `p ~ 'health' > 0`.
+
+---
+
+## 6. 🎮 Danh Sách Lệnh Kiểm Tra Nhanh (Cheat Sheet)
+
+| Lệnh Minecraft Console / OP | Mô tả chức năng |
 | :--- | :--- |
-| [`world/scripts/custom_mob_effects.sc`](file:///C:/Users/ADMIN/MineServer/world/scripts/custom_mob_effects.sc) | Toàn bộ script Scarpet điều khiển Boss Warden, Wither, Bossbar, Trăng Máu và hiệu ứng On-Hit |
-| [`config/servercore/config.yml`](file:///C:/Users/ADMIN/MineServer/config/servercore/config.yml) | Cấu hình tối ưu hóa hiệu năng ServerCore (View/Simulation distance, Dynamic MSPT) |
-| [`config/buffmobs.json`](file:///C:/Users/ADMIN/MineServer/config/buffmobs.json) | Cấu hình tăng chỉ số quái thường Nether/Overworld của mod BuffMobs |
-| [`mob_buffs_summary.md`](file:///C:/Users/ADMIN/MineServer/mob_buffs_summary.md) | Tài liệu tóm tắt các cơ chế Buff quái và Trăng Máu |
-| [`walkthrough.md`](file:///C:/Users/ADMIN/.gemini/antigravity-cli/brain/8a36bc8b-0faa-4bb4-b9de-7b6de53e1149/walkthrough.md) | Nhật ký thay đổi và kiểm tra thực tế |
+| `/custom_mob_effects test_warden_p2` | Đặt máu Warden về 460 HP (sẵn sàng kích hoạt Phase 2 RAGE khi tụt $\le 450$ HP) |
+| `/custom_mob_effects test_warden_heal` | Đặt Warden vào Phase 2 với 140 HP (kích hoạt ngay Huyết Tế 600 HP, Chướng khí & Nhạc Cuồng Nộ) |
+| `/custom_mob_effects test_warden_drop` | Thử nghiệm rơi gói phần thưởng Thần Thoại của Warden tại vị trí người chơi |
+| `/custom_mob_effects trigger_blood_moon` | Kích hoạt Đêm Trăng Máu ngay lập tức và chuyển giờ về Hoàng Hôn |
+| `/custom_mob_effects status` | Xem trạng thái Trăng Máu và chu kỳ ngày hiện tại |
+| `tick query` | Kiểm tra MSPT và TPS thực tế của Server |
