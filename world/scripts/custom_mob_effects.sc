@@ -103,9 +103,9 @@ _init_warden_bossbar() -> (
 
 // Tải dữ liệu lưu trữ ngày Trăng Máu
 _load_blood_moon_data() -> (
-    current_day = floor(time() / 24000);
+    current_day = floor(day_time() / 24000);
     data = read_file('bloodmoon', 'json');
-    if (data != null && data:'next_day' != null && data:'next_day' >= current_day,
+    if (data != null && data:'next_day' != null && data:'next_day' >= current_day && data:'next_day' <= current_day + 30,
         global_blood_moon_day = data:'next_day';
     ,
         global_blood_moon_day = current_day + floor(rand(8)) + 8;
@@ -307,8 +307,8 @@ _on_warden_load(e, new) -> (
 
 _on_overworld_mob_load(e, new) -> (
     if (new && (e ~ 'dimension') ~ 'overworld',
-        day = floor(time() / 24000);
-        daytime = time() % 24000;
+        day = floor(day_time() / 24000);
+        daytime = day_time() % 24000;
         is_night = (daytime >= 12000 && daytime < 23000);
         
         if (day == global_blood_moon_day && is_night,
@@ -472,8 +472,8 @@ __on_player_takes_damage(player, amount, source, source_entity) -> (
     );
     
     if (is_overworld && is_mob && !is_boss_attack,
-        day = floor(time() / 24000);
-        daytime = time() % 24000;
+        day = floor(day_time() / 24000);
+        daytime = day_time() % 24000;
         is_night = (daytime >= 12000 && daytime < 23000);
         is_blood_moon = (day == global_blood_moon_day && is_night);
         
@@ -664,8 +664,8 @@ __on_player_deals_damage(player, amount, entity) -> (
         is_hostile = query(entity, 'category') == 'hostile';
         
         if (is_hostile,
-            day = floor(time() / 24000);
-            daytime = time() % 24000;
+            day = floor(day_time() / 24000);
+            daytime = day_time() % 24000;
             is_night = (daytime >= 12000 && daytime < 23000);
             is_blood_moon = (day == global_blood_moon_day && is_night);
             
@@ -1002,12 +1002,14 @@ __on_tick() -> (
         )
     );
 
-    // 7. Cảnh báo hoàng hôn ngày Trăng Máu
-    if (global_tick_count % 100 == 0,
-        daytime = time() % 24000;
-        day = floor(time() / 24000);
+    // 7. Quản lý Đêm Trăng Máu
+    if (global_tick_count % 20 == 0,
+        day = floor(day_time() / 24000);
+        daytime = day_time() % 24000;
+        is_night = (daytime >= 12000 && daytime < 23000);
         
-        if (day == global_blood_moon_day && daytime >= 12000 && daytime < 13000,
+        // Bắt đầu đêm Trăng Máu (Hoàng hôn đến đêm)
+        if (day == global_blood_moon_day && is_night,
             if (!global_was_blood_moon_notified,
                 for(players,
                     p = _;
@@ -1021,7 +1023,8 @@ __on_tick() -> (
             )
         );
         
-        if (global_was_blood_moon_notified && (daytime < 12000 || day != global_blood_moon_day),
+        // Kết thúc đêm Trăng Máu khi trời sáng (hết đêm hoặc sang ngày mới)
+        if (global_was_blood_moon_notified && !is_night,
             for(players,
                 p = _;
                 sound('minecraft:ui.toast.challenge_complete', pos(p), 0.8, 1.0);
@@ -1044,12 +1047,12 @@ __on_tick() -> (
 // ── LỆNH KIỂM TRA DÀNH CHO ADMIN OP & SERVER CONSOLE ──
 
 trigger_blood_moon() -> (
-    current_day = floor(time() / 24000);
+    run('time set 12000');
+    current_day = floor(day_time() / 24000);
     global_blood_moon_day = current_day;
     global_was_blood_moon_notified = false;
     _save_blood_moon_data();
-    run('time set 12000');
-    msg = 'Đã kích hoạt Trăng Máu cho hôm nay và chuyển giờ về Hoàng Hôn!';
+    msg = 'Đã kích hoạt Trăng Máu cho hôm nay và chuyển giờ về Hoàng Hôn (12000 ticks)!';
     for(player('all'), print(_, '§4§l[Trăng Máu] ' + msg));
     print('[Server Console] ' + msg);
 );
@@ -1102,8 +1105,8 @@ test_warden_drop() -> (
 );
 
 status() -> (
-    current_day = floor(time() / 24000);
-    daytime = time() % 24000;
+    current_day = floor(day_time() / 24000);
+    daytime = day_time() % 24000;
     is_night = (daytime >= 12000 && daytime < 23000);
     is_bm_now = (current_day == global_blood_moon_day && is_night);
     days_left = max(0, global_blood_moon_day - current_day);
