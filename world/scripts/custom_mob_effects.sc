@@ -3,6 +3,12 @@
 //   Gây hiệu ứng bất lợi, buff quái Overworld/Nether/End và Đêm Trăng Máu
 // ==============================================================================
 
+// Khóa quyền thực thi lệnh: Cấp 4 (Chỉ Server Console / RCON / Admin tối cao), Scope: Global
+__config() -> {
+    'scope' -> 'global',
+    'command_permission' -> 4
+};
+
 global_blood_moon_day = null;
 global_was_blood_moon_notified = false;
 
@@ -1048,55 +1054,53 @@ __on_tick() -> (
     )
 );
 
-// ── LỆNH KIỂM TRA CHO DEVELOPER ──
+// ── LỆNH KIỂM TRA DÀNH RIÊNG CHO SERVER CONSOLE / DEVELOPER ──
+
+// Helper kiểm tra chỉ cho phép Server Console / RCON thực thi
+_check_console_only() -> (
+    p = player();
+    if (p != null,
+        print(p, '§c[Lệnh Bị Khóa] Lệnh này chỉ dành riêng cho Server Console / RCON! Người chơi không được phép sử dụng.');
+        return(false);
+    );
+    return(true);
+);
 
 // Lệnh gốc: khi gõ /custom_mob_effects không có tham số
 __command() -> status();
 
-// Lệnh: /custom_mob_effects trigger_blood_moon
+// Lệnh: /custom_mob_effects trigger_blood_moon (Chỉ Server Console)
 trigger_blood_moon() -> (
-    p = player();
-    if (query(p, 'permission_level') < 2,
-        print(p, '§cBạn không có quyền sử dụng lệnh này!');
-        return()
-    );
+    if (!_check_console_only(), return());
     current_day = floor(time() / 24000);
     global_blood_moon_day = current_day;
     global_was_blood_moon_notified = false;
     _save_blood_moon_data();
     run('time set 12000');
-    print(p, '§4§l[Trăng Máu] Đã kích hoạt Trăng Máu cho hôm nay và chuyển giờ về Hoàng Hôn!');
+    print('[Server Console] Đã kích hoạt Trăng Máu cho hôm nay và chuyển giờ về Hoàng Hôn!');
 );
 
-// Lệnh: /custom_mob_effects test_warden_p2
+// Lệnh: /custom_mob_effects test_warden_p2 (Chỉ Server Console)
 // Đặt máu của Warden gần nhất về 460 HP để kiểm tra Phase 2
 test_warden_p2() -> (
-    p = player();
-    if (query(p, 'permission_level') < 2,
-        print(p, '§cBạn không có quyền sử dụng lệnh này!');
-        return()
-    );
+    if (!_check_console_only(), return());
     wardens = entity_list('warden');
     if (length(wardens) == 0,
-        print(p, '§cKhông tìm thấy Warden nào trong tầm!');
+        print('[Server Console] Không tìm thấy Warden nào trong toàn bộ server!');
         return();
     );
     w = wardens:0;
     modify(w, 'health', 460.0);
-    print(p, '§aĐã đặt máu Warden về 460 HP (chuẩn bị kích hoạt Phase 2 khi xuống <= 450 HP / 30% Máu)!');
+    print(str('[Server Console] Đã đặt máu Warden (%s) về 460 HP (chuẩn bị kích hoạt Phase 2 khi xuống <= 450 HP / 30%% Máu)!', w ~ 'uuid'));
 );
 
-// Lệnh: /custom_mob_effects test_warden_heal
+// Lệnh: /custom_mob_effects test_warden_heal (Chỉ Server Console)
 // Đặt máu của Warden gần nhất về 140 HP trong Phase 2 để kiểm tra Hồi máu 10s lên 600 HP và Nhạc Sacrifice
 test_warden_heal() -> (
-    p = player();
-    if (query(p, 'permission_level') < 2,
-        print(p, '§cBạn không có quyền sử dụng lệnh này!');
-        return()
-    );
+    if (!_check_console_only(), return());
     wardens = entity_list('warden');
     if (length(wardens) == 0,
-        print(p, '§cKhông tìm thấy Warden nào trong tầm!');
+        print('[Server Console] Không tìm thấy Warden nào trong toàn bộ server!');
         return();
     );
     w = wardens:0;
@@ -1104,31 +1108,33 @@ test_warden_heal() -> (
     delete(global_warden_emergency_healed:(w ~ 'uuid'));
     delete(global_warden_healing_ticks:(w ~ 'uuid'));
     modify(w, 'health', 140.0);
-    print(p, '§aĐã đặt Warden vào Phase 2 với 140 HP để kiểm tra cơ chế Huyết Tế (< 10% / < 150 HP) hồi lên 600 HP trong 10s và nhạc Sacrifice!');
+    print(str('[Server Console] Đã đặt Warden (%s) vào Phase 2 với 140 HP để kiểm tra cơ chế Huyết Tế (< 10%% / < 150 HP) hồi lên 600 HP trong 10s và nhạc Sacrifice!', w ~ 'uuid'));
 );
 
-// Lệnh: /custom_mob_effects test_warden_drop
-// Thử nghiệm rơi drop phần thưởng Warden tại vị trí người chơi
+// Lệnh: /custom_mob_effects test_warden_drop (Chỉ Server Console)
+// Thử nghiệm rơi drop phần thưởng Warden tại vị trí người chơi online đầu tiên
 test_warden_drop() -> (
-    p = player();
-    if (query(p, 'permission_level') < 2,
-        print(p, '§cBạn không có quyền sử dụng lệnh này!');
-        return()
+    if (!_check_console_only(), return());
+    players = player('all');
+    if (length(players) > 0,
+        target_p = players:0;
+        _drop_warden_loot(pos(target_p), target_p);
+        print(str('[Server Console] Đã kích hoạt test phần thưởng rơi ra của Warden tại vị trí của %s!', target_p ~ 'name'));
+    ,
+        print('[Server Console] Không có người chơi nào online để lấy vị trí spawn drop test!');
     );
-    _drop_warden_loot(pos(p), p);
-    print(p, '§aĐã kích hoạt test phần thưởng rơi ra của Warden tại vị trí của bạn!');
 );
 
-// Lệnh: /custom_mob_effects status
+// Lệnh: /custom_mob_effects status (Chỉ Server Console)
 // Xem trạng thái trăng máu hiện tại và lịch trình
 status() -> (
-    p = player();
+    if (!_check_console_only(), return());
     current_day = floor(time() / 24000);
     daytime = time() % 24000;
-    print(p, '§7--- Trạng thái Custom Mob Effects ---');
-    print(p, str('§7Ngày hiện tại: %d (Thời gian ngày: %d)', current_day, daytime));
-    print(p, str('§7Ngày Trăng Máu tiếp theo: %d', global_blood_moon_day));
     is_night = (daytime >= 12000 && daytime < 23000);
     is_bm_now = (current_day == global_blood_moon_day && is_night);
-    print(p, str('§7Trăng Máu đang hoạt động: %s', if(is_bm_now, '§4ĐANG CHẠY', '§aKhông')));
+    print('--- [Server Console] Trạng thái Custom Mob Effects ---');
+    print(str('Ngày hiện tại: %d (Thời gian ngày: %d)', current_day, daytime));
+    print(str('Ngày Trăng Máu tiếp theo: %d', global_blood_moon_day));
+    print(str('Trăng Máu đang hoạt động: %s', if(is_bm_now, 'ĐANG CHẠY', 'Không')));
 );
