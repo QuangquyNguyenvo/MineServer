@@ -85,6 +85,18 @@ Toàn bộ logic được lập trình bằng Scarpet tại file [`world/scripts
     * **Phase 1:** Tên **Warden** màu `dark_aqua` (`§3`), thanh màu `blue`.
     * **Phase 2:** Tên **Warden (Phase 2 - Cuồng Nộ)** màu `red` (`§c`), thanh chuyển sang màu `red`.
     * Tự động hiển thị/ẩn trong bán kính 40m quanh Warden.
+15. **🎁 Kho Báu & Phần Thưởng Hạ Gục (Warden Mythic Drops):**
+    * **Nhóm 1 (Đảm bảo 100%):** 1x Lõi Nặng (`heavy_core`), 1-2x Sao Địa Ngục (`nether_star`), 1-2x Phôi Nâng Cấp Netherite (`netherite_upgrade_smithing_template`), ~2000 XP Orbs.
+    * **Nhóm 2 (20% Rơi 1 Thần Khí):**
+      * 🗡️ **Lưỡi Đao Hư Không (`Void Reaper`):** Lưỡi hái Netherite (`weaponsexpanded:netherite_scythe`) phù phép **Sharpness VII, Looting IV, Sweeping Edge IV, Unbreaking V, Mending**.
+      * 🛡️ **Giáp Ngực Hư Vô (`Sculk Carapace`):** Giáp ngực Netherite phù phép **Protection VI, Thorns IV, Unbreaking V, Mending**.
+      * 👢 **Ủng Bóng Ma (`Ghost Walker Boots`):** Ủng Netherite phù phép **Protection V, Feather Falling V, Swift Sneak V, Soul Speed III, Depth Strider III, Mending**.
+    * **Nhóm 3 (50% Mỗi Món):**
+      * 2 - 4x Táo Vàng Phù Phép (Enchanted Golden Apple).
+      * 2x Thỏi Netherite (Netherite Ingot).
+      * 2x Totem Bất Tử (Totem of Undying).
+      * 1x Bản mẫu trang trí giáp Silence (`silence_armor_trim_smithing_template`).
+    * **Chiến tích:** Bắn pháo hoa ăn mừng, hiệu ứng âm thanh chiến thắng và thông báo toàn server tên dũng sĩ đã tiêu diệt Warden.
 
 ---
 

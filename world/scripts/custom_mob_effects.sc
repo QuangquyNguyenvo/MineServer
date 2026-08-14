@@ -13,6 +13,7 @@ global_warden_pull_cooldown = {};
 global_warden_phase2 = {};
 global_warden_emergency_healed = {};
 global_warden_healing_ticks = {};
+global_warden_loot_dropped = {};
 global_player_warden_music = {};
 global_player_music_timer = {};
 
@@ -109,6 +110,80 @@ _trigger_warden_rage(w, w_pos, w_uuid) -> (
     
     // Thông báo khung chat bằng tellraw theo đúng định dạng
     run('tellraw @a ["",{"text":"[WARNING] ","color":"dark_red","bold":true},{"text":"Warden ","color":"dark_aqua","bold":true},{"text":"đã rơi vào trạng thái ","color":"gray"},{"text":"CUỒNG NỘ (RAGE)!","color":"red","bold":true,"italic":true},{"text":"\\nSức mạnh Sculk bùng nổ, mọi đòn đánh giờ đây bỏ qua giáp!","color":"dark_purple"}]');
+);
+
+// Helper tạo rơi vật phẩm thần thoại và kho báu khi Warden bị tiêu diệt
+_drop_warden_loot(w_pos, killer) -> (
+    bx = w_pos:0;
+    by = w_pos:1 + 0.5;
+    bz = w_pos:2;
+    
+    // ── NHÓM 1: GUARANTEED 100% DROPS ──
+    // 1. 1x Heavy Core (Lõi Nặng)
+    run(str('summon item %f %f %f {Item:{id:"minecraft:heavy_core",count:1}}', bx, by, bz));
+    
+    // 2. 1 - 2x Nether Star (Sao Địa Ngục)
+    star_count = if(rand(1.0) < 0.5, 1, 2);
+    run(str('summon item %f %f %f {Item:{id:"minecraft:nether_star",count:%d}}', bx, by, bz, star_count));
+    
+    // 3. 1 - 2x Netherite Upgrade Template (Phôi Nâng Cấp Netherite)
+    template_count = if(rand(1.0) < 0.5, 1, 2);
+    run(str('summon item %f %f %f {Item:{id:"minecraft:netherite_upgrade_smithing_template",count:%d}}', bx, by, bz, template_count));
+    
+    // 4. Cơn mưa kinh nghiệm ~2000 XP (4 x 500 XP orbs)
+    run(str('summon experience_orb %f %f %f {value:500}', bx, by, bz));
+    run(str('summon experience_orb %f %f %f {value:500}', bx, by, bz));
+    run(str('summon experience_orb %f %f %f {value:500}', bx, by, bz));
+    run(str('summon experience_orb %f %f %f {value:500}', bx, by, bz));
+    
+    // ── NHÓM 2: TRANG BỊ THẦN THOẠI GOD GEAR (TỈ LỆ 20% RƠI 1 TRONG 3 MÓN) ──
+    if (rand(1.0) < 0.20,
+        god_gear_roll = floor(rand(3));
+        if (god_gear_roll == 0,
+            // 1. Lưỡi Đao Hư Không (Void Reaper - Netherite Scythe)
+            run(str('summon item %f %f %f {Item:{id:"weaponsexpanded:netherite_scythe",count:1,components:{"minecraft:custom_name":\'{"text":"Lưỡi Đao Hư Không (Void Reaper)","color":"dark_purple","bold":true,"italic":false}\',"minecraft:lore":[\'{"text":"Được rèn từ mảnh vỡ xương sọ và linh hồn Sculk của Warden.","color":"gray","italic":true}\',\'{"text":"★ Trang Bị Thần Thoại (Mythic Tier) ★","color":"gold","bold":true}\'],"minecraft:enchantments":{levels:{"minecraft:sharpness":7,"minecraft:looting":4,"minecraft:sweeping_edge":4,"minecraft:unbreaking":5,"minecraft:mending":1}},"minecraft:rarity":"epic"}}}', bx, by, bz));
+            run('tellraw @a ["",{"text":"[THẦN KHÍ XUẤT THẾ] ","color":"gold","bold":true},{"text":"Warden đã rơi ra bảo khí Thần Thoại: ","color":"yellow"},{"text":"Lưỡi Đao Hư Không (Void Reaper)!","color":"dark_purple","bold":true}]');
+        , god_gear_roll == 1,
+            // 2. Giáp Ngực Hư Vô (Sculk Carapace - Netherite Chestplate)
+            run(str('summon item %f %f %f {Item:{id:"minecraft:netherite_chestplate",count:1,components:{"minecraft:custom_name":\'{"text":"Giáp Ngực Hư Vô (Sculk Carapace)","color":"dark_aqua","bold":true,"italic":false}\',"minecraft:lore":[\'{"text":"Lớp mai giáp hắc ám hấp thụ chấn động từ cõi chết.","color":"gray","italic":true}\',\'{"text":"★ Trang Bị Thần Thoại (Mythic Tier) ★","color":"gold","bold":true}\'],"minecraft:enchantments":{levels:{"minecraft:protection":6,"minecraft:thorns":4,"minecraft:unbreaking":5,"minecraft:mending":1}},"minecraft:rarity":"epic"}}}', bx, by, bz));
+            run('tellraw @a ["",{"text":"[THẦN KHÍ XUẤT THẾ] ","color":"gold","bold":true},{"text":"Warden đã rơi ra bảo khí Thần Thoại: ","color":"yellow"},{"text":"Giáp Ngực Hư Vô (Sculk Carapace)!","color":"dark_aqua","bold":true}]');
+        ,
+            // 3. Ủng Bóng Ma (Ghost Walker Boots - Netherite Boots)
+            run(str('summon item %f %f %f {Item:{id:"minecraft:netherite_boots",count:1,components:{"minecraft:custom_name":\'{"text":"Ủng Bóng Ma (Ghost Walker Boots)","color":"dark_aqua","bold":true,"italic":false}\',"minecraft:lore":[\'{"text":"Bước đi êm ái như bóng ma, lướt qua mọi cạm bẫy Deep Dark.","color":"gray","italic":true}\',\'{"text":"★ Trang Bị Thần Thoại (Mythic Tier) ★","color":"gold","bold":true}\'],"minecraft:enchantments":{levels:{"minecraft:protection":5,"minecraft:feather_falling":5,"minecraft:swift_sneak":5,"minecraft:soul_speed":3,"minecraft:depth_strider":3,"minecraft:mending":1}},"minecraft:rarity":"epic"}}}', bx, by, bz));
+            run('tellraw @a ["",{"text":"[THẦN KHÍ XUẤT THẾ] ","color":"gold","bold":true},{"text":"Warden đã rơi ra bảo khí Thần Thoại: ","color":"yellow"},{"text":"Ủng Bóng Ma (Ghost Walker Boots)!","color":"dark_aqua","bold":true}]');
+        );
+    );
+    
+    // ── NHÓM 3: KHO BÁU & TÀI NGUYÊN (TỈ LỆ 50% MỖI MÓN) ──
+    // 1. Táo Vàng Phù Phép (2 - 4 quả)
+    if (rand(1.0) < 0.50,
+        gap_count = floor(rand(3)) + 2; // 2, 3, hoặc 4
+        run(str('summon item %f %f %f {Item:{id:"minecraft:enchanted_golden_apple",count:%d}}', bx, by, bz, gap_count));
+    );
+    
+    // 2. 2x Netherite Ingot
+    if (rand(1.0) < 0.50,
+        run(str('summon item %f %f %f {Item:{id:"minecraft:netherite_ingot",count:2}}', bx, by, bz));
+    );
+    
+    // 3. 2x Totem of Undying
+    if (rand(1.0) < 0.50,
+        run(str('summon item %f %f %f {Item:{id:"minecraft:totem_of_undying",count:2}}', bx, by, bz));
+    );
+    
+    // 4. 1x Silence Armor Trim Smithing Template
+    if (rand(1.0) < 0.50,
+        run(str('summon item %f %f %f {Item:{id:"minecraft:silence_armor_trim_smithing_template",count:1}}', bx, by, bz));
+    );
+    
+    // Hiệu ứng ăn mừng & âm thanh chiến thắng
+    sound('minecraft:ui.toast.challenge_complete', w_pos, 2.0, 1.0);
+    sound('minecraft:entity.player.levelup', w_pos, 2.0, 0.5);
+    run(str('summon firework_rocket %f %f %f {LifeTime:20,FireworksItem:{id:"firework_rocket",count:1,components:{"minecraft:fireworks":{explosions:[{Shape:"large_ball",Colors:[16711680,65280,255],FadeColors:[16776960]}]}}}}', bx, by + 1, bz));
+    
+    // Thông báo toàn server đã hạ gục Warden
+    killer_name = if(killer != null, killer ~ 'name', 'Dũng sĩ vô danh');
+    run(str('tellraw @a ["",{"text":"[CHIẾN TÍCH] ","color":"green","bold":true},{"text":"%s ","color":"gold","bold":true},{"text":"đã tiêu diệt thành công ","color":"yellow"},{"text":"Chúa Tể Bóng Tối Warden!","color":"dark_aqua","bold":true}]', killer_name));
 );
 
 // Register handler cho Enderman spawn ở The End
@@ -334,6 +409,13 @@ __on_damaged(entity, amount, source, attacking_entity) -> (
                 )
             ));
             return();
+        );
+        
+        // Kiểm tra xem Warden có chết do đòn đánh này không để kích hoạt phần thưởng
+        if (remaining_hp <= 0 && global_warden_emergency_healed:w_uuid && !global_warden_loot_dropped:w_uuid,
+            global_warden_loot_dropped:w_uuid = true;
+            killer_entity = if(attacking_entity ~ 'type' == 'player', attacking_entity, null);
+            _drop_warden_loot(w_pos, killer_entity);
         );
         
         // Xử lý giảm trừ sát thương thông thường
@@ -566,6 +648,17 @@ __on_player_deals_damage(player, amount, entity) -> (
     // Kiểm tra xem quái có bị chết do đòn đánh này không
     if (entity ~ 'health' <= amount,
         type = entity ~ 'type';
+        
+        // ── XỬ LÝ DROP CHO BOSS WARDEN ──
+        if (type == 'warden',
+            w_uuid = entity ~ 'uuid';
+            if (!global_warden_loot_dropped:w_uuid,
+                global_warden_loot_dropped:w_uuid = true;
+                _drop_warden_loot(pos(entity), player);
+            );
+            return();
+        );
+        
         is_hostile = query(entity, 'category') == 'hostile';
         
         if (is_hostile,
@@ -670,6 +763,9 @@ __on_tick() -> (
         );
         for(keys(global_warden_healing_ticks),
             if (!living_uuids:_, delete(global_warden_healing_ticks:_));
+        );
+        for(keys(global_warden_loot_dropped),
+            if (!living_uuids:_, delete(global_warden_loot_dropped:_));
         );
     );
     
@@ -1009,6 +1105,18 @@ test_warden_heal() -> (
     delete(global_warden_healing_ticks:(w ~ 'uuid'));
     modify(w, 'health', 95.0);
     print(p, '§aĐã đặt Warden vào Phase 2 với 95 HP để kiểm tra cơ chế Huyết Tế (< 10%) hồi lên 400 HP trong 10s và nhạc Sacrifice!');
+);
+
+// Lệnh: /custom_mob_effects test_warden_drop
+// Thử nghiệm rơi drop phần thưởng Warden tại vị trí người chơi
+test_warden_drop() -> (
+    p = player();
+    if (query(p, 'permission_level') < 2,
+        print(p, '§cBạn không có quyền sử dụng lệnh này!');
+        return()
+    );
+    _drop_warden_loot(pos(p), p);
+    print(p, '§aĐã kích hoạt test phần thưởng rơi ra của Warden tại vị trí của bạn!');
 );
 
 // Lệnh: /custom_mob_effects status
