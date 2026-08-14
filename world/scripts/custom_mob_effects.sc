@@ -75,8 +75,8 @@ entity_load_handler('shulker', _(e, new) -> (
 // Register handler cho Wither spawn (bất kể đâu)
 entity_load_handler('wither', _(e, new) -> (
     if (new,
-        run(str('attribute %s minecraft:generic.max_health base set 400', e ~ 'uuid'));
-        modify(e, 'health', 400.0);
+        run(str('attribute %s minecraft:generic.max_health base set 600', e ~ 'uuid'));
+        modify(e, 'health', 600.0);
     )
 ));
 
@@ -122,14 +122,21 @@ __on_player_takes_damage(player, amount, source, source_entity) -> (
     is_mob = query(source_entity, 'category') == 'hostile' || type == 'wither' || type == 'ender_dragon';
     is_bullet = (type == 'shulker_bullet');
     is_boss_attack = (type == 'wither' || type == 'wither_skull' || type == 'ender_dragon' || type == 'dragon_fireball');
+    is_wither_attack = (type == 'wither' || type == 'wither_skull');
     
     if (!is_mob && !is_bullet && !is_boss_attack, return());
 
     dim = player ~ 'dimension';
     
     // ── TĂNG SÁT THƯƠNG BOSS TẠI NETHER VÀ THE END (+1 damage = -1 HP trực tiếp) ──
-    if (is_boss_attack && (dim == 'minecraft:the_nether' || dim == 'minecraft:the_end'),
+    if (is_boss_attack && !is_wither_attack && (dim == 'minecraft:the_nether' || dim == 'minecraft:the_end'),
         modify(player, 'health', max(0, (player ~ 'health') - 1.0))
+    );
+
+    // ── SÁT THƯƠNG CHUẨN WITHER (2 HP = 1 tim trực tiếp) ──
+    if (is_wither_attack,
+        modify(player, 'health', max(0, (player ~ 'health') - 2.0));
+        run(str('title %s actionbar {"text":"§4§lBị tấn công bởi Wither: Nhận 2 sát thương chuẩn! (Bỏ qua giáp)"}', player ~ 'name'));
     );
 
     // ── XỬ LÝ TẠI OVERWORLD ──
