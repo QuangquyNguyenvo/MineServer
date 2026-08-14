@@ -532,7 +532,7 @@ __on_tick() -> (
         curr_hp = p ~ 'health';
         prev_hp = global_player_last_health:p_name;
         
-        if (prev_hp != null && prev_hp > 0 && curr_hp > prev_hp && !p ~ 'dead',
+        if (prev_hp != null && prev_hp > 0 && curr_hp > prev_hp,
             if (global_sonic_debuff:p_name != null,
                 heal_delta = curr_hp - prev_hp;
                 new_hp = curr_hp - (heal_delta * 0.5);
