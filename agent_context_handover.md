@@ -72,7 +72,7 @@ Toàn bộ logic được lập trình bằng Scarpet tại file [`world/scripts
 12. **🩸 Cơ chế Huyết Tế Tối Thượng (Emergency Heal khi < 10% Máu trong Phase 2):**
     * Khi máu Warden tụt xuống dưới **10%** (< 100 HP) trong Phase 2, Warden kích hoạt cơ chế hồi sinh khẩn cấp 1 lần duy nhất trong trận đấu.
     * **Chướng Khí Độc:** Lập tức gieo rắc hiệu ứng tiêu cực lên toàn bộ người chơi trong phạm vi **40 blocks** trong **10 giây (200 ticks)**: **Buồn nôn II (Nausea II)**, **Mù quáng (Blindness)** và **Trúng độc II (Poison II)**.
-    * **Hồi máu dần trong 10 giây:** Warden tiến hành hấp thụ năng lượng linh hồn và hồi phục từ 10% lên **30% Máu tối đa (300 HP)** kéo dài tương ứng trong **10 giây** (+1 HP mỗi tick / 20 HP mỗi giây), đi kèm hiệu ứng hạt linh hồn Sculk, Totem và tiếng đập tim dồn dập.
+    * **Bất Tử & Hồi máu dần trong 10 giây:** Warden được **miễn nhiễm 100% mọi nguồn sát thương (Bất tử)** trong suốt 10 giây vận khí; hấp thụ năng lượng linh hồn và hồi phục từ 100 HP lên **300 HP (30% Max HP)** (+1 HP mỗi tick / 20 HP mỗi giây), đi kèm hiệu ứng hạt linh hồn Sculk, Totem và tiếng đập tim dồn dập.
 13. **Thanh máu Boss (Boss Health Bar):**
     * **Phase 1:** Tên **Warden** màu `dark_aqua` (`§3`), thanh màu `blue`.
     * **Phase 2:** Tên **Warden (Phase 2 - Cuồng Nộ)** màu `red` (`§c`), thanh chuyển sang màu `red`.

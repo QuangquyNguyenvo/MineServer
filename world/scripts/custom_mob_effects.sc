@@ -201,6 +201,33 @@ __on_damaged(entity, amount, source, attacking_entity) -> (
         w_uuid = entity ~ 'uuid';
         w_pos = pos(entity);
         
+        // ── MIỄN NHIỄM SÁT THƯƠNG TRONG QUÁ TRÌNH HUYẾT TẾ HỒI MÁU (100 -> 300 HP) ──
+        is_channeling_heal = (global_warden_healing_ticks:w_uuid != null && global_warden_healing_ticks:w_uuid > 0);
+        if (is_channeling_heal,
+            if (amount >= hp,
+                temp_health = hp + amount;
+                run(str('attribute %s minecraft:generic.max_health base set %f', w_uuid, max(max_hp, temp_health)));
+                modify(entity, 'health', temp_health);
+                schedule(0, _(outer(entity), outer(hp), outer(max_hp), outer(w_uuid)) -> (
+                    if (entity && !query(entity, 'removed'),
+                        run(str('attribute %s minecraft:generic.max_health base set %f', w_uuid, max_hp));
+                        modify(entity, 'health', hp);
+                    )
+                ));
+            ,
+                schedule(0, _(outer(entity), outer(amount), outer(max_hp)) -> (
+                    if (entity && !query(entity, 'removed'),
+                        curr_hp = entity ~ 'health';
+                        modify(entity, 'health', min(max_hp, curr_hp + amount));
+                    )
+                ));
+            );
+            sound('minecraft:item.shield.block', w_pos, 1.2, 0.8);
+            run(str('particle minecraft:enchanted_hit %f %f %f 0.5 0.8 0.5 0.2 20', w_pos:0, w_pos:1 + 1.5, w_pos:2));
+            run(str('title @a[x=%f,y=%f,z=%f,distance=..35] actionbar {"text":"§4§l[Bất Tử] Warden đang Huyết Tế (100-300 HP), miễn nhiễm mọi sát thương!"}', w_pos:0, w_pos:1, w_pos:2));
+            return();
+        );
+        
         // Kiểm tra trạng thái Phase 2 (< 30% Max HP = < 300 HP)
         is_phase2 = global_warden_phase2:w_uuid || (hp / max_hp <= 0.30);
         
