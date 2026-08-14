@@ -467,8 +467,8 @@ __on_player_takes_damage(player, amount, source, source_entity) -> (
     );
     
     if (is_wither_attack,
-        modify(player, 'health', max(0.5, (player ~ 'health') - 2.0));
-        run(str('title %s actionbar {"text":"§4§lBị tấn công bởi Wither: Nhận 2 sát thương chuẩn! (Bỏ qua giáp)"}', p_name));
+        modify(player, 'health', max(0.5, (player ~ 'health') - 4.0));
+        run(str('title %s actionbar {"text":"§4§lBị tấn công bởi Wither: Nhận 4 sát thương chuẩn! (Bỏ qua giáp)"}', p_name));
     );
     
     if (is_overworld && is_mob && !is_boss_attack,

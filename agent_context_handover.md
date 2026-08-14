@@ -107,7 +107,7 @@ Toàn bộ logic được lập trình bằng Scarpet độc lập tại file [`
    * Chu kỳ xuất hiện: **8 đến 15 ngày một lần** tại Overworld.
    * Quái vật Overworld: **x2.5 Max HP**, **+30% tốc độ di chuyển**, đánh gây thêm 2 True Damage (1 tim) và **50% cơ hội gây mù Blindness II trong 3s**.
    * Phần thưởng rơi thêm: Zombie (10% Diamond), Creeper (10% TNT), Enderman (10% Eye of Ender), Skeleton (5% Bow Power V / Punch II / Mending), Spider (10% Slow Falling Potion).
-2. **Boss Wither:** 600 Max HP, mọi đòn đánh và đạn sọ `wither_skull` gây thêm **+2.0 True Damage (1 tim)** trừ thẳng vào máu người chơi, xuyên qua giáp.
+2. **Boss Wither:** 600 Max HP, mọi đòn đánh và đạn sọ `wither_skull` gây thêm **+4.0 True Damage (2 tim)** trừ thẳng vào máu người chơi, xuyên qua giáp.
 3. **Boss Ender Dragon:** 700 Max HP, gây thêm +1.0 sát thương trực tiếp ở The End.
 4. **Enderman / Shulker (The End):** Nhân 1.5x Max HP (Enderman 60 HP, Shulker 45 HP), Enderman tăng +1.0 sát thương.
 5. **Nether Mobs:** Cấu hình qua [`config/buffmobs.json`](file:///C:/Users/ADMIN/MineServer/config/buffmobs.json).
