@@ -136,8 +136,8 @@ _drop_warden_loot(w_pos, killer) -> (
     run(str('summon experience_orb %f %f %f {value:500}', bx, by, bz));
     run(str('summon experience_orb %f %f %f {value:500}', bx, by, bz));
     
-    // ── NHÓM 2: TRANG BỊ THẦN THOẠI GOD GEAR (TỈ LỆ 20% RƠI 1 TRONG 3 MÓN) ──
-    if (rand(1.0) < 0.20,
+    // ── NHÓM 2: TRANG BỊ THẦN THOẠI GOD GEAR (TỈ LỆ 10% RƠI 1 TRONG 3 MÓN) ──
+    if (rand(1.0) < 0.10,
         god_gear_roll = floor(rand(3));
         if (god_gear_roll == 0,
             // 1. Lưỡi Đao Hư Không (Void Reaper - Netherite Scythe)
