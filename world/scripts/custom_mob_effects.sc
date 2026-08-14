@@ -33,6 +33,9 @@ global_warden_healing_ticks = {};
 global_warden_loot_dropped = {};
 global_player_warden_music = {};
 global_player_music_timer = {};
+global_warden_melee_combo = {};
+global_warden_sonic_charge_tick = {};
+global_golem_hp = {};
 
 // Danh sách các hiệu ứng xấu để phản ngược lại người chơi
 global_negative_effects = {
@@ -141,6 +144,61 @@ _apply_warden_blood_sacrifice_debuffs(w_pos) -> (
             modify(p, 'effect', 'poison', 200, 1);   // Poison II trong 10s (200 ticks)
             run(str('title %s actionbar {"text":"§4§lChướng Khí Huyết Tế: Nausea II, Blindness & Poison II trong 10s!"}', p ~ 'name'));
         )
+    );
+);
+
+// Helper bắn sóng âm Sonic Boom cận chiến (Combo 3+1)
+_fire_warden_melee_sonic_boom(w, target) -> (
+    if (w == null || query(w, 'removed') || target == null || query(target, 'removed'), return());
+    w_pos = pos(w);
+    t_pos = pos(target);
+    w_eye = [w_pos:0, w_pos:1 + 1.6, w_pos:2];
+    t_eye = [t_pos:0, t_pos:1 + 1.0, t_pos:2];
+    
+    dx = t_eye:0 - w_eye:0;
+    dy = t_eye:1 - w_eye:1;
+    dz = t_eye:2 - w_eye:2;
+    dist = sqrt(dx*dx + dy*dy + dz*dz);
+    if (dist <= 0, return());
+    
+    // Bắn hạt Sonic Boom dọc theo tia
+    step = 0.8;
+    steps = max(1, floor(dist / step));
+    for(range(0, steps + 1),
+        prog = _ / steps;
+        px = w_eye:0 + dx * prog;
+        py = w_eye:1 + dy * prog;
+        pz = w_eye:2 + dz * prog;
+        run(str('particle minecraft:sonic_boom %f %f %f 0 0 0 0 1', px, py, pz));
+    );
+    
+    sound('minecraft:entity.warden.sonic_boom', t_pos, 2.0, 1.0);
+    
+    w_uuid = w ~ 'uuid';
+    is_p2 = global_warden_phase2:w_uuid;
+    
+    if (target ~ 'type' == 'player',
+        t_max_hp = _get_attribute(target, 'max_health', 20.0);
+        sonic_ratio = if(is_p2, 0.45, 0.33);
+        true_dmg = t_max_hp * sonic_ratio;
+        
+        modify(target, 'health', max(0.5, (target ~ 'health') - true_dmg));
+        p_name = target ~ 'name';
+        global_sonic_debuff:p_name = 100;
+        
+        // Hất văng mục tiêu
+        modify(target, 'motion', dx / dist * 0.8, 0.4, dz / dist * 0.8);
+        
+        if (is_p2,
+            run(str('title %s actionbar {"text":"§4§lTrúng Sonic Boom Phase 2: Nhận 45%% Sát thương chuẩn & Giảm hồi máu 50%%!"}', p_name));
+        ,
+            run(str('title %s actionbar {"text":"§c§lBị trúng Sóng Âm Cận Chiến: Nhận sát thương chuẩn & Giảm hồi máu 50%%!"}', p_name));
+        );
+    ,
+        // Nếu mục tiêu là Iron Golem / Mob khác
+        curr_thp = target ~ 'health';
+        modify(target, 'health', max(0.0, curr_thp - 100.0));
+        modify(target, 'motion', dx / dist * 1.0, 0.5, dz / dist * 1.0);
     );
 );
 
@@ -430,7 +488,7 @@ __on_player_takes_damage(player, amount, source, source_entity) -> (
     if (source_entity == null, return());
     type = source_entity ~ 'type';
     
-    // ── CƠ CHẾ PHẢN HIỆU ỨNG XẤU CỦA WARDEN ──
+    // ── CƠ CHẾ PHẢN HIỆU ỨNG XẤU & TÍCH LŨY COMBO CẬN CHIẾN CỦA WARDEN ──
     if (type == 'warden',
         effects = query(source_entity, 'effect');
         if (effects != null,
@@ -448,7 +506,20 @@ __on_player_takes_damage(player, amount, source, source_entity) -> (
                     );
                 )
             )
-        )
+        );
+        
+        // Tích lũy điểm Combo cận chiến cho Warden (Combo 3+1)
+        w_uuid = source_entity ~ 'uuid';
+        w_pos = pos(source_entity);
+        combo = (global_warden_melee_combo:w_uuid || 0) + 1;
+        if (combo >= 3,
+            global_warden_melee_combo:w_uuid = 0;
+            global_warden_sonic_charge_tick:w_uuid = 15; // Nạp 15 ticks (0.75s) rồi bắn
+            sound('minecraft:entity.warden.sonic_charge', w_pos, 2.0, 1.0);
+            run(str('particle minecraft:sculk_charge_pop %f %f %f 0.5 0.5 0.5 0.1 20', w_pos:0, w_pos:1 + 1.5, w_pos:2));
+        ,
+            global_warden_melee_combo:w_uuid = combo;
+        );
     );
     
     is_mob = query(source_entity, 'category') == 'hostile' || type == 'wither' || type == 'ender_dragon';
@@ -766,6 +837,12 @@ __on_tick() -> (
         for(keys(global_warden_loot_dropped),
             if (!living_uuids:_, delete(global_warden_loot_dropped:_));
         );
+        for(keys(global_warden_melee_combo),
+            if (!living_uuids:_, delete(global_warden_melee_combo:_));
+        );
+        for(keys(global_warden_sonic_charge_tick),
+            if (!living_uuids:_, delete(global_warden_sonic_charge_tick:_));
+        );
     );
     
     // 4. Tiến trình hồi máu dần (10s = 200 ticks) khi Warden kích hoạt Huyết Tế Tối Thượng (150 -> 600 HP)
@@ -1000,6 +1077,94 @@ __on_tick() -> (
                 )
             )
         )
+    );
+
+    // --- CƠ CHẾ IRON GOLEM SIPHON, ƯU TIÊN NGƯỜI CHƠI & MELEE SONIC BOOM (COMBO 3+1) ---
+    for(wardens,
+        w = _;
+        w_uuid = w ~ 'uuid';
+        w_pos = pos(w);
+        w_dim = w ~ 'dimension';
+        w_max = _get_attribute(w, 'max_health', 1500.0);
+        
+        // 1. Ưu tiên mục tiêu người chơi (Survival trong bán kính 30m)
+        if (global_tick_count % 5 == 0,
+            nearby_players = filter(players, _distance(pos(_), w_pos) <= 30 && (_ ~ 'dimension') == w_dim && query(_, 'gamemode') == 'survival');
+            if (length(nearby_players) > 0,
+                closest_p = nearby_players:0;
+                min_d = _distance(pos(closest_p), w_pos);
+                for(nearby_players,
+                    d = _distance(pos(_), w_pos);
+                    if (d < min_d, min_d = d; closest_p = _);
+                );
+                if (query(w, 'target') != closest_p,
+                    modify(w, 'target', closest_p);
+                );
+            );
+        );
+        
+        // 2. Theo dõi và hấp thụ máu từ Iron Golem gần Warden (12m)
+        golems = entity_area('iron_golem', w_pos, [12, 6, 12]);
+        for(golems,
+            g = _;
+            g_uuid = g ~ 'uuid';
+            curr_ghp = g ~ 'health';
+            last_ghp = global_golem_hp:g_uuid;
+            
+            if (last_ghp != null,
+                if (curr_ghp < last_ghp,
+                    if (curr_ghp <= 0 || query(g, 'removed'),
+                        // Tiêu diệt Iron Golem: Hồi 200 HP cho Warden (Không gửi thông báo chữ)
+                        modify(w, 'health', min(w_max, (w ~ 'health') + 200.0));
+                        sound('minecraft:entity.warden.roar', w_pos, 2.0, 1.0);
+                        run(str('particle minecraft:totem_of_undying %f %f %f 0.6 1.0 0.6 0.1 25', w_pos:0, w_pos:1 + 1.5, w_pos:2));
+                        combo = (global_warden_melee_combo:w_uuid || 0) + 1;
+                        if (combo >= 3,
+                            global_warden_melee_combo:w_uuid = 0;
+                            global_warden_sonic_charge_tick:w_uuid = 15;
+                            sound('minecraft:entity.warden.sonic_charge', w_pos, 2.0, 1.0);
+                        ,
+                            global_warden_melee_combo:w_uuid = combo;
+                        );
+                    ,
+                        // Đánh trúng Iron Golem: Hồi 50 HP cho Warden
+                        modify(w, 'health', min(w_max, (w ~ 'health') + 50.0));
+                        sound('minecraft:entity.warden.heartbeat', w_pos, 1.5, 1.3);
+                        run(str('particle minecraft:sculk_soul %f %f %f 0.5 0.5 0.5 0.05 10', w_pos:0, w_pos:1 + 1.5, w_pos:2));
+                        combo = (global_warden_melee_combo:w_uuid || 0) + 1;
+                        if (combo >= 3,
+                            global_warden_melee_combo:w_uuid = 0;
+                            global_warden_sonic_charge_tick:w_uuid = 15;
+                            sound('minecraft:entity.warden.sonic_charge', w_pos, 2.0, 1.0);
+                        ,
+                            global_warden_melee_combo:w_uuid = combo;
+                        );
+                    );
+                );
+            );
+            global_golem_hp:g_uuid = curr_ghp;
+        );
+        
+        // 3. Tiến trình nạp và bắn Sonic Boom cận chiến (Combo 3+1)
+        charge_ticks = global_warden_sonic_charge_tick:w_uuid;
+        if (charge_ticks != null && charge_ticks > 0,
+            global_warden_sonic_charge_tick:w_uuid = charge_ticks - 1;
+            if (charge_ticks % 3 == 0,
+                run(str('particle minecraft:sculk_charge_pop %f %f %f 0.3 0.3 0.3 0.05 5', w_pos:0, w_pos:1 + 1.6, w_pos:2));
+            );
+            
+            if (charge_ticks == 1,
+                delete(global_warden_sonic_charge_tick:w_uuid);
+                tgt = query(w, 'target');
+                if (tgt == null,
+                    nearby_p = filter(players, _distance(pos(_), w_pos) <= 20 && (_ ~ 'dimension') == w_dim && query(_, 'gamemode') == 'survival');
+                    tgt = if(length(nearby_p) > 0, nearby_p:0, if(length(golems) > 0, golems:0, null));
+                );
+                if (tgt != null,
+                    _fire_warden_melee_sonic_boom(w, tgt);
+                );
+            );
+        );
     );
 
     // 7. Quản lý Đêm Trăng Máu

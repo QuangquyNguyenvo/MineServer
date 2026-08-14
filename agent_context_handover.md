@@ -101,6 +101,17 @@ Toàn bộ logic được lập trình bằng Scarpet độc lập tại file [`
 
 ---
 
+### ⚔️ 2.5. Khắc Chế Iron Golem & Sonic Boom Cận Chiến (Combo 3+1)
+* **Khắc chế Iron Golem (Iron Siphon):**
+  * Mỗi đòn Warden đánh trúng Iron Golem $\rightarrow$ Hồi **+50 HP**.
+  * Khi tiêu diệt Iron Golem $\rightarrow$ Hồi **+200 HP** (hiệu ứng hạt Totem + tiếng gầm rú).
+  * **Ưu tiên mục tiêu người chơi:** Nếu có người chơi Survival trong bán kính 30m, Warden sẽ luôn ưu tiên khóa mục tiêu và đuổi theo người chơi, không bị Iron Golem thu hút làm mồi nhử/tank.
+* **Sonic Boom Cận Chiến (Combo 3+1):**
+  * Warden có thể kích hoạt Sonic Boom ở mọi cự ly (kể cả cận chiến 0m).
+  * Cứ sau **3 đòn đánh cận chiến** $\rightarrow$ Warden nạp năng lượng trong 15 ticks (`entity.warden.sonic_charge`) và đòn tiếp theo (đòn thứ 4) **chắc chắn sẽ là Sonic Boom** gây sát thương chuẩn (33% / 45% Max HP), trừ 50% hồi máu trong 5s và hất tung mục tiêu ra xa.
+
+---
+
 ## 3. 🌕 Đêm Trăng Máu & Các Cơ Chế Mob Khác
 
 1. **Đêm Trăng Máu (Blood Moon):**
