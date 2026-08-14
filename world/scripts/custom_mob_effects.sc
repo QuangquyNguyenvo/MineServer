@@ -1054,13 +1054,16 @@ __on_tick() -> (
     )
 );
 
-// ── LỆNH KIỂM TRA DÀNH RIÊNG CHO SERVER CONSOLE / DEVELOPER ──
+// ── LỆNH KIỂM TRA DÀNH CHO ADMIN OP & SERVER CONSOLE ──
 
-// Helper kiểm tra chỉ cho phép Server Console / RCON thực thi
-_check_console_only() -> (
+// Helper kiểm tra quyền thực thi (Chỉ Console hoặc Admin OP cấp >= 2)
+_check_permission() -> (
     p = player();
     if (p != null,
-        print(p, '§c[Lệnh Bị Khóa] Lệnh này chỉ dành riêng cho Server Console / RCON! Người chơi không được phép sử dụng.');
+        if (query(p, 'permission_level') >= 2,
+            return(true);
+        );
+        print(p, '§c[Lệnh Bị Khóa] Lệnh này chỉ dành riêng cho Admin OP / Server Console! Người chơi không được phép sử dụng.');
         return(false);
     );
     return(true);
@@ -1069,38 +1072,45 @@ _check_console_only() -> (
 // Lệnh gốc: khi gõ /custom_mob_effects không có tham số
 __command() -> status();
 
-// Lệnh: /custom_mob_effects trigger_blood_moon (Chỉ Server Console)
+// Lệnh: /custom_mob_effects trigger_blood_moon
 trigger_blood_moon() -> (
-    if (!_check_console_only(), return());
+    if (!_check_permission(), return());
     current_day = floor(time() / 24000);
     global_blood_moon_day = current_day;
     global_was_blood_moon_notified = false;
     _save_blood_moon_data();
     run('time set 12000');
-    print('[Server Console] Đã kích hoạt Trăng Máu cho hôm nay và chuyển giờ về Hoàng Hôn!');
+    p = player();
+    msg = 'Đã kích hoạt Trăng Máu cho hôm nay và chuyển giờ về Hoàng Hôn!';
+    if (p != null, print(p, '§4§l[Trăng Máu] ' + msg), print('[Server Console] ' + msg));
 );
 
-// Lệnh: /custom_mob_effects test_warden_p2 (Chỉ Server Console)
+// Lệnh: /custom_mob_effects test_warden_p2
 // Đặt máu của Warden gần nhất về 460 HP để kiểm tra Phase 2
 test_warden_p2() -> (
-    if (!_check_console_only(), return());
+    if (!_check_permission(), return());
     wardens = entity_list('warden');
+    p = player();
     if (length(wardens) == 0,
-        print('[Server Console] Không tìm thấy Warden nào trong toàn bộ server!');
+        msg = 'Không tìm thấy Warden nào trong toàn bộ thế giới!';
+        if (p != null, print(p, '§c' + msg), print('[Server Console] ' + msg));
         return();
     );
     w = wardens:0;
     modify(w, 'health', 460.0);
-    print(str('[Server Console] Đã đặt máu Warden (%s) về 460 HP (chuẩn bị kích hoạt Phase 2 khi xuống <= 450 HP / 30%% Máu)!', w ~ 'uuid'));
+    msg = str('Đã đặt máu Warden (%s) về 460 HP (chuẩn bị kích hoạt Phase 2 khi xuống <= 450 HP / 30%% Máu)!', w ~ 'uuid');
+    if (p != null, print(p, '§a' + msg), print('[Server Console] ' + msg));
 );
 
-// Lệnh: /custom_mob_effects test_warden_heal (Chỉ Server Console)
+// Lệnh: /custom_mob_effects test_warden_heal
 // Đặt máu của Warden gần nhất về 140 HP trong Phase 2 để kiểm tra Hồi máu 10s lên 600 HP và Nhạc Sacrifice
 test_warden_heal() -> (
-    if (!_check_console_only(), return());
+    if (!_check_permission(), return());
     wardens = entity_list('warden');
+    p = player();
     if (length(wardens) == 0,
-        print('[Server Console] Không tìm thấy Warden nào trong toàn bộ server!');
+        msg = 'Không tìm thấy Warden nào trong toàn bộ thế giới!';
+        if (p != null, print(p, '§c' + msg), print('[Server Console] ' + msg));
         return();
     );
     w = wardens:0;
@@ -1108,33 +1118,45 @@ test_warden_heal() -> (
     delete(global_warden_emergency_healed:(w ~ 'uuid'));
     delete(global_warden_healing_ticks:(w ~ 'uuid'));
     modify(w, 'health', 140.0);
-    print(str('[Server Console] Đã đặt Warden (%s) vào Phase 2 với 140 HP để kiểm tra cơ chế Huyết Tế (< 10%% / < 150 HP) hồi lên 600 HP trong 10s và nhạc Sacrifice!', w ~ 'uuid'));
+    msg = str('Đã đặt Warden (%s) vào Phase 2 với 140 HP để kiểm tra cơ chế Huyết Tế (< 10%% / < 150 HP) hồi lên 600 HP trong 10s và nhạc Sacrifice!', w ~ 'uuid');
+    if (p != null, print(p, '§a' + msg), print('[Server Console] ' + msg));
 );
 
-// Lệnh: /custom_mob_effects test_warden_drop (Chỉ Server Console)
-// Thử nghiệm rơi drop phần thưởng Warden tại vị trí người chơi online đầu tiên
+// Lệnh: /custom_mob_effects test_warden_drop
+// Thử nghiệm rơi drop phần thưởng Warden
 test_warden_drop() -> (
-    if (!_check_console_only(), return());
-    players = player('all');
-    if (length(players) > 0,
-        target_p = players:0;
+    if (!_check_permission(), return());
+    p = player();
+    target_p = if(p != null, p, (
+        players = player('all');
+        if (length(players) > 0, players:0, null)
+    ));
+    if (target_p != null,
         _drop_warden_loot(pos(target_p), target_p);
-        print(str('[Server Console] Đã kích hoạt test phần thưởng rơi ra của Warden tại vị trí của %s!', target_p ~ 'name'));
+        msg = str('Đã kích hoạt test phần thưởng rơi ra của Warden tại vị trí của %s!', target_p ~ 'name');
+        if (p != null, print(p, '§a' + msg), print('[Server Console] ' + msg));
     ,
-        print('[Server Console] Không có người chơi nào online để lấy vị trí spawn drop test!');
+        msg = 'Không tìm thấy người chơi nào online để lấy vị trí spawn drop test!';
+        if (p != null, print(p, '§c' + msg), print('[Server Console] ' + msg));
     );
 );
 
-// Lệnh: /custom_mob_effects status (Chỉ Server Console)
+// Lệnh: /custom_mob_effects status
 // Xem trạng thái trăng máu hiện tại và lịch trình
 status() -> (
-    if (!_check_console_only(), return());
+    if (!_check_permission(), return());
     current_day = floor(time() / 24000);
     daytime = time() % 24000;
     is_night = (daytime >= 12000 && daytime < 23000);
     is_bm_now = (current_day == global_blood_moon_day && is_night);
-    print('--- [Server Console] Trạng thái Custom Mob Effects ---');
-    print(str('Ngày hiện tại: %d (Thời gian ngày: %d)', current_day, daytime));
-    print(str('Ngày Trăng Máu tiếp theo: %d', global_blood_moon_day));
-    print(str('Trăng Máu đang hoạt động: %s', if(is_bm_now, 'ĐANG CHẠY', 'Không')));
+    p = player();
+    lines = [
+        '--- Trạng thái Custom Mob Effects ---',
+        str('Ngày hiện tại: %d (Thời gian ngày: %d)', current_day, daytime),
+        str('Ngày Trăng Máu tiếp theo: %d', global_blood_moon_day),
+        str('Trăng Máu đang hoạt động: %s', if(is_bm_now, 'ĐANG CHẠY', 'Không'))
+    ];
+    for(lines,
+        if (p != null, print(p, '§7' + _), print('[Server Console] ' + _));
+    );
 );
