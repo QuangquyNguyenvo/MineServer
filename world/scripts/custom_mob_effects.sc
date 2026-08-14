@@ -38,6 +38,36 @@ global_negative_effects = {
     'minecraft:darkness' -> true
 };
 
+// ── CÁC HÀM TIỆN ÍCH CỐT LÕI (100% NATIVE SCARPET) ──
+
+// Helper tính khoảng cách Euclid giữa 2 tọa độ (tương thích 100% mọi phiên bản Carpet)
+_distance(p1, p2) -> (
+    if (p1 == null || p2 == null, return(999999));
+    dx = p1:0 - p2:0;
+    dy = p1:1 - p2:1;
+    dz = p1:2 - p2:2;
+    sqrt(dx*dx + dy*dy + dz*dz)
+);
+
+// Helper lấy chỉ số attribute an toàn (tương thích 100% mọi phiên bản Carpet)
+_get_attribute(e, attr_name, default_val) -> (
+    if (e == null, return(default_val));
+    // 1. Kiểm tra max_health trực tiếp nếu là generic.max_health
+    if (attr_name == 'generic.max_health' || attr_name == 'minecraft:generic.max_health',
+        mh = query(e, 'max_health');
+        if (mh != null, return(mh));
+    );
+    // 2. Thử query attribute
+    val = query(e, 'attribute', attr_name);
+    if (val != null, return(val));
+    // 3. Thử query với tiền tố minecraft:
+    if (!attr_name ~ ':',
+        val = query(e, 'attribute', 'minecraft:' + attr_name);
+        if (val != null, return(val));
+    );
+    return(default_val);
+);
+
 // Hàm khởi tạo Bossbar cho Warden (Màu text xanh dark_aqua, màu thanh bossbar xanh blue)
 _init_warden_bossbar() -> (
     run('bossbar add warden_boss {"text":"Warden","color":"dark_aqua","bold":true}');
@@ -88,7 +118,7 @@ _get_additional_xp(mob_type) -> (
 _apply_warden_blood_sacrifice_debuffs(w_pos) -> (
     for(player('all'),
         p = _;
-        if (distance(pos(p), w_pos) <= 40,
+        if (_distance(pos(p), w_pos) <= 40,
             modify(p, 'effect', 'nausea', 200, 1);    // Nausea II trong 10s (200 ticks)
             modify(p, 'effect', 'blindness', 200, 0); // Blindness trong 10s (200 ticks)
             modify(p, 'effect', 'poison', 200, 1);   // Poison II trong 10s (200 ticks)
@@ -196,18 +226,14 @@ _drop_warden_loot(w_pos, killer) -> (
 entity_load_handler('enderman', _(e, new) -> (
     if (new && e ~ 'dimension' == 'minecraft:the_end',
         // Tăng max health gấp 1.5 lần (Base 40 -> 60)
-        base_hp = attribute(e, 'generic.max_health');
-        if (base_hp != null,
-            new_hp = base_hp * 1.5;
-            run(str('attribute %s minecraft:generic.max_health base set %f', e ~ 'uuid', new_hp));
-            modify(e, 'health', new_hp);
-        );
+        base_hp = _get_attribute(e, 'generic.max_health', 40.0);
+        new_hp = base_hp * 1.5;
+        run(str('attribute %s minecraft:generic.max_health base set %f', e ~ 'uuid', new_hp));
+        modify(e, 'health', new_hp);
         
         // Tăng damage thêm 1.0 (Base 7 -> 8)
-        base_dmg = attribute(e, 'generic.attack_damage');
-        if (base_dmg != null,
-            run(str('attribute %s minecraft:generic.attack_damage base set %f', e ~ 'uuid', base_dmg + 1.0));
-        )
+        base_dmg = _get_attribute(e, 'generic.attack_damage', 7.0);
+        run(str('attribute %s minecraft:generic.attack_damage base set %f', e ~ 'uuid', base_dmg + 1.0));
     )
 ));
 
@@ -215,12 +241,10 @@ entity_load_handler('enderman', _(e, new) -> (
 entity_load_handler('shulker', _(e, new) -> (
     if (new && e ~ 'dimension' == 'minecraft:the_end',
         // Tăng max health gấp 1.5 lần (Base 30 -> 45)
-        base_hp = attribute(e, 'generic.max_health');
-        if (base_hp != null,
-            new_hp = base_hp * 1.5;
-            run(str('attribute %s minecraft:generic.max_health base set %f', e ~ 'uuid', new_hp));
-            modify(e, 'health', new_hp);
-        )
+        base_hp = _get_attribute(e, 'generic.max_health', 30.0);
+        new_hp = base_hp * 1.5;
+        run(str('attribute %s minecraft:generic.max_health base set %f', e ~ 'uuid', new_hp));
+        modify(e, 'health', new_hp);
     )
 ));
 
@@ -300,8 +324,7 @@ __on_damaged(entity, amount, source, attacking_entity) -> (
         );
 
         hp = entity ~ 'health';
-        max_hp = attribute(entity, 'generic.max_health');
-        if (max_hp == null, max_hp = 1500.0);
+        max_hp = _get_attribute(entity, 'generic.max_health', 1500.0);
         w_uuid = entity ~ 'uuid';
         w_pos = pos(entity);
         
@@ -332,7 +355,7 @@ __on_damaged(entity, amount, source, attacking_entity) -> (
             return();
         );
         
-        // Kiểm tra trạng thái Phase 2 (< 30% Max HP = < 300 HP)
+        // Kiểm tra trạng thái Phase 2 (< 30% Max HP = < 450 HP)
         is_phase2 = global_warden_phase2:w_uuid || (hp / max_hp <= 0.30);
         
         // Kích hoạt Phase 2 (RAGE) nếu vừa chạm mốc
@@ -404,7 +427,7 @@ __on_damaged(entity, amount, source, attacking_entity) -> (
                     for(player('all'),
                         p = _;
                         p_name = p ~ 'name';
-                        if (distance(pos(p), p_pos) <= 40,
+                        if (_distance(pos(p), p_pos) <= 40,
                             run(str('stopsound %s record', p_name));
                             run(str('playsound minecraft:custom.warden_sacrifice record %s ~ ~ ~ 1.0 1.0', p_name));
                             global_player_warden_music:p_name = 'sacrifice';
@@ -456,22 +479,21 @@ __on_damaged(entity, amount, source, attacking_entity) -> (
         player = entity;
         p_name = player ~ 'name';
         hp = player ~ 'health';
-        max_hp = attribute(player, 'generic.max_health');
-        if (max_hp == null, max_hp = 20.0);
+        max_hp = _get_attribute(player, 'generic.max_health', 20.0);
         
         // Kiểm tra xem Warden gây ra Sonic Boom có đang ở Phase 2 không
         is_phase2 = false;
         if (attacking_entity != null && attacking_entity ~ 'type' == 'warden',
             w_uuid = attacking_entity ~ 'uuid';
-            is_phase2 = (global_warden_phase2:w_uuid || (attacking_entity ~ 'health') <= 300);
+            is_phase2 = (global_warden_phase2:w_uuid || (attacking_entity ~ 'health') <= 450);
         ,
             // Quét tìm Warden gần player trong phạm vi 40m
             p_pos = pos(player);
             for(entity_list('warden'),
                 w = _;
-                if (distance(p_pos, pos(w)) <= 40,
+                if (_distance(p_pos, pos(w)) <= 40,
                     w_uuid = w ~ 'uuid';
-                    if (global_warden_phase2:w_uuid || (w ~ 'health') <= 300,
+                    if (global_warden_phase2:w_uuid || (w ~ 'health') <= 450,
                         is_phase2 = true;
                         break();
                     )
@@ -527,19 +549,15 @@ entity_load_handler('monster', _(e, new) -> (
         
         if (day == global_blood_moon_day && is_night,
             // 1. Nhân 2.5x máu
-            base_hp = attribute(e, 'generic.max_health');
-            if (base_hp != null,
-                new_hp = base_hp * 2.5;
-                run(str('attribute %s minecraft:generic.max_health base set %f', e ~ 'uuid', new_hp));
-                modify(e, 'health', new_hp);
-            );
+            base_hp = _get_attribute(e, 'generic.max_health', 20.0);
+            new_hp = base_hp * 2.5;
+            run(str('attribute %s minecraft:generic.max_health base set %f', e ~ 'uuid', new_hp));
+            modify(e, 'health', new_hp);
             
             // 2. Tăng 30% tốc độ di chuyển
-            base_speed = attribute(e, 'generic.movement_speed');
-            if (base_speed != null,
-                new_speed = base_speed * 1.3;
-                run(str('attribute %s minecraft:generic.movement_speed base set %f', e ~ 'uuid', new_speed));
-            )
+            base_speed = _get_attribute(e, 'generic.movement_speed', 0.25);
+            new_speed = base_speed * 1.3;
+            run(str('attribute %s minecraft:generic.movement_speed base set %f', e ~ 'uuid', new_speed));
         )
     )
 ));
@@ -783,8 +801,7 @@ __on_tick() -> (
         if (heal_ticks != null && heal_ticks > 0,
             global_warden_healing_ticks:w_uuid = heal_ticks - 1;
             curr_w_hp = w ~ 'health';
-            w_max = attribute(w, 'generic.max_health');
-            if (w_max == null, w_max = 1500.0);
+            w_max = _get_attribute(w, 'generic.max_health', 1500.0);
             target_cap = w_max * 0.40; // 600.0 HP (40% Max HP)
             
             // Hồi 2.25 HP mỗi tick (Tổng 450 HP trong 200 ticks = 10 giây)
@@ -825,10 +842,9 @@ __on_tick() -> (
             w_uuid = w ~ 'uuid';
             w_hp = w ~ 'health';
             w_pos = pos(w);
-            w_max = attribute(w, 'generic.max_health');
-            if (w_max == null, w_max = 1500.0);
+            w_max = _get_attribute(w, 'generic.max_health', 1500.0);
             
-            // Check kích hoạt Phase 2 (RAGE) nếu máu <= 30% (<= 300 HP)
+            // Check kích hoạt Phase 2 (RAGE) nếu máu <= 30% (<= 450 HP)
             if (w_hp <= (w_max * 0.30) && !global_warden_phase2:w_uuid,
                 _trigger_warden_rage(w, w_pos, w_uuid);
             );
@@ -846,19 +862,19 @@ __on_tick() -> (
                 run(str('particle minecraft:totem_of_undying %f %f %f 1.0 1.5 1.0 0.5 150', w_pos:0, w_pos:1 + 1.5, w_pos:2));
                 
                 run(str('title @a[x=%f,y=%f,z=%f,distance=..40] title {"text":"§4§l[HUYẾT TẾ TỐI THƯỢNG]","bold":true}', w_pos:0, w_pos:1, w_pos:2));
-                run(str('title @a[x=%f,y=%f,z=%f,distance=..40] subtitle {"text":"§cWarden giải phóng chướng khí (10s) & Hồi phục về 40%% Máu!"}', w_pos:0, w_pos:1, w_pos:2));
+                run(str('title @a[x=%f,y=%f,z=%f,distance=..40] subtitle {"text":"§cWarden giải phóng chướng khí (10s) & Hồi phục về 600 HP (40%% Máu)!"}', w_pos:0, w_pos:1, w_pos:2));
                 
                 _apply_warden_blood_sacrifice_debuffs(w_pos);
                 
                 for(players,
                     p = _;
                     p_name = p ~ 'name';
-                    if (distance(pos(p), w_pos) <= 40,
+                    if (_distance(pos(p), w_pos) <= 40,
                         run(str('stopsound %s record', p_name));
                         run(str('playsound minecraft:custom.warden_sacrifice record %s ~ ~ ~ 1.0 1.0', p_name));
                         global_player_warden_music:p_name = 'sacrifice';
                         global_player_music_timer:p_name = 3500;
-                        print(p, '§4§l[Warden] Kích hoạt Huyết Tế Tối Thượng! Chướng khí độc lan tỏa 40m và bắt đầu hấp thụ sinh lực về 40% Máu!');
+                        print(p, '§4§l[Warden] Kích hoạt Huyết Tế Tối Thượng! Chướng khí độc lan tỏa 40m và bắt đầu hấp thụ sinh lực về 600 HP (40% Máu)!');
                     )
                 );
             );
@@ -885,7 +901,7 @@ __on_tick() -> (
             for(players,
                 p = _;
                 p_name = p ~ 'name';
-                p_dist = distance(pos(p), w_pos);
+                p_dist = _distance(pos(p), w_pos);
                 curr_track = global_player_warden_music:p_name;
                 tmr = global_player_music_timer:p_name;
                 
@@ -933,7 +949,7 @@ __on_tick() -> (
         nearby_warden = false;
         for(wardens,
             w = _;
-            if (distance(p_pos, pos(w)) <= 40,
+            if (_distance(p_pos, pos(w)) <= 40,
                 nearby_warden = true;
                 break();
             )
