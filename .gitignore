@@ -1,6 +1,7 @@
 # Minecraft Server Runtime & Temporary files
 *.rar
 *.zip
+!ChaosCubed_Warden_BGM.zip
 logs/
 cache/
 libraries/

@@ -13,6 +13,8 @@ global_warden_pull_cooldown = {};
 global_warden_phase2 = {};
 global_warden_emergency_healed = {};
 global_warden_healing_ticks = {};
+global_player_warden_music = {};
+global_player_music_timer = {};
 
 // Danh sách các hiệu ứng xấu để phản ngược lại người chơi
 global_negative_effects = {
@@ -201,7 +203,7 @@ __on_damaged(entity, amount, source, attacking_entity) -> (
         w_uuid = entity ~ 'uuid';
         w_pos = pos(entity);
         
-        // ── MIỄN NHIỄM SÁT THƯƠNG TRONG QUÁ TRÌNH HUYẾT TẾ HỒI MÁU (100 -> 300 HP) ──
+        // ── MIỄN NHIỄM SÁT THƯƠNG TRONG QUÁ TRÌNH HUYẾT TẾ HỒI MÁU (100 -> 400 HP) ──
         is_channeling_heal = (global_warden_healing_ticks:w_uuid != null && global_warden_healing_ticks:w_uuid > 0);
         if (is_channeling_heal,
             if (amount >= hp,
@@ -224,7 +226,7 @@ __on_damaged(entity, amount, source, attacking_entity) -> (
             );
             sound('minecraft:item.shield.block', w_pos, 1.2, 0.8);
             run(str('particle minecraft:enchanted_hit %f %f %f 0.5 0.8 0.5 0.2 20', w_pos:0, w_pos:1 + 1.5, w_pos:2));
-            run(str('title @a[x=%f,y=%f,z=%f,distance=..35] actionbar {"text":"§4§l[Bất Tử] Warden đang Huyết Tế (100-300 HP), miễn nhiễm mọi sát thương!"}', w_pos:0, w_pos:1, w_pos:2));
+            run(str('title @a[x=%f,y=%f,z=%f,distance=..35] actionbar {"text":"§4§l[Bất Tử] Warden đang Huyết Tế (100-400 HP), miễn nhiễm mọi sát thương!"}', w_pos:0, w_pos:1, w_pos:2));
             return();
         );
         
@@ -280,7 +282,7 @@ __on_damaged(entity, amount, source, attacking_entity) -> (
         actual_damage = amount * (1 - resistance);
         remaining_hp = hp - actual_damage;
         
-        // Kiểm tra cơ chế Hồi máu khẩn cấp Phase 2 (< 10% HP -> kích hoạt Huyết Tế Tối Thượng trong 10s)
+        // Kiểm tra cơ chế Hồi máu khẩn cấp Phase 2 (< 10% HP -> kích hoạt Huyết Tế Tối Thượng hồi lên 400 HP trong 10s)
         if (is_phase2 && remaining_hp < (max_hp * 0.10) && !global_warden_emergency_healed:w_uuid,
             global_warden_emergency_healed:w_uuid = true;
             global_warden_healing_ticks:w_uuid = 200; // Hồi máu dần trong 10 giây (200 ticks)
@@ -305,14 +307,21 @@ __on_damaged(entity, amount, source, attacking_entity) -> (
                     run(str('particle minecraft:totem_of_undying %f %f %f 1.0 1.5 1.0 0.5 150', p_pos:0, p_pos:1 + 1.5, p_pos:2));
                     
                     run(str('title @a[x=%f,y=%f,z=%f,distance=..40] title {"text":"§4§l[HUYẾT TẾ TỐI THƯỢNG]","bold":true}', p_pos:0, p_pos:1, p_pos:2));
-                    run(str('title @a[x=%f,y=%f,z=%f,distance=..40] subtitle {"text":"§cWarden giải phóng chướng khí (10s) & Hồi phục về 30%% Máu!"}', p_pos:0, p_pos:1, p_pos:2));
+                    run(str('title @a[x=%f,y=%f,z=%f,distance=..40] subtitle {"text":"§cWarden giải phóng chướng khí (10s) & Hồi phục về 40%% Máu!"}', p_pos:0, p_pos:1, p_pos:2));
                     
                     // Gây hiệu ứng Nausea II, Blindness, Poison II trong 10s (40 blocks)
                     _apply_warden_blood_sacrifice_debuffs(p_pos);
                     
+                    // Chuyển sang nhạc Huyết Tế ngay lập tức cho người chơi trong 40m
                     for(player('all'),
-                        if (distance(pos(_), p_pos) <= 40,
-                            print(_, '§4§l[Warden] Kích hoạt Huyết Tế Tối Thượng! Chướng khí độc lan tỏa 40m và bắt đầu hấp thụ sinh lực trong 10s!');
+                        p = _;
+                        p_name = p ~ 'name';
+                        if (distance(pos(p), p_pos) <= 40,
+                            run(str('stopsound %s record', p_name));
+                            run(str('playsound minecraft:custom.warden_sacrifice record %s ~ ~ ~ 1.0 1.0', p_name));
+                            global_player_warden_music:p_name = 'sacrifice';
+                            global_player_music_timer:p_name = 3500;
+                            print(p, '§4§l[Warden] Kích hoạt Huyết Tế Tối Thượng! Chướng khí độc lan tỏa 40m và bắt đầu hấp thụ sinh lực về 40% Máu!');
                         )
                     );
                 )
@@ -613,13 +622,13 @@ __on_player_deals_damage(player, amount, entity) -> (
     )
 );
 
-// Quét định kỳ mỗi 100 ticks để kiểm tra chuyển giao ngày/đêm và thông báo Trăng Máu
+// Quét định kỳ mỗi tick / định kỳ để quản lý Warden, Nhạc nền BGM và Trăng Máu
 global_tick_count = 0;
 
 __on_tick() -> (
     global_tick_count = global_tick_count + 1;
     
-    // 1. Quản lý đếm ngược cooldown của Warden (chạy mỗi tick)
+    // 1. Quản lý đếm ngược cooldown kéo mục tiêu của Warden
     for(keys(global_warden_pull_cooldown),
         cd = global_warden_pull_cooldown:_;
         if (cd > 0,
@@ -629,7 +638,16 @@ __on_tick() -> (
         )
     );
 
-    // 2. Lấy danh sách người chơi online & Warden
+    // 2. Quản lý đếm ngược thời lượng nhạc nền BGM của từng người chơi
+    for(keys(global_player_music_timer),
+        p_name = _;
+        tmr = global_player_music_timer:p_name;
+        if (tmr != null && tmr > 0,
+            global_player_music_timer:p_name = tmr - 1;
+        )
+    );
+
+    // 3. Lấy danh sách người chơi online & Warden
     players = player('all');
     wardens = entity_list('warden');
     
@@ -648,7 +666,7 @@ __on_tick() -> (
         );
     );
     
-    // 3. Tiến trình hồi máu dần (10s = 200 ticks) khi Warden kích hoạt Huyết Tế Tối Thượng
+    // 4. Tiến trình hồi máu dần (10s = 200 ticks) khi Warden kích hoạt Huyết Tế Tối Thượng (100 -> 400 HP)
     for(wardens,
         w = _;
         w_uuid = w ~ 'uuid';
@@ -658,11 +676,11 @@ __on_tick() -> (
             curr_w_hp = w ~ 'health';
             w_max = attribute(w, 'generic.max_health');
             if (w_max == null, w_max = 1000.0);
-            target_cap = w_max * 0.30; // 300.0
+            target_cap = w_max * 0.40; // 400.0 HP (40% Max HP)
             
-            // Hồi 1.0 HP mỗi tick (Tổng 200 HP trong 200 ticks = 10 giây)
+            // Hồi 1.5 HP mỗi tick (Tổng 300 HP trong 200 ticks = 10 giây)
             if (curr_w_hp < target_cap,
-                modify(w, 'health', min(target_cap, curr_w_hp + 1.0));
+                modify(w, 'health', min(target_cap, curr_w_hp + 1.5));
             );
             
             w_p = pos(w);
@@ -679,19 +697,19 @@ __on_tick() -> (
             if (heal_ticks == 1,
                 delete(global_warden_healing_ticks:w_uuid);
                 sound('minecraft:entity.warden.roar', w_p, 2.0, 1.0);
-                run(str('title @a[x=%f,y=%f,z=%f,distance=..40] actionbar {"text":"§a§lQuá trình Huyết Tế hoàn tất! Warden đã phục hồi 300 HP!"}', w_p:0, w_p:1, w_p:2));
+                run(str('title @a[x=%f,y=%f,z=%f,distance=..40] actionbar {"text":"§a§lQuá trình Huyết Tế hoàn tất! Warden đã phục hồi 400 HP (40%% Máu)!"}', w_p:0, w_p:1, w_p:2));
             );
         )
     );
     
-    // 4. Phá block xung quanh Warden mỗi 5 ticks để tránh bị nhốt
+    // 5. Phá block xung quanh Warden mỗi 5 ticks để tránh bị nhốt
     if (global_tick_count % 5 == 0,
         for(wardens,
             _warden_break_blocks(_);
         )
     );
     
-    // 5. Quản lý Boss Health Bar và Phase 2 cho Warden mỗi 5 ticks
+    // 6. Quản lý Boss Health Bar, Phase 2 và Hệ Thống Nhạc Nền BGM Looping
     if (global_tick_count % 5 == 0,
         if (length(wardens) > 0,
             w = wardens:0;
@@ -714,7 +732,7 @@ __on_tick() -> (
                 
                 run(str('title @a[x=%f,y=%f,z=%f,distance=..40] title {"text":"§c§lWARDEN PHASE 2: CUỒNG NỘ!","bold":true}', w_pos:0, w_pos:1, w_pos:2));
                 run(str('title @a[x=%f,y=%f,z=%f,distance=..40] subtitle {"text":"§4Tăng 50%% Tốc độ | Kháng 100%% Tầm xa | Sonic Boom 45%% HP"}', w_pos:0, w_pos:1, w_pos:2));
-                for(player('all'),
+                for(players,
                     if (distance(pos(_), w_pos) <= 40,
                         print(_, '§c§l[CẢNH BÁO] Warden đã tiến vào PHASE 2: Cuồng Nộ! Miễn nhiễm toàn bộ sát thương tầm xa!');
                     )
@@ -734,13 +752,19 @@ __on_tick() -> (
                 run(str('particle minecraft:totem_of_undying %f %f %f 1.0 1.5 1.0 0.5 150', w_pos:0, w_pos:1 + 1.5, w_pos:2));
                 
                 run(str('title @a[x=%f,y=%f,z=%f,distance=..40] title {"text":"§4§l[HUYẾT TẾ TỐI THƯỢNG]","bold":true}', w_pos:0, w_pos:1, w_pos:2));
-                run(str('title @a[x=%f,y=%f,z=%f,distance=..40] subtitle {"text":"§cWarden giải phóng chướng khí (10s) & Hồi phục về 30%% Máu!"}', w_pos:0, w_pos:1, w_pos:2));
+                run(str('title @a[x=%f,y=%f,z=%f,distance=..40] subtitle {"text":"§cWarden giải phóng chướng khí (10s) & Hồi phục về 40%% Máu!"}', w_pos:0, w_pos:1, w_pos:2));
                 
                 _apply_warden_blood_sacrifice_debuffs(w_pos);
                 
-                for(player('all'),
-                    if (distance(pos(_), w_pos) <= 40,
-                        print(_, '§4§l[Warden] Kích hoạt Huyết Tế Tối Thượng! Chướng khí độc lan tỏa 40m và bắt đầu hấp thụ sinh lực trong 10s!');
+                for(players,
+                    p = _;
+                    p_name = p ~ 'name';
+                    if (distance(pos(p), w_pos) <= 40,
+                        run(str('stopsound %s record', p_name));
+                        run(str('playsound minecraft:custom.warden_sacrifice record %s ~ ~ ~ 1.0 1.0', p_name));
+                        global_player_warden_music:p_name = 'sacrifice';
+                        global_player_music_timer:p_name = 3500;
+                        print(p, '§4§l[Warden] Kích hoạt Huyết Tế Tối Thượng! Chướng khí độc lan tỏa 40m và bắt đầu hấp thụ sinh lực về 40% Máu!');
                     )
                 );
             );
@@ -757,9 +781,52 @@ __on_tick() -> (
             run(str('bossbar set minecraft:warden_boss value %d', floor(w_hp)));
             run('bossbar set minecraft:warden_boss visible true');
             run(str('bossbar set minecraft:warden_boss players @a[x=%f,y=%f,z=%f,distance=..40]', w_pos:0, w_pos:1, w_pos:2));
+            
+            // ── QUẢN LÝ NHẠC NỀN BGM LOOPING CHO NGƯỜI CHƠI TRONG VÙNG 40M ──
+            has_sacrificed = global_warden_emergency_healed:w_uuid;
+            req_track = if(has_sacrificed, 'sacrifice', 'theme');
+            req_sound = if(has_sacrificed, 'minecraft:custom.warden_sacrifice', 'minecraft:custom.warden_theme');
+            track_dur = if(has_sacrificed, 3500, 4180); // 175s hoặc 209s
+            
+            for(players,
+                p = _;
+                p_name = p ~ 'name';
+                p_dist = distance(pos(p), w_pos);
+                curr_track = global_player_warden_music:p_name;
+                tmr = global_player_music_timer:p_name;
+                
+                if (p_dist <= 40,
+                    // Nếu chưa phát nhạc hoặc nhạc đã hết giờ (cần loop) hoặc cần chuyển sang bài Huyết Tế
+                    if (curr_track != req_track || tmr == null || tmr <= 0,
+                        if (curr_track != null,
+                            run(str('stopsound %s record', p_name));
+                        );
+                        run(str('playsound %s record %s ~ ~ ~ 1.0 1.0', req_sound, p_name));
+                        global_player_warden_music:p_name = req_track;
+                        global_player_music_timer:p_name = track_dur;
+                    );
+                ,
+                    // Người chơi ra ngoài phạm vi 40m: dừng nhạc
+                    if (curr_track != null,
+                        run(str('stopsound %s record minecraft:custom.warden_theme', p_name));
+                        run(str('stopsound %s record minecraft:custom.warden_sacrifice', p_name));
+                        delete(global_player_warden_music:p_name);
+                        delete(global_player_music_timer:p_name);
+                    );
+                );
+            );
         ,
+            // Không có Warden nào trong thế giới: Tắt Bossbar và dừng toàn bộ nhạc Warden
             run('bossbar set minecraft:warden_boss visible false');
             run('bossbar set minecraft:warden_boss players');
+            
+            for(keys(global_player_warden_music),
+                p_name = _;
+                run(str('stopsound %s record minecraft:custom.warden_theme', p_name));
+                run(str('stopsound %s record minecraft:custom.warden_sacrifice', p_name));
+                delete(global_player_warden_music:p_name);
+                delete(global_player_music_timer:p_name);
+            );
         )
     );
     
@@ -859,7 +926,7 @@ __on_tick() -> (
         )
     );
 
-    // 6. Cảnh báo hoàng hôn ngày Trăng Máu
+    // 7. Cảnh báo hoàng hôn ngày Trăng Máu
     if (global_tick_count % 100 == 0,
         daytime = time() % 24000;
         day = floor(time() / 24000);
@@ -867,7 +934,7 @@ __on_tick() -> (
         // Cảnh báo hoàng hôn ngày Trăng Máu
         if (day == global_blood_moon_day && daytime >= 12000 && daytime < 13000,
             if (!global_was_blood_moon_notified,
-                for(player('all'),
+                for(players,
                     p = _;
                     sound('minecraft:entity.wither.spawn', pos(p), 1.0, 0.7);
                     sound('minecraft:ambient.cave', pos(p), 1.0, 0.5);
@@ -881,7 +948,7 @@ __on_tick() -> (
         
         // Kết thúc ngày trăng máu (sang ngày mới hoặc hết đêm)
         if (global_was_blood_moon_notified && (daytime < 12000 || day != global_blood_moon_day),
-            for(player('all'),
+            for(players,
                 p = _;
                 sound('minecraft:ui.toast.challenge_complete', pos(p), 0.8, 1.0);
                 print(p, '§a§l[Yên bình] Đêm trăng máu đã qua. Sức mạnh quái vật trở lại bình thường.');
@@ -932,7 +999,7 @@ test_warden_p2() -> (
 );
 
 // Lệnh: /custom_mob_effects test_warden_heal
-// Đặt máu của Warden gần nhất về 95 HP trong Phase 2 để kiểm tra Hồi máu 10s và Debuff
+// Đặt máu của Warden gần nhất về 95 HP trong Phase 2 để kiểm tra Hồi máu 10s lên 400 HP và Nhạc Sacrifice
 test_warden_heal() -> (
     p = player();
     if (query(p, 'permission_level') < 2,
@@ -949,7 +1016,7 @@ test_warden_heal() -> (
     delete(global_warden_emergency_healed:(w ~ 'uuid'));
     delete(global_warden_healing_ticks:(w ~ 'uuid'));
     modify(w, 'health', 95.0);
-    print(p, '§aĐã đặt Warden vào Phase 2 với 95 HP để kiểm tra cơ chế Huyết Tế (< 10%) trong 10s!');
+    print(p, '§aĐã đặt Warden vào Phase 2 với 95 HP để kiểm tra cơ chế Huyết Tế (< 10%) hồi lên 400 HP trong 10s và nhạc Sacrifice!');
 );
 
 // Lệnh: /custom_mob_effects status

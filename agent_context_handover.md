@@ -72,8 +72,13 @@ Toàn bộ logic được lập trình bằng Scarpet tại file [`world/scripts
 12. **🩸 Cơ chế Huyết Tế Tối Thượng (Emergency Heal khi < 10% Máu trong Phase 2):**
     * Khi máu Warden tụt xuống dưới **10%** (< 100 HP) trong Phase 2, Warden kích hoạt cơ chế hồi sinh khẩn cấp 1 lần duy nhất trong trận đấu.
     * **Chướng Khí Độc:** Lập tức gieo rắc hiệu ứng tiêu cực lên toàn bộ người chơi trong phạm vi **40 blocks** trong **10 giây (200 ticks)**: **Buồn nôn II (Nausea II)**, **Mù quáng (Blindness)** và **Trúng độc II (Poison II)**.
-    * **Bất Tử & Hồi máu dần trong 10 giây:** Warden được **miễn nhiễm 100% mọi nguồn sát thương (Bất tử)** trong suốt 10 giây vận khí; hấp thụ năng lượng linh hồn và hồi phục từ 100 HP lên **300 HP (30% Max HP)** (+1 HP mỗi tick / 20 HP mỗi giây), đi kèm hiệu ứng hạt linh hồn Sculk, Totem và tiếng đập tim dồn dập.
-13. **Thanh máu Boss (Boss Health Bar):**
+    * **Bất Tử & Hồi máu dần trong 10 giây:** Warden được **miễn nhiễm 100% mọi nguồn sát thương (Bất tử)** trong suốt 10 giây vận khí; hấp thụ năng lượng linh hồn và hồi phục từ 100 HP lên **400 HP (40% Max HP)** (+1.5 HP mỗi tick / 30 HP mỗi giây), đi kèm hiệu ứng hạt linh hồn Sculk, Totem và tiếng đập tim dồn dập.
+13. **🎵 Hệ Thống Nhạc Nền Tùy Chỉnh (Custom BGM Looping):**
+    * **Nhạc Giai Đoạn 1 / Spawn:** `minecraft:custom.warden_theme` (Bản nhạc chiến đấu tự động phát và lặp vô tận khi Bossbar Warden xuất hiện cho người chơi trong bán kính 40m).
+    * **Nhạc Huyết Tế / Phase 2:** `minecraft:custom.warden_sacrifice` (Tự động chuyển nhạc từ giây thứ 14 của bản nhạc cuồng nộ khi Warden kích hoạt Huyết Tế, lặp vô tận cho đến khi Warden bị tiêu diệt).
+    * Khi người chơi ra khỏi phạm vi 40m hoặc Warden bị tiêu diệt: Tự động chạy `stopsound` ngắt toàn bộ nhạc nền sạch sẽ.
+    * **Gói Resource Pack:** File [`ChaosCubed_Warden_BGM.zip`](file:///C:/Users/ADMIN/MineServer/ChaosCubed_Warden_BGM.zip) (SHA1: `67b5bce83e97785b6b1ca59d7122485d06b87e8d`) đã được cấu hình tự động tải trong `server.properties`.
+14. **Thanh máu Boss (Boss Health Bar):**
     * **Phase 1:** Tên **Warden** màu `dark_aqua` (`§3`), thanh màu `blue`.
     * **Phase 2:** Tên **Warden (Phase 2 - Cuồng Nộ)** màu `red` (`§c`), thanh chuyển sang màu `red`.
     * Tự động hiển thị/ẩn trong bán kính 40m quanh Warden.
