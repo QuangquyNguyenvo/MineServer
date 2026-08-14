@@ -329,7 +329,7 @@ _on_overworld_mob_load(e, new) -> (
 );
 
 // Khởi chạy khi App được nạp
-__on_start() -> (
+_setup_app() -> (
     _init_warden_bossbar();
     _load_blood_moon_data();
     
@@ -343,6 +343,9 @@ __on_start() -> (
         entity_load_handler(_, '_on_overworld_mob_load')
     );
 );
+
+__on_start() -> _setup_app();
+_setup_app();
 
 // Hàm phá hủy block xung quanh Warden để tránh bị nhốt
 _warden_break_blocks(w) -> (
