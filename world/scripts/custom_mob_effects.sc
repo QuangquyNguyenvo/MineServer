@@ -90,6 +90,27 @@ _apply_warden_blood_sacrifice_debuffs(w_pos) -> (
     );
 );
 
+// Helper kích hoạt trạng thái Cuồng Nộ (RAGE / Phase 2) cho Warden
+_trigger_warden_rage(w, w_pos, w_uuid) -> (
+    global_warden_phase2:w_uuid = true;
+    run(str('attribute %s minecraft:generic.movement_speed base set 0.45', w_uuid));
+    
+    // Hiệu ứng âm thanh gầm rú & hạt
+    sound('minecraft:entity.warden.roar', w_pos, 2.5, 0.8);
+    sound('minecraft:entity.ender_dragon.growl', w_pos, 2.0, 0.6);
+    for(player('all'), sound('minecraft:entity.warden.roar', pos(_), 1.5, 0.8));
+    
+    run(str('particle minecraft:sculk_soul %f %f %f 1.0 1.0 1.0 0.2 60', w_pos:0, w_pos:1 + 1.5, w_pos:2));
+    run(str('particle minecraft:soul_fire_flame %f %f %f 1.5 1.5 1.5 0.1 80', w_pos:0, w_pos:1 + 1.0, w_pos:2));
+    
+    // Thông báo màn hình Title & Subtitle theo đúng định dạng
+    run('title @a subtitle {"text":"Warden đã bùng nổ năng lượng Sculk!","color":"dark_red","italic":true}');
+    run('title @a title {"text":"CUỒNG NỘ (RAGE)!","color":"red","bold":true}');
+    
+    // Thông báo khung chat bằng tellraw theo đúng định dạng
+    run('tellraw @a ["",{"text":"[WARNING] ","color":"dark_red","bold":true},{"text":"Warden ","color":"dark_aqua","bold":true},{"text":"đã rơi vào trạng thái ","color":"gray"},{"text":"CUỒNG NỘ (RAGE)!","color":"red","bold":true,"italic":true},{"text":"\\nSức mạnh Sculk bùng nổ, mọi đòn đánh giờ đây bỏ qua giáp!","color":"dark_purple"}]');
+);
+
 // Register handler cho Enderman spawn ở The End
 entity_load_handler('enderman', _(e, new) -> (
     if (new && e ~ 'dimension' == 'minecraft:the_end',
@@ -233,23 +254,9 @@ __on_damaged(entity, amount, source, attacking_entity) -> (
         // Kiểm tra trạng thái Phase 2 (< 30% Max HP = < 300 HP)
         is_phase2 = global_warden_phase2:w_uuid || (hp / max_hp <= 0.30);
         
-        // Kích hoạt Phase 2 nếu vừa chạm mốc
+        // Kích hoạt Phase 2 (RAGE) nếu vừa chạm mốc
         if (is_phase2 && !global_warden_phase2:w_uuid,
-            global_warden_phase2:w_uuid = true;
-            run(str('attribute %s minecraft:generic.movement_speed base set 0.45', w_uuid));
-            
-            sound('minecraft:entity.warden.roar', w_pos, 2.0, 0.8);
-            sound('minecraft:entity.ender_dragon.growl', w_pos, 2.0, 0.6);
-            run(str('particle minecraft:sculk_soul %f %f %f 1.0 1.0 1.0 0.2 60', w_pos:0, w_pos:1 + 1.5, w_pos:2));
-            run(str('particle minecraft:soul_fire_flame %f %f %f 1.5 1.5 1.5 0.1 80', w_pos:0, w_pos:1 + 1.0, w_pos:2));
-            
-            run(str('title @a[x=%f,y=%f,z=%f,distance=..40] title {"text":"§c§lWARDEN PHASE 2: CUỒNG NỘ!","bold":true}', w_pos:0, w_pos:1, w_pos:2));
-            run(str('title @a[x=%f,y=%f,z=%f,distance=..40] subtitle {"text":"§4Tăng 50%% Tốc độ | Kháng 100%% Tầm xa | Sonic Boom 45%% HP"}', w_pos:0, w_pos:1, w_pos:2));
-            for(player('all'),
-                if (distance(pos(_), w_pos) <= 40,
-                    print(_, '§c§l[CẢNH BÁO] Warden đã tiến vào PHASE 2: Cuồng Nộ! Miễn nhiễm toàn bộ sát thương tầm xa!');
-                )
-            );
+            _trigger_warden_rage(entity, w_pos, w_uuid);
         );
 
         // Kiểm tra loại sát thương từ vật thể bắn (Projectile)
@@ -719,24 +726,9 @@ __on_tick() -> (
             w_max = attribute(w, 'generic.max_health');
             if (w_max == null, w_max = 1000.0);
             
-            // Check kích hoạt Phase 2 nếu máu <= 30% (<= 300 HP)
+            // Check kích hoạt Phase 2 (RAGE) nếu máu <= 30% (<= 300 HP)
             if (w_hp <= (w_max * 0.30) && !global_warden_phase2:w_uuid,
-                global_warden_phase2:w_uuid = true;
-                // Tăng 50% tốc độ di chuyển (Base 0.3 -> 0.45)
-                run(str('attribute %s minecraft:generic.movement_speed base set 0.45', w_uuid));
-                
-                sound('minecraft:entity.warden.roar', w_pos, 2.0, 0.8);
-                sound('minecraft:entity.ender_dragon.growl', w_pos, 2.0, 0.6);
-                run(str('particle minecraft:sculk_soul %f %f %f 1.0 1.0 1.0 0.2 60', w_pos:0, w_pos:1 + 1.5, w_pos:2));
-                run(str('particle minecraft:soul_fire_flame %f %f %f 1.5 1.5 1.5 0.1 80', w_pos:0, w_pos:1 + 1.0, w_pos:2));
-                
-                run(str('title @a[x=%f,y=%f,z=%f,distance=..40] title {"text":"§c§lWARDEN PHASE 2: CUỒNG NỘ!","bold":true}', w_pos:0, w_pos:1, w_pos:2));
-                run(str('title @a[x=%f,y=%f,z=%f,distance=..40] subtitle {"text":"§4Tăng 50%% Tốc độ | Kháng 100%% Tầm xa | Sonic Boom 45%% HP"}', w_pos:0, w_pos:1, w_pos:2));
-                for(players,
-                    if (distance(pos(_), w_pos) <= 40,
-                        print(_, '§c§l[CẢNH BÁO] Warden đã tiến vào PHASE 2: Cuồng Nộ! Miễn nhiễm toàn bộ sát thương tầm xa!');
-                    )
-                );
+                _trigger_warden_rage(w, w_pos, w_uuid);
             );
             
             is_p2 = global_warden_phase2:w_uuid;

@@ -64,11 +64,14 @@ Toàn bộ logic được lập trình bằng Scarpet tại file [`world/scripts
    * Quét vùng 3x4x3 quanh Warden mỗi 5 ticks và phá hủy các block rắn (kể cả Obsidian) bằng `/fill air destroy` để chống bị người chơi nhốt.
 10. **Phản hiệu ứng xấu (Effect Reflection):**
     * Khi đánh trúng người chơi, Warden quét các hiệu ứng tiêu cực nó đang dính (Slowness, Poison, Weakness, Blindness...) và phản ngược lại người chơi trong tối đa 5 giây.
-11. **🔥 Cơ chế Phase 2 - Cuồng Nộ (Kích hoạt khi <= 30% Máu / <= 300 HP):**
+11. **🔥 Cơ chế Phase 2 - Cuồng Nộ / RAGE (Kích hoạt khi <= 30% Máu / <= 300 HP):**
     * **Tăng tốc độ:** Tăng **50% tốc độ di chuyển** (`movement_speed` base set 0.45).
     * **Kháng 100% Sát thương tầm xa (Projectile Immunity):** Kháng tuyệt đối 100% mọi vật thể bắn (Cung tên, Đinh ba, Bình thuốc ném/kéo dài, Cầu lửa, Sọ Wither, Wind Charge, Pháo hoa...), buộc người chơi phải cận chiến bằng kiếm.
     * **Sonic Boom Thăng Hoa:** Sát thương chuẩn tăng lên **45% Max HP** của người chơi.
-    * **Hiệu ứng & Âm thanh:** Gầm rú chuyển dạng (`warden.roar` + `ender_dragon.growl`), bung hạt linh hồn Sculk và Lửa linh hồn; thông báo Title cảnh báo toàn khu vực 40m.
+    * **Âm thanh & Hiệu ứng:** Gầm rú toàn server (`warden.roar` + `ender_dragon.growl`), bung hạt linh hồn Sculk và Lửa linh hồn.
+    * **Thông báo Title & Chat tellraw:**
+      * **Subtitle:** `Warden đã bùng nổ năng lượng Sculk!` (màu `dark_red`, in nghiêng).
+      * **Tellraw Chat:** `[WARNING] Warden đã rơi vào trạng thái CUỒNG NỘ (RAGE)!\nSức mạnh Sculk bùng nổ, mọi đòn đánh giờ đây bỏ qua giáp!`.
 12. **🩸 Cơ chế Huyết Tế Tối Thượng (Emergency Heal khi < 10% Máu trong Phase 2):**
     * Khi máu Warden tụt xuống dưới **10%** (< 100 HP) trong Phase 2, Warden kích hoạt cơ chế hồi sinh khẩn cấp 1 lần duy nhất trong trận đấu.
     * **Chướng Khí Độc:** Lập tức gieo rắc hiệu ứng tiêu cực lên toàn bộ người chơi trong phạm vi **40 blocks** trong **10 giây (200 ticks)**: **Buồn nôn II (Nausea II)**, **Mù quáng (Blindness)** và **Trúng độc II (Poison II)**.
