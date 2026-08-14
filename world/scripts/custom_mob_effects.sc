@@ -607,8 +607,8 @@ __on_player_deals_damage(player, amount, entity) -> (
                         p = _;
                         p_name = p ~ 'name';
                         if (_distance(pos(p), p_pos) <= 40,
-                            run(str('stopsound %s record', p_name));
-                            run(str('playsound minecraft:custom.warden_sacrifice record %s ~ ~ ~ 1.0 1.0', p_name));
+                            run(str('execute as %s at @s run stopsound @s record', p_name));
+                            run(str('execute as %s at @s run playsound minecraft:custom.warden_sacrifice record @s ~ ~ ~ 1000.0 1.0', p_name));
                             global_player_warden_music:p_name = 'sacrifice';
                             global_player_music_timer:p_name = 3500;
                             print(p, '§4§l[Warden] Kích hoạt Huyết Tế Tối Thượng! Chướng khí độc lan tỏa 40m và bắt đầu hấp thụ sinh lực về 600 HP (40% Máu)!');
@@ -834,8 +834,8 @@ __on_tick() -> (
                     p = _;
                     p_name = p ~ 'name';
                     if (_distance(pos(p), w_pos) <= 40,
-                        run(str('stopsound %s record', p_name));
-                        run(str('playsound minecraft:custom.warden_sacrifice record %s ~ ~ ~ 1.0 1.0', p_name));
+                        run(str('execute as %s at @s run stopsound @s record', p_name));
+                        run(str('execute as %s at @s run playsound minecraft:custom.warden_sacrifice record @s ~ ~ ~ 1000.0 1.0', p_name));
                         global_player_warden_music:p_name = 'sacrifice';
                         global_player_music_timer:p_name = 3500;
                         print(p, '§4§l[Warden] Kích hoạt Huyết Tế Tối Thượng! Chướng khí độc lan tỏa 40m và bắt đầu hấp thụ sinh lực về 600 HP (40% Máu)!');
@@ -872,16 +872,16 @@ __on_tick() -> (
                 if (p_dist <= 40,
                     if (curr_track != req_track || tmr == null || tmr <= 0,
                         if (curr_track != null,
-                            run(str('stopsound %s record', p_name));
+                            run(str('execute as %s at @s run stopsound @s record', p_name));
                         );
-                        run(str('playsound %s record %s ~ ~ ~ 1.0 1.0', req_sound, p_name));
+                        run(str('execute as %s at @s run playsound %s record @s ~ ~ ~ 1000.0 1.0', p_name, req_sound));
                         global_player_warden_music:p_name = req_track;
                         global_player_music_timer:p_name = track_dur;
                     );
                 ,
                     if (curr_track != null,
-                        run(str('stopsound %s record minecraft:custom.warden_theme', p_name));
-                        run(str('stopsound %s record minecraft:custom.warden_sacrifice', p_name));
+                        run(str('execute as %s at @s run stopsound @s record minecraft:custom.warden_theme', p_name));
+                        run(str('execute as %s at @s run stopsound @s record minecraft:custom.warden_sacrifice', p_name));
                         delete(global_player_warden_music:p_name);
                         delete(global_player_music_timer:p_name);
                     );
@@ -893,8 +893,8 @@ __on_tick() -> (
             
             for(keys(global_player_warden_music),
                 p_name = _;
-                run(str('stopsound %s record minecraft:custom.warden_theme', p_name));
-                run(str('stopsound %s record minecraft:custom.warden_sacrifice', p_name));
+                run(str('execute as %s at @s run stopsound @s record minecraft:custom.warden_theme', p_name));
+                run(str('execute as %s at @s run stopsound @s record minecraft:custom.warden_sacrifice', p_name));
                 delete(global_player_warden_music:p_name);
                 delete(global_player_music_timer:p_name);
             );
