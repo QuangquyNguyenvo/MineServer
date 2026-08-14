@@ -226,7 +226,7 @@ _drop_warden_loot(w_pos, killer) -> (
 // ── HANDLERS KHI MOB SPAWN (100% NATIVE 1.21+) ──
 
 _on_enderman_load(e, new) -> (
-    if (new && e ~ 'dimension' == 'minecraft:the_end',
+    if (new && (e ~ 'dimension') ~ 'the_end',
         schedule(0, _(outer(e)) -> (
             if (e && !query(e, 'removed'),
                 base_hp = _get_attribute(e, 'max_health', 40.0);
@@ -242,7 +242,7 @@ _on_enderman_load(e, new) -> (
 );
 
 _on_shulker_load(e, new) -> (
-    if (new && e ~ 'dimension' == 'minecraft:the_end',
+    if (new && (e ~ 'dimension') ~ 'the_end',
         schedule(0, _(outer(e)) -> (
             if (e && !query(e, 'removed'),
                 base_hp = _get_attribute(e, 'max_health', 30.0);
@@ -286,8 +286,8 @@ _on_warden_load(e, new) -> (
                 
                 // Thông báo global toàn server
                 w_pos = pos(e);
-                dim = e ~ 'dimension';
-                dim_name = if(dim == 'minecraft:overworld', 'Overworld', if(dim == 'minecraft:the_nether', 'Nether', 'The End'));
+                dim = str(e ~ 'dimension');
+                dim_name = if(dim ~ 'overworld', 'Overworld', if(dim ~ 'nether', 'Nether', if(dim ~ 'end', 'The End', 'Overworld')));
                 bx = floor(w_pos:0);
                 by = floor(w_pos:1);
                 bz = floor(w_pos:2);
@@ -306,7 +306,7 @@ _on_warden_load(e, new) -> (
 );
 
 _on_overworld_mob_load(e, new) -> (
-    if (new && e ~ 'dimension' == 'minecraft:overworld',
+    if (new && (e ~ 'dimension') ~ 'overworld',
         day = floor(time() / 24000);
         daytime = time() % 24000;
         is_night = (daytime >= 12000 && daytime < 23000);
@@ -454,9 +454,12 @@ __on_player_takes_damage(player, amount, source, source_entity) -> (
     is_wither_attack = (type == 'wither' || type == 'wither_skull');
     
     if (!is_mob && !is_bullet && !is_boss_attack, return());
-    dim = player ~ 'dimension';
+    dim = str(player ~ 'dimension');
+    is_overworld = (dim ~ 'overworld');
+    is_nether = (dim ~ 'nether');
+    is_end = (dim ~ 'end');
     
-    if (is_boss_attack && !is_wither_attack && (dim == 'minecraft:the_nether' || dim == 'minecraft:the_end'),
+    if (is_boss_attack && !is_wither_attack && (is_nether || is_end),
         modify(player, 'health', max(0.5, (player ~ 'health') - 1.0));
     );
     
@@ -465,7 +468,7 @@ __on_player_takes_damage(player, amount, source, source_entity) -> (
         run(str('title %s actionbar {"text":"§4§lBị tấn công bởi Wither: Nhận 2 sát thương chuẩn! (Bỏ qua giáp)"}', p_name));
     );
     
-    if (dim == 'minecraft:overworld' && is_mob && !is_boss_attack,
+    if (is_overworld && is_mob && !is_boss_attack,
         day = floor(time() / 24000);
         daytime = time() % 24000;
         is_night = (daytime >= 12000 && daytime < 23000);
@@ -489,7 +492,7 @@ __on_player_takes_damage(player, amount, source, source_entity) -> (
         )
     );
     
-    if (dim == 'minecraft:the_nether' && is_mob && !is_boss_attack,
+    if (is_nether && is_mob && !is_boss_attack,
         if (rand(1.0) < 0.30,
             modify(player, 'effect', 'poison', 100, 0);
             modify(player, 'effect', 'slowness', 60, 0);
@@ -499,7 +502,7 @@ __on_player_takes_damage(player, amount, source, source_entity) -> (
         )
     );
     
-    if (dim == 'minecraft:the_end',
+    if (is_end,
         if (is_mob && !is_boss_attack && rand(1.0) < 0.30,
             modify(player, 'effect', 'slowness', 60, 1);
             run(str('title %s actionbar {"text":"§5Bạn bị làm chậm cực độ (Slowness II)!"}', p_name));
