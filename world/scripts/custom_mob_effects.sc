@@ -12,6 +12,7 @@ global_player_last_health = {};
 global_warden_pull_cooldown = {};
 global_warden_phase2 = {};
 global_warden_emergency_healed = {};
+global_warden_healing_ticks = {};
 
 // Danh sách các hiệu ứng xấu để phản ngược lại người chơi
 global_negative_effects = {
@@ -74,6 +75,19 @@ _get_additional_xp(mob_type) -> (
     if (val != null, val, 2) // Mặc định cộng 2 XP cho các quái khác
 );
 
+// Helper gây chướng khí Huyết Tế Tối Thượng lên người chơi trong phạm vi 40m
+_apply_warden_blood_sacrifice_debuffs(w_pos) -> (
+    for(player('all'),
+        p = _;
+        if (distance(pos(p), w_pos) <= 40,
+            modify(p, 'effect', 'nausea', 200, 1);    // Nausea II trong 10s (200 ticks)
+            modify(p, 'effect', 'blindness', 200, 0); // Blindness trong 10s (200 ticks)
+            modify(p, 'effect', 'poison', 200, 1);   // Poison II trong 10s (200 ticks)
+            run(str('title %s actionbar {"text":"§4§lChướng Khí Huyết Tế: Nausea II, Blindness & Poison II trong 10s!"}', p ~ 'name'));
+        )
+    );
+);
+
 // Register handler cho Enderman spawn ở The End
 entity_load_handler('enderman', _(e, new) -> (
     if (new && e ~ 'dimension' == 'minecraft:the_end',
@@ -128,6 +142,23 @@ entity_load_handler('warden', _(e, new) -> (
         run(str('attribute %s minecraft:generic.max_health base set 1000', e ~ 'uuid'));
         run(str('attribute %s minecraft:generic.movement_speed base set 0.30', e ~ 'uuid'));
         modify(e, 'health', 1000.0);
+        
+        // ── THÔNG BÁO GLOBAL TOÀN SERVER TRÊN KHUNG CHAT KHI WARDEN SPAWN ──
+        w_pos = pos(e);
+        dim = e ~ 'dimension';
+        dim_name = if(dim == 'minecraft:overworld', 'Overworld', if(dim == 'minecraft:the_nether', 'Nether', 'The End'));
+        bx = floor(w_pos:0);
+        by = floor(w_pos:1);
+        bz = floor(w_pos:2);
+        
+        for(player('all'),
+            p = _;
+            sound('minecraft:entity.warden.emerge', pos(p), 1.2, 0.7);
+            sound('minecraft:ambient.cave', pos(p), 1.0, 0.5);
+            print(p, str('§4§l[CẢNH BÁO TOÀN SERVER] §cChúa Tể Bóng Tối §4§lWarden §cđã thức tỉnh tại §e%s [%d, %d, %d]§c! Hãy cẩn trọng!', dim_name, bx, by, bz));
+            run(str('title %s subtitle {"text":"§cTại: %s [%d, %d, %d]","italic":true}', p ~ 'name', dim_name, bx, by, bz));
+            run(str('title %s title {"text":"§4§lWARDEN ĐÃ XUẤT HIỆN!"}', p ~ 'name'));
+        );
     )
 ));
 
@@ -222,32 +253,39 @@ __on_damaged(entity, amount, source, attacking_entity) -> (
         actual_damage = amount * (1 - resistance);
         remaining_hp = hp - actual_damage;
         
-        // Kiểm tra cơ chế Hồi máu khẩn cấp Phase 2 (< 10% HP -> hồi về 30% Max HP)
+        // Kiểm tra cơ chế Hồi máu khẩn cấp Phase 2 (< 10% HP -> kích hoạt Huyết Tế Tối Thượng trong 10s)
         if (is_phase2 && remaining_hp < (max_hp * 0.10) && !global_warden_emergency_healed:w_uuid,
             global_warden_emergency_healed:w_uuid = true;
-            heal_target = max_hp * 0.30;
+            global_warden_healing_ticks:w_uuid = 200; // Hồi máu dần trong 10 giây (200 ticks)
+            
+            // Đặt máu khởi điểm (tối thiểu 100 HP để bắt đầu quá trình hồi máu 10s)
+            start_hp = max(100.0, remaining_hp);
             
             // Chống chết sốc ở tick hiện tại: buff tạm máu để sống sót
-            temp_health = hp + amount + heal_target;
+            temp_health = hp + amount + start_hp;
             run(str('attribute %s minecraft:generic.max_health base set %f', w_uuid, temp_health));
             modify(entity, 'health', temp_health);
             
-            schedule(0, _(outer(entity), outer(max_hp), outer(heal_target), outer(w_uuid)) -> (
+            schedule(0, _(outer(entity), outer(max_hp), outer(start_hp), outer(w_uuid)) -> (
                 if (entity && !query(entity, 'removed'),
                     run(str('attribute %s minecraft:generic.max_health base set %f', w_uuid, max_hp));
-                    modify(entity, 'health', heal_target);
+                    modify(entity, 'health', start_hp);
                     
                     p_pos = pos(entity);
                     sound('minecraft:item.totem.use', p_pos, 2.0, 0.8);
                     sound('minecraft:entity.warden.heartbeat', p_pos, 2.0, 1.2);
                     sound('minecraft:entity.wither.spawn', p_pos, 1.5, 1.2);
-                    run(str('particle minecraft:totem_of_undying %f %f %f 1.0 1.5 1.0 0.5 120', p_pos:0, p_pos:1 + 1.5, p_pos:2));
+                    run(str('particle minecraft:totem_of_undying %f %f %f 1.0 1.5 1.0 0.5 150', p_pos:0, p_pos:1 + 1.5, p_pos:2));
                     
                     run(str('title @a[x=%f,y=%f,z=%f,distance=..40] title {"text":"§4§l[HUYẾT TẾ TỐI THƯỢNG]","bold":true}', p_pos:0, p_pos:1, p_pos:2));
-                    run(str('title @a[x=%f,y=%f,z=%f,distance=..40] subtitle {"text":"§cWarden hấp thụ linh hồn Sculk, hồi phục về 30%% Máu!"}', p_pos:0, p_pos:1, p_pos:2));
+                    run(str('title @a[x=%f,y=%f,z=%f,distance=..40] subtitle {"text":"§cWarden giải phóng chướng khí (10s) & Hồi phục về 30%% Máu!"}', p_pos:0, p_pos:1, p_pos:2));
+                    
+                    // Gây hiệu ứng Nausea II, Blindness, Poison II trong 10s (40 blocks)
+                    _apply_warden_blood_sacrifice_debuffs(p_pos);
+                    
                     for(player('all'),
                         if (distance(pos(_), p_pos) <= 40,
-                            print(_, '§4§l[Warden] Hấp thụ linh hồn Sculk, hồi phục sinh lực về 30% Máu!');
+                            print(_, '§4§l[Warden] Kích hoạt Huyết Tế Tối Thượng! Chướng khí độc lan tỏa 40m và bắt đầu hấp thụ sinh lực trong 10s!');
                         )
                     );
                 )
@@ -578,16 +616,55 @@ __on_tick() -> (
         for(keys(global_warden_emergency_healed),
             if (!living_uuids:_, delete(global_warden_emergency_healed:_));
         );
+        for(keys(global_warden_healing_ticks),
+            if (!living_uuids:_, delete(global_warden_healing_ticks:_));
+        );
     );
     
-    // 3. Phá block xung quanh Warden mỗi 5 ticks để tránh bị nhốt
+    // 3. Tiến trình hồi máu dần (10s = 200 ticks) khi Warden kích hoạt Huyết Tế Tối Thượng
+    for(wardens,
+        w = _;
+        w_uuid = w ~ 'uuid';
+        heal_ticks = global_warden_healing_ticks:w_uuid;
+        if (heal_ticks != null && heal_ticks > 0,
+            global_warden_healing_ticks:w_uuid = heal_ticks - 1;
+            curr_w_hp = w ~ 'health';
+            w_max = attribute(w, 'generic.max_health');
+            if (w_max == null, w_max = 1000.0);
+            target_cap = w_max * 0.30; // 300.0
+            
+            // Hồi 1.0 HP mỗi tick (Tổng 200 HP trong 200 ticks = 10 giây)
+            if (curr_w_hp < target_cap,
+                modify(w, 'health', min(target_cap, curr_w_hp + 1.0));
+            );
+            
+            w_p = pos(w);
+            // Hiệu ứng hạt linh hồn Sculk và Totem định kỳ
+            if (heal_ticks % 4 == 0,
+                run(str('particle minecraft:sculk_soul %f %f %f 0.6 0.8 0.6 0.05 10', w_p:0, w_p:1 + 1.2, w_p:2));
+                run(str('particle minecraft:totem_of_undying %f %f %f 0.5 0.8 0.5 0.1 6', w_p:0, w_p:1 + 1.5, w_p:2));
+            );
+            // Tiếng nhịp tim dồn dập mỗi giây (20 ticks)
+            if (heal_ticks % 20 == 0,
+                sound('minecraft:entity.warden.heartbeat', w_p, 1.5, 1.3);
+            );
+            
+            if (heal_ticks == 1,
+                delete(global_warden_healing_ticks:w_uuid);
+                sound('minecraft:entity.warden.roar', w_p, 2.0, 1.0);
+                run(str('title @a[x=%f,y=%f,z=%f,distance=..40] actionbar {"text":"§a§lQuá trình Huyết Tế hoàn tất! Warden đã phục hồi 300 HP!"}', w_p:0, w_p:1, w_p:2));
+            );
+        )
+    );
+    
+    // 4. Phá block xung quanh Warden mỗi 5 ticks để tránh bị nhốt
     if (global_tick_count % 5 == 0,
         for(wardens,
             _warden_break_blocks(_);
         )
     );
     
-    // 4. Quản lý Boss Health Bar và Phase 2 cho Warden mỗi 5 ticks
+    // 5. Quản lý Boss Health Bar và Phase 2 cho Warden mỗi 5 ticks
     if (global_tick_count % 5 == 0,
         if (length(wardens) > 0,
             w = wardens:0;
@@ -619,25 +696,26 @@ __on_tick() -> (
             
             is_p2 = global_warden_phase2:w_uuid;
             
-            // Check Emergency Heal nếu máu < 10% trong Phase 2
+            // Check Emergency Heal nếu máu < 10% trong Phase 2 (nếu bị giảm máu ngoài hook damage)
             if (is_p2 && w_hp < (w_max * 0.10) && w_hp > 0 && !global_warden_emergency_healed:w_uuid,
                 global_warden_emergency_healed:w_uuid = true;
-                heal_amount = w_max * 0.30;
-                modify(w, 'health', heal_amount);
+                global_warden_healing_ticks:w_uuid = 200; // 10 giây
                 
                 sound('minecraft:item.totem.use', w_pos, 2.0, 0.8);
                 sound('minecraft:entity.warden.heartbeat', w_pos, 2.0, 1.2);
                 sound('minecraft:entity.wither.spawn', w_pos, 1.5, 1.2);
-                run(str('particle minecraft:totem_of_undying %f %f %f 1.0 1.5 1.0 0.5 120', w_pos:0, w_pos:1 + 1.5, w_pos:2));
+                run(str('particle minecraft:totem_of_undying %f %f %f 1.0 1.5 1.0 0.5 150', w_pos:0, w_pos:1 + 1.5, w_pos:2));
                 
                 run(str('title @a[x=%f,y=%f,z=%f,distance=..40] title {"text":"§4§l[HUYẾT TẾ TỐI THƯỢNG]","bold":true}', w_pos:0, w_pos:1, w_pos:2));
-                run(str('title @a[x=%f,y=%f,z=%f,distance=..40] subtitle {"text":"§cWarden hấp thụ linh hồn Sculk, hồi phục về 30%% Máu!"}', w_pos:0, w_pos:1, w_pos:2));
+                run(str('title @a[x=%f,y=%f,z=%f,distance=..40] subtitle {"text":"§cWarden giải phóng chướng khí (10s) & Hồi phục về 30%% Máu!"}', w_pos:0, w_pos:1, w_pos:2));
+                
+                _apply_warden_blood_sacrifice_debuffs(w_pos);
+                
                 for(player('all'),
                     if (distance(pos(_), w_pos) <= 40,
-                        print(_, '§4§l[Warden] Hấp thụ linh hồn Sculk, hồi phục sinh lực về 30% Máu!');
+                        print(_, '§4§l[Warden] Kích hoạt Huyết Tế Tối Thượng! Chướng khí độc lan tỏa 40m và bắt đầu hấp thụ sinh lực trong 10s!');
                     )
                 );
-                w_hp = heal_amount;
             );
             
             // Cập nhật Bossbar
@@ -754,7 +832,7 @@ __on_tick() -> (
         )
     );
 
-    // 5. Cảnh báo hoàng hôn ngày Trăng Máu
+    // 6. Cảnh báo hoàng hôn ngày Trăng Máu
     if (global_tick_count % 100 == 0,
         daytime = time() % 24000;
         day = floor(time() / 24000);
@@ -827,7 +905,7 @@ test_warden_p2() -> (
 );
 
 // Lệnh: /custom_mob_effects test_warden_heal
-// Đặt máu của Warden gần nhất về 95 HP trong Phase 2 để kiểm tra Hồi máu
+// Đặt máu của Warden gần nhất về 95 HP trong Phase 2 để kiểm tra Hồi máu 10s và Debuff
 test_warden_heal() -> (
     p = player();
     if (query(p, 'permission_level') < 2,
@@ -842,8 +920,9 @@ test_warden_heal() -> (
     w = wardens:0;
     global_warden_phase2:(w ~ 'uuid') = true;
     delete(global_warden_emergency_healed:(w ~ 'uuid'));
+    delete(global_warden_healing_ticks:(w ~ 'uuid'));
     modify(w, 'health', 95.0);
-    print(p, '§aĐã đặt Warden vào Phase 2 với 95 HP để kiểm tra cơ chế Huyết Tế (< 10%)!');
+    print(p, '§aĐã đặt Warden vào Phase 2 với 95 HP để kiểm tra cơ chế Huyết Tế (< 10%) trong 10s!');
 );
 
 // Lệnh: /custom_mob_effects status

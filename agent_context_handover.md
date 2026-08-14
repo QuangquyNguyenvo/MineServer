@@ -43,7 +43,7 @@ Tài liệu này ghi lại toàn bộ bối cảnh dự án, trạng thái hệ 
 ### 👾 3. Boss Tối Thượng Warden (Đại Tu Toàn Diện & Phase 2)
 Toàn bộ logic được lập trình bằng Scarpet tại file [`world/scripts/custom_mob_effects.sc`](file:///C:/Users/ADMIN/MineServer/world/scripts/custom_mob_effects.sc):
 
-1. **Máu tối đa:** Tăng lên **1000 HP** khi spawn.
+1. **Máu tối đa & Thông báo Global:** Tăng lên **1000 HP** khi spawn. Khi xuất hiện, server tự động phát âm thanh gầm thức tỉnh kèm thông báo đỏ rực trên khung chat toàn server và Title kèm tọa độ chính xác: `[CẢNH BÁO TOÀN SERVER] Chúa Tể Bóng Tối Warden đã thức tỉnh tại <Dimension> [X, Y, Z]!`.
 2. **Kháng sát thương vật lý động theo ngưỡng máu (Phase 1):**
    * Kháng **30%** khi máu $> 70\%$ (> 700 HP).
    * Kháng **50%** khi máu $< 50\%$ (< 500 HP).
@@ -70,8 +70,9 @@ Toàn bộ logic được lập trình bằng Scarpet tại file [`world/scripts
     * **Sonic Boom Thăng Hoa:** Sát thương chuẩn tăng lên **45% Max HP** của người chơi.
     * **Hiệu ứng & Âm thanh:** Gầm rú chuyển dạng (`warden.roar` + `ender_dragon.growl`), bung hạt linh hồn Sculk và Lửa linh hồn; thông báo Title cảnh báo toàn khu vực 40m.
 12. **🩸 Cơ chế Huyết Tế Tối Thượng (Emergency Heal khi < 10% Máu trong Phase 2):**
-    * Khi máu Warden tụt xuống dưới **10%** (< 100 HP) trong Phase 2, Warden kích hoạt cơ chế hồi sinh khẩn cấp 1 lần duy nhất: hấp thụ linh hồn Sculk và **hồi phục ngay lập tức về 30% Máu tối đa (300 HP)**.
-    * Kèm hiệu ứng bảo hiểm chống chết sốc trong tick, nổ hạt Totem, tiếng đập tim dồn dập và thông báo Title `[HUYẾT TẾ TỐI THƯỢNG]`.
+    * Khi máu Warden tụt xuống dưới **10%** (< 100 HP) trong Phase 2, Warden kích hoạt cơ chế hồi sinh khẩn cấp 1 lần duy nhất trong trận đấu.
+    * **Chướng Khí Độc:** Lập tức gieo rắc hiệu ứng tiêu cực lên toàn bộ người chơi trong phạm vi **40 blocks** trong **10 giây (200 ticks)**: **Buồn nôn II (Nausea II)**, **Mù quáng (Blindness)** và **Trúng độc II (Poison II)**.
+    * **Hồi máu dần trong 10 giây:** Warden tiến hành hấp thụ năng lượng linh hồn và hồi phục từ 10% lên **30% Máu tối đa (300 HP)** kéo dài tương ứng trong **10 giây** (+1 HP mỗi tick / 20 HP mỗi giây), đi kèm hiệu ứng hạt linh hồn Sculk, Totem và tiếng đập tim dồn dập.
 13. **Thanh máu Boss (Boss Health Bar):**
     * **Phase 1:** Tên **Warden** màu `dark_aqua` (`§3`), thanh màu `blue`.
     * **Phase 2:** Tên **Warden (Phase 2 - Cuồng Nộ)** màu `red` (`§c`), thanh chuyển sang màu `red`.
