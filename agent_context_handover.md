@@ -43,17 +43,19 @@ Tài liệu này ghi lại toàn bộ bối cảnh dự án, trạng thái hệ 
 ### 👾 3. Boss Tối Thượng Warden (Đại Tu Toàn Diện & Phase 2)
 Toàn bộ logic được lập trình bằng Scarpet tại file [`world/scripts/custom_mob_effects.sc`](file:///C:/Users/ADMIN/MineServer/world/scripts/custom_mob_effects.sc):
 
-1. **Máu tối đa & Thông báo Global:** Tăng lên **1000 HP** khi spawn. Khi xuất hiện, server tự động phát âm thanh gầm thức tỉnh kèm thông báo đỏ rực trên khung chat toàn server và Title kèm tọa độ chính xác: `[CẢNH BÁO TOÀN SERVER] Chúa Tể Bóng Tối Warden đã thức tỉnh tại <Dimension> [X, Y, Z]!`.
-2. **Kháng sát thương vật lý động theo ngưỡng máu (Phase 1):**
-   * Kháng **30%** khi máu $> 70\%$ (> 700 HP).
-   * Kháng **50%** khi máu $< 50\%$ (< 500 HP).
+1. **Tăng Máu & Tốc Độ Cơ Bản:**
+   * Máu tối đa: **1500 HP** (`generic.max_health base set 1500`).
+   * Tốc độ di chuyển ban đầu: `0.30` (nhanh hơn vanilla).
+2. **Kháng Sát Thương Thích Ứng (Adaptive Resistance):**
+   * Máu $> 70\%$ ($> 1050$ HP): Kháng **30% sát thương vật lý**.
+   * Máu $< 50\%$ ($< 750$ HP): Kháng **50% sát thương vật lý**.
 3. **Kháng 80% Instant Damage / Phép thuật:**
    * Sát thương từ `magic` và `indirect_magic` (thuốc Instant Damage Harming I & II) bị giảm 80%.
 4. **Miễn nhiễm ngạt nước (Drown Immunity):**
    * Hoàn toàn triệt tiêu sát thương ngạt nước (`drown`), không thể bị dìm chết.
 5. **Sonic Boom True Damage:**
-   * **Phase 1 (> 30% HP):** Gây sát thương chuẩn bằng **33% máu tối đa** của người chơi.
-   * **Phase 2 (<= 30% HP):** Gây sát thương chuẩn tăng vọt lên **45% máu tối đa** của người chơi.
+   * **Phase 1 (> 30% HP / > 450 HP):** Gây sát thương chuẩn bằng **33% máu tối đa** của người chơi.
+   * **Phase 2 (<= 30% HP / <= 450 HP):** Gây sát thương chuẩn tăng vọt lên **45% máu tối đa** của người chơi.
 6. **Giảm hồi máu 50% (Healing Debuff):**
    * Trúng Sonic Boom sẽ dính debuff giảm 50% khả năng hồi máu từ mọi nguồn trong **5 giây (100 ticks)**.
 7. **Trọng Lực Cực Đại (Anti-Flight Zone):**
@@ -64,7 +66,7 @@ Toàn bộ logic được lập trình bằng Scarpet tại file [`world/scripts
    * Quét vùng 3x4x3 quanh Warden mỗi 5 ticks và phá hủy các block rắn (kể cả Obsidian) bằng `/fill air destroy` để chống bị người chơi nhốt.
 10. **Phản hiệu ứng xấu (Effect Reflection):**
     * Khi đánh trúng người chơi, Warden quét các hiệu ứng tiêu cực nó đang dính (Slowness, Poison, Weakness, Blindness...) và phản ngược lại người chơi trong tối đa 5 giây.
-11. **🔥 Cơ chế Phase 2 - Cuồng Nộ / RAGE (Kích hoạt khi <= 30% Máu / <= 300 HP):**
+11. **🔥 Cơ chế Phase 2 - Cuồng Nộ / RAGE (Kích hoạt khi <= 30% Máu / <= 450 HP):**
     * **Tăng tốc độ:** Tăng **50% tốc độ di chuyển** (`movement_speed` base set 0.45).
     * **Kháng 100% Sát thương tầm xa (Projectile Immunity):** Kháng tuyệt đối 100% mọi vật thể bắn (Cung tên, Đinh ba, Bình thuốc ném/kéo dài, Cầu lửa, Sọ Wither, Wind Charge, Pháo hoa...), buộc người chơi phải cận chiến bằng kiếm.
     * **Sonic Boom Thăng Hoa:** Sát thương chuẩn tăng lên **45% Max HP** của người chơi.
@@ -72,10 +74,10 @@ Toàn bộ logic được lập trình bằng Scarpet tại file [`world/scripts
     * **Thông báo Title & Chat tellraw:**
       * **Subtitle:** `Warden đã bùng nổ năng lượng Sculk!` (màu `dark_red`, in nghiêng).
       * **Tellraw Chat:** `[WARNING] Warden đã rơi vào trạng thái CUỒNG NỘ (RAGE)!\nSức mạnh Sculk bùng nổ, mọi đòn đánh giờ đây bỏ qua giáp!`.
-12. **🩸 Cơ chế Huyết Tế Tối Thượng (Emergency Heal khi < 10% Máu trong Phase 2):**
-    * Khi máu Warden tụt xuống dưới **10%** (< 100 HP) trong Phase 2, Warden kích hoạt cơ chế hồi sinh khẩn cấp 1 lần duy nhất trong trận đấu.
+12. **🩸 Cơ chế Huyết Tế Tối Thượng (Emergency Heal khi < 10% Máu / < 150 HP trong Phase 2):**
+    * Khi máu Warden tụt xuống dưới **10%** (< 150 HP) trong Phase 2, Warden kích hoạt cơ chế hồi sinh khẩn cấp 1 lần duy nhất trong trận đấu.
     * **Chướng Khí Độc:** Lập tức gieo rắc hiệu ứng tiêu cực lên toàn bộ người chơi trong phạm vi **40 blocks** trong **10 giây (200 ticks)**: **Buồn nôn II (Nausea II)**, **Mù quáng (Blindness)** và **Trúng độc II (Poison II)**.
-    * **Bất Tử & Hồi máu dần trong 10 giây:** Warden được **miễn nhiễm 100% mọi nguồn sát thương (Bất tử)** trong suốt 10 giây vận khí; hấp thụ năng lượng linh hồn và hồi phục từ 100 HP lên **400 HP (40% Max HP)** (+1.5 HP mỗi tick / 30 HP mỗi giây), đi kèm hiệu ứng hạt linh hồn Sculk, Totem và tiếng đập tim dồn dập.
+    * **Bất Tử & Hồi máu dần trong 10 giây:** Warden được **miễn nhiễm 100% mọi nguồn sát thương (Bất tử)** trong suốt 10 giây vận khí; hấp thụ năng lượng linh hồn và hồi phục từ 150 HP lên **600 HP (40% Max HP)** (+2.25 HP mỗi tick / 45 HP mỗi giây), đi kèm hiệu ứng hạt linh hồn Sculk, Totem và tiếng đập tim dồn dập.
 13. **🎵 Hệ Thống Nhạc Nền Tùy Chỉnh (Custom BGM Looping):**
     * **Nhạc Giai Đoạn 1 / Spawn:** `minecraft:custom.warden_theme` (Bản nhạc chiến đấu tự động phát và lặp vô tận khi Bossbar Warden xuất hiện cho người chơi trong bán kính 40m).
     * **Nhạc Huyết Tế / Phase 2:** `minecraft:custom.warden_sacrifice` (Tự động chuyển nhạc từ giây thứ 14 của bản nhạc cuồng nộ khi Warden kích hoạt Huyết Tế, lặp vô tận cho đến khi Warden bị tiêu diệt).

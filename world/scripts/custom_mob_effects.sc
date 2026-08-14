@@ -35,7 +35,7 @@ global_negative_effects = {
 // Hàm khởi tạo Bossbar cho Warden (Màu text xanh dark_aqua, màu thanh bossbar xanh blue)
 _init_warden_bossbar() -> (
     run('bossbar add warden_boss {"text":"Warden","color":"dark_aqua","bold":true}');
-    run('bossbar set minecraft:warden_boss max 1000');
+    run('bossbar set minecraft:warden_boss max 1500');
     run('bossbar set minecraft:warden_boss color blue');
     run('bossbar set minecraft:warden_boss style progress');
     run('bossbar set minecraft:warden_boss visible false');
@@ -237,9 +237,9 @@ entity_load_handler('ender_dragon', _(e, new) -> (
 // Register handler cho Warden spawn (bất kể đâu)
 entity_load_handler('warden', _(e, new) -> (
     if (new,
-        run(str('attribute %s minecraft:generic.max_health base set 1000', e ~ 'uuid'));
+        run(str('attribute %s minecraft:generic.max_health base set 1500', e ~ 'uuid'));
         run(str('attribute %s minecraft:generic.movement_speed base set 0.30', e ~ 'uuid'));
-        modify(e, 'health', 1000.0);
+        modify(e, 'health', 1500.0);
         
         // ── THÔNG BÁO GLOBAL TOÀN SERVER TRÊN KHUNG CHAT KHI WARDEN SPAWN ──
         w_pos = pos(e);
@@ -287,7 +287,7 @@ __on_damaged(entity, amount, source, attacking_entity) -> (
         if (source == 'drown',
             schedule(0, _(outer(entity), outer(amount)) -> (
                 if (entity && !query(entity, 'removed'),
-                    modify(entity, 'health', min(1000.0, (entity ~ 'health') + amount));
+                    modify(entity, 'health', min(1500.0, (entity ~ 'health') + amount));
                 )
             ));
             return();
@@ -295,11 +295,11 @@ __on_damaged(entity, amount, source, attacking_entity) -> (
 
         hp = entity ~ 'health';
         max_hp = attribute(entity, 'generic.max_health');
-        if (max_hp == null, max_hp = 1000.0);
+        if (max_hp == null, max_hp = 1500.0);
         w_uuid = entity ~ 'uuid';
         w_pos = pos(entity);
         
-        // ── MIỄN NHIỄM SÁT THƯƠNG TRONG QUÁ TRÌNH HUYẾT TẾ HỒI MÁU (100 -> 400 HP) ──
+        // ── MIỄN NHIỄM SÁT THƯƠNG TRONG QUÁ TRÌNH HUYẾT TẾ HỒI MÁU (150 -> 600 HP) ──
         is_channeling_heal = (global_warden_healing_ticks:w_uuid != null && global_warden_healing_ticks:w_uuid > 0);
         if (is_channeling_heal,
             if (amount >= hp,
@@ -322,7 +322,7 @@ __on_damaged(entity, amount, source, attacking_entity) -> (
             );
             sound('minecraft:item.shield.block', w_pos, 1.2, 0.8);
             run(str('particle minecraft:enchanted_hit %f %f %f 0.5 0.8 0.5 0.2 20', w_pos:0, w_pos:1 + 1.5, w_pos:2));
-            run(str('title @a[x=%f,y=%f,z=%f,distance=..35] actionbar {"text":"§4§l[Bất Tử] Warden đang Huyết Tế (100-400 HP), miễn nhiễm mọi sát thương!"}', w_pos:0, w_pos:1, w_pos:2));
+            run(str('title @a[x=%f,y=%f,z=%f,distance=..35] actionbar {"text":"§4§l[Bất Tử] Warden đang Huyết Tế (150-600 HP), miễn nhiễm mọi sát thương!"}', w_pos:0, w_pos:1, w_pos:2));
             return();
         );
         
@@ -364,13 +364,13 @@ __on_damaged(entity, amount, source, attacking_entity) -> (
         actual_damage = amount * (1 - resistance);
         remaining_hp = hp - actual_damage;
         
-        // Kiểm tra cơ chế Hồi máu khẩn cấp Phase 2 (< 10% HP -> kích hoạt Huyết Tế Tối Thượng hồi lên 400 HP trong 10s)
+        // Kiểm tra cơ chế Hồi máu khẩn cấp Phase 2 (< 10% HP -> kích hoạt Huyết Tế Tối Thượng hồi lên 600 HP trong 10s)
         if (is_phase2 && remaining_hp < (max_hp * 0.10) && !global_warden_emergency_healed:w_uuid,
             global_warden_emergency_healed:w_uuid = true;
             global_warden_healing_ticks:w_uuid = 200; // Hồi máu dần trong 10 giây (200 ticks)
             
-            // Đặt máu khởi điểm (tối thiểu 100 HP để bắt đầu quá trình hồi máu 10s)
-            start_hp = max(100.0, remaining_hp);
+            // Đặt máu khởi điểm (tối thiểu 150 HP để bắt đầu quá trình hồi máu 10s)
+            start_hp = max(150.0, remaining_hp);
             
             // Chống chết sốc ở tick hiện tại: buff tạm máu để sống sót
             temp_health = hp + amount + start_hp;
@@ -389,7 +389,7 @@ __on_damaged(entity, amount, source, attacking_entity) -> (
                     run(str('particle minecraft:totem_of_undying %f %f %f 1.0 1.5 1.0 0.5 150', p_pos:0, p_pos:1 + 1.5, p_pos:2));
                     
                     run(str('title @a[x=%f,y=%f,z=%f,distance=..40] title {"text":"§4§l[HUYẾT TẾ TỐI THƯỢNG]","bold":true}', p_pos:0, p_pos:1, p_pos:2));
-                    run(str('title @a[x=%f,y=%f,z=%f,distance=..40] subtitle {"text":"§cWarden giải phóng chướng khí (10s) & Hồi phục về 40%% Máu!"}', p_pos:0, p_pos:1, p_pos:2));
+                    run(str('title @a[x=%f,y=%f,z=%f,distance=..40] subtitle {"text":"§cWarden giải phóng chướng khí (10s) & Hồi phục về 600 HP (40%% Máu)!"}', p_pos:0, p_pos:1, p_pos:2));
                     
                     // Gây hiệu ứng Nausea II, Blindness, Poison II trong 10s (40 blocks)
                     _apply_warden_blood_sacrifice_debuffs(p_pos);
@@ -403,7 +403,7 @@ __on_damaged(entity, amount, source, attacking_entity) -> (
                             run(str('playsound minecraft:custom.warden_sacrifice record %s ~ ~ ~ 1.0 1.0', p_name));
                             global_player_warden_music:p_name = 'sacrifice';
                             global_player_music_timer:p_name = 3500;
-                            print(p, '§4§l[Warden] Kích hoạt Huyết Tế Tối Thượng! Chướng khí độc lan tỏa 40m và bắt đầu hấp thụ sinh lực về 40% Máu!');
+                            print(p, '§4§l[Warden] Kích hoạt Huyết Tế Tối Thượng! Chướng khí độc lan tỏa 40m và bắt đầu hấp thụ sinh lực về 600 HP (40% Máu)!');
                         )
                     );
                 )
@@ -769,7 +769,7 @@ __on_tick() -> (
         );
     );
     
-    // 4. Tiến trình hồi máu dần (10s = 200 ticks) khi Warden kích hoạt Huyết Tế Tối Thượng (100 -> 400 HP)
+    // 4. Tiến trình hồi máu dần (10s = 200 ticks) khi Warden kích hoạt Huyết Tế Tối Thượng (150 -> 600 HP)
     for(wardens,
         w = _;
         w_uuid = w ~ 'uuid';
@@ -778,12 +778,12 @@ __on_tick() -> (
             global_warden_healing_ticks:w_uuid = heal_ticks - 1;
             curr_w_hp = w ~ 'health';
             w_max = attribute(w, 'generic.max_health');
-            if (w_max == null, w_max = 1000.0);
-            target_cap = w_max * 0.40; // 400.0 HP (40% Max HP)
+            if (w_max == null, w_max = 1500.0);
+            target_cap = w_max * 0.40; // 600.0 HP (40% Max HP)
             
-            // Hồi 1.5 HP mỗi tick (Tổng 300 HP trong 200 ticks = 10 giây)
+            // Hồi 2.25 HP mỗi tick (Tổng 450 HP trong 200 ticks = 10 giây)
             if (curr_w_hp < target_cap,
-                modify(w, 'health', min(target_cap, curr_w_hp + 1.5));
+                modify(w, 'health', min(target_cap, curr_w_hp + 2.25));
             );
             
             w_p = pos(w);
@@ -800,7 +800,7 @@ __on_tick() -> (
             if (heal_ticks == 1,
                 delete(global_warden_healing_ticks:w_uuid);
                 sound('minecraft:entity.warden.roar', w_p, 2.0, 1.0);
-                run(str('title @a[x=%f,y=%f,z=%f,distance=..40] actionbar {"text":"§a§lQuá trình Huyết Tế hoàn tất! Warden đã phục hồi 400 HP (40%% Máu)!"}', w_p:0, w_p:1, w_p:2));
+                run(str('title @a[x=%f,y=%f,z=%f,distance=..40] actionbar {"text":"§a§lQuá trình Huyết Tế hoàn tất! Warden đã phục hồi 600 HP (40%% Máu)!"}', w_p:0, w_p:1, w_p:2));
             );
         )
     );
@@ -820,7 +820,7 @@ __on_tick() -> (
             w_hp = w ~ 'health';
             w_pos = pos(w);
             w_max = attribute(w, 'generic.max_health');
-            if (w_max == null, w_max = 1000.0);
+            if (w_max == null, w_max = 1500.0);
             
             // Check kích hoạt Phase 2 (RAGE) nếu máu <= 30% (<= 300 HP)
             if (w_hp <= (w_max * 0.30) && !global_warden_phase2:w_uuid,
@@ -1069,7 +1069,7 @@ trigger_blood_moon() -> (
 );
 
 // Lệnh: /custom_mob_effects test_warden_p2
-// Đặt máu của Warden gần nhất về 310 HP để kiểm tra Phase 2
+// Đặt máu của Warden gần nhất về 460 HP để kiểm tra Phase 2
 test_warden_p2() -> (
     p = player();
     if (query(p, 'permission_level') < 2,
@@ -1082,12 +1082,12 @@ test_warden_p2() -> (
         return();
     );
     w = wardens:0;
-    modify(w, 'health', 310.0);
-    print(p, '§aĐã đặt máu Warden về 310 HP (chuẩn bị kích hoạt Phase 2 khi xuống <= 300 HP)!');
+    modify(w, 'health', 460.0);
+    print(p, '§aĐã đặt máu Warden về 460 HP (chuẩn bị kích hoạt Phase 2 khi xuống <= 450 HP / 30% Máu)!');
 );
 
 // Lệnh: /custom_mob_effects test_warden_heal
-// Đặt máu của Warden gần nhất về 95 HP trong Phase 2 để kiểm tra Hồi máu 10s lên 400 HP và Nhạc Sacrifice
+// Đặt máu của Warden gần nhất về 140 HP trong Phase 2 để kiểm tra Hồi máu 10s lên 600 HP và Nhạc Sacrifice
 test_warden_heal() -> (
     p = player();
     if (query(p, 'permission_level') < 2,
@@ -1103,8 +1103,8 @@ test_warden_heal() -> (
     global_warden_phase2:(w ~ 'uuid') = true;
     delete(global_warden_emergency_healed:(w ~ 'uuid'));
     delete(global_warden_healing_ticks:(w ~ 'uuid'));
-    modify(w, 'health', 95.0);
-    print(p, '§aĐã đặt Warden vào Phase 2 với 95 HP để kiểm tra cơ chế Huyết Tế (< 10%) hồi lên 400 HP trong 10s và nhạc Sacrifice!');
+    modify(w, 'health', 140.0);
+    print(p, '§aĐã đặt Warden vào Phase 2 với 140 HP để kiểm tra cơ chế Huyết Tế (< 10% / < 150 HP) hồi lên 600 HP trong 10s và nhạc Sacrifice!');
 );
 
 // Lệnh: /custom_mob_effects test_warden_drop
