@@ -103,11 +103,11 @@ _init_warden_bossbar() -> (
 
 // Tải dữ liệu lưu trữ ngày Trăng Máu
 _load_blood_moon_data() -> (
+    current_day = floor(time() / 24000);
     data = read_file('bloodmoon', 'json');
-    if (data != null,
+    if (data != null && data:'next_day' != null && data:'next_day' >= current_day,
         global_blood_moon_day = data:'next_day';
     ,
-        current_day = floor(time() / 24000);
         global_blood_moon_day = current_day + floor(rand(8)) + 8;
         _save_blood_moon_data();
     );
@@ -1030,7 +1030,14 @@ __on_tick() -> (
             global_blood_moon_day = day + floor(rand(8)) + 8;
             _save_blood_moon_data();
             global_was_blood_moon_notified = false;
-        )
+        );
+        
+        // Tự động lên lịch lại nếu ngày Trăng Máu đã bị trôi qua trong quá khứ
+        if (day > global_blood_moon_day,
+            global_blood_moon_day = day + floor(rand(8)) + 8;
+            _save_blood_moon_data();
+            global_was_blood_moon_notified = false;
+        );
     )
 );
 
@@ -1099,11 +1106,12 @@ status() -> (
     daytime = time() % 24000;
     is_night = (daytime >= 12000 && daytime < 23000);
     is_bm_now = (current_day == global_blood_moon_day && is_night);
+    days_left = max(0, global_blood_moon_day - current_day);
     lines = [
         '--- Trạng thái Custom Mob Effects ---',
         str('Ngày hiện tại: %d (Thời gian ngày: %d)', current_day, daytime),
-        str('Ngày Trăng Máu tiếp theo: %d', global_blood_moon_day),
-        str('Trăng Máu đang hoạt động: %s', if(is_bm_now, 'ĐANG CHẠY', 'Không'))
+        str('Ngày Trăng Máu tiếp theo: %d (Còn %d ngày nữa)', global_blood_moon_day, days_left),
+        str('Trăng Máu đang hoạt động: %s', if(is_bm_now, '§c§lĐANG CHẠY', '§7Không'))
     ];
     for(lines,
         line = _;
