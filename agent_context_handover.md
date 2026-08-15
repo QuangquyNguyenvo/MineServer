@@ -185,7 +185,16 @@ Khi cần sửa đổi code script Scarpet hoặc file config:
 | :--- | :--- |
 | `/custom_mob_effects test_warden_phase_two` | Đặt máu Warden về 460 HP (sẵn sàng kích hoạt Phase 2 RAGE khi tụt $\le 450$ HP) |
 | `/custom_mob_effects test_warden_heal` | Đặt Warden vào Phase 2 với 140 HP (kích hoạt ngay Huyết Tế 600 HP, Chướng khí & Nhạc Cuồng Nộ) |
-| `/custom_mob_effects test_warden_drop` | Thử nghiệm rơi gói phần thưởng Thần Thoại của Warden tại vị trí người chơi |
 | `/custom_mob_effects trigger_blood_moon` | Kích hoạt Đêm Trăng Máu ngay lập tức và chuyển giờ về Hoàng Hôn |
 | `/custom_mob_effects status` | Xem trạng thái Trăng Máu và chu kỳ ngày hiện tại |
 | `tick query` | Kiểm tra MSPT và TPS thực tế của Server |
+
+---
+
+## 7. 🌐 Hướng Dẫn Tích Hợp Web (Minecraft Web Integration)
+
+Toàn bộ hướng dẫn tích hợp hiển thị trạng thái server (`ancient.pikamc.vn:25238`), số người online và avatar danh sách người chơi lên trang web (HTML/JS, React, Next.js, Node.js) đã được lưu chi tiết tại:
+👉 [`MINECRAFT_WEB_INTEGRATION_GUIDE.md`](file:///C:/Users/ADMIN/MineServer/MINECRAFT_WEB_INTEGRATION_GUIDE.md)
+* **REST API Endpoint:** `https://api.mcsrvstat.us/3/ancient.pikamc.vn:25238`
+* **Avatar API:** `https://mc-heads.net/avatar/{username}/32`
+
