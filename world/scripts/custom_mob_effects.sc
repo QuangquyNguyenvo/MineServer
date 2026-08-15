@@ -604,11 +604,7 @@ __on_player_deals_damage(player, amount, entity) -> (
         // 1. Kiểm tra trạng thái Huyết Tế Bất Tử (10s)
         is_channeling_heal = (global_warden_healing_ticks:w_uuid != null && global_warden_healing_ticks:w_uuid > 0);
         if (is_channeling_heal,
-            schedule(0, _(outer(entity), outer(hp), outer(max_hp)) -> (
-                if (entity && !query(entity, 'removed'),
-                    modify(entity, 'health', min(max_hp, hp));
-                )
-            ));
+            modify(entity, 'nbt_merge', '{Invulnerable:1b}');
             sound('minecraft:item.shield.block', w_pos, 1.2, 0.8);
             run(str('particle minecraft:enchanted_hit %f %f %f 0.5 0.8 0.5 0.2 20', w_pos:0, w_pos:1 + 1.5, w_pos:2));
             run(str('title %s actionbar {"text":"§4§l[Bất Tử] Warden đang Huyết Tế (150-600 HP), miễn nhiễm mọi sát thương!"}', player ~ 'name'));
@@ -660,6 +656,9 @@ __on_player_deals_damage(player, amount, entity) -> (
             global_warden_healing_ticks:w_uuid = 200; // Hồi máu dần trong 10 giây (200 ticks)
             start_hp = max(150.0, remaining_hp);
             
+            // KÍCH HOẠT BẤT TỬ TUYỆT ĐỐI NGAY LẬP TỨC TẠI ENGINE LEVEL
+            modify(entity, 'nbt_merge', '{Invulnerable:1b}');
+            
             temp_health = hp + amount + start_hp;
             run(str('attribute %s max_health base set %f', w_uuid, temp_health));
             modify(entity, 'health', temp_health);
@@ -668,6 +667,7 @@ __on_player_deals_damage(player, amount, entity) -> (
                 if (entity && !query(entity, 'removed'),
                     run(str('attribute %s max_health base set %f', w_uuid, max_hp));
                     modify(entity, 'health', start_hp);
+                    modify(entity, 'nbt_merge', '{Invulnerable:1b}');
                     
                     p_pos = pos(entity);
                     sound('minecraft:item.totem.use', p_pos, 2.0, 0.8);
@@ -856,6 +856,9 @@ __on_tick() -> (
             w_max = _get_attribute(w, 'max_health', 1500.0);
             target_cap = w_max * 0.40; // 600.0 HP (40% Max HP)
             
+            // Duy trì Bất Tử tuyệt đối (kháng 100% mọi nguồn sát thương)
+            modify(w, 'nbt_merge', '{Invulnerable:1b}');
+            
             if (curr_w_hp < target_cap,
                 modify(w, 'health', min(target_cap, curr_w_hp + 2.25));
             );
@@ -871,6 +874,9 @@ __on_tick() -> (
             
             if (heal_ticks == 1,
                 delete(global_warden_healing_ticks:w_uuid);
+                // Kết thúc 10s Huyết Tế: Tắt Bất Tử, cho phép nhận sát thương trở lại
+                modify(w, 'nbt_merge', '{Invulnerable:0b}');
+                modify(w, 'health', target_cap);
                 sound('minecraft:entity.warden.roar', w_p, 2.0, 1.0);
                 run(str('title @a[x=%f,y=%f,z=%f,distance=..40] actionbar {"text":"§a§lQuá trình Huyết Tế hoàn tất! Warden đã phục hồi 600 HP (40%% Máu)!"}', w_p:0, w_p:1, w_p:2));
             );
@@ -902,6 +908,9 @@ __on_tick() -> (
             if (is_p2 && w_hp < (w_max * 0.10) && w_hp > 0 && !global_warden_emergency_healed:w_uuid,
                 global_warden_emergency_healed:w_uuid = true;
                 global_warden_healing_ticks:w_uuid = 200; // 10 giây
+                
+                // KÍCH HOẠT BẤT TỬ TUYỆT ĐỐI NGAY LẬP TỨC
+                modify(w, 'nbt_merge', '{Invulnerable:1b}');
                 
                 sound('minecraft:item.totem.use', w_pos, 2.0, 0.8);
                 sound('minecraft:entity.warden.heartbeat', w_pos, 2.0, 1.2);
@@ -1249,6 +1258,7 @@ test_warden_heal() -> (
     global_warden_phase2:(w ~ 'uuid') = true;
     delete(global_warden_emergency_healed:(w ~ 'uuid'));
     delete(global_warden_healing_ticks:(w ~ 'uuid'));
+    modify(w, 'nbt_merge', '{Invulnerable:0b}');
     modify(w, 'health', 140.0);
     msg = str('Đã đặt Warden (%s) vào Phase 2 với 140 HP để kiểm tra cơ chế Huyết Tế (< 10%% / < 150 HP) hồi lên 600 HP trong 10s và nhạc Sacrifice!', w ~ 'uuid');
     for(player('all'), print(_, '§a' + msg));
