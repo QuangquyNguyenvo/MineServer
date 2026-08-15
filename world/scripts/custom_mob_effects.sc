@@ -1127,7 +1127,10 @@ __on_tick() -> (
                     if (d < min_d, min_d = d; closest_p = _);
                 );
                 if (query(w, 'target') != closest_p,
-                    modify(w, 'target', closest_p);
+                    p_uuid_nbt = query(closest_p, 'nbt', 'UUID');
+                    if (p_uuid_nbt != null,
+                        modify(w, 'nbt_merge', str('{anger:{suspects:[{uuid:%s,anger:150}]}}', p_uuid_nbt));
+                    );
                 );
             );
         );
