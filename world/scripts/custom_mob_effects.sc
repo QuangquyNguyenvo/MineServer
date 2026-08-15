@@ -878,12 +878,22 @@ __on_tick() -> (
     players = player('all');
     wardens = _get_all_wardens();
     
-    // Miễn nhiễm ngạt nước 100% cho Warden & Giữ trần máu 600 HP trong Phase 2/Rage/Huyết Tế
+    // Miễn nhiễm ngạt nước 100% cho Warden & Tự động khởi tạo 1500 Max HP & Giữ trần máu 600 HP trong Phase 2
     for(wardens,
-        modify(_, 'air', 300);
-        w_allowed = _get_warden_max_allowed_health(_);
-        if ((_ ~ 'health') > w_allowed,
-            modify(_, 'health', w_allowed);
+        w = _;
+        w_uuid = w ~ 'uuid';
+        modify(w, 'air', 300);
+        
+        // Nếu Warden chưa được nâng cấp lên 1500 Max HP
+        if (_get_attribute(w, 'max_health', 500.0) < 1000.0,
+            run(str('attribute %s max_health base set 1500', w_uuid));
+            run(str('attribute %s movement_speed base set 0.30', w_uuid));
+            modify(w, 'health', 1500.0);
+        );
+        
+        w_allowed = _get_warden_max_allowed_health(w);
+        if ((w ~ 'health') > w_allowed,
+            modify(w, 'health', w_allowed);
         );
     );
     
