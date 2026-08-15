@@ -105,8 +105,9 @@ Toàn bộ logic được lập trình bằng Scarpet độc lập tại file [`
 * **Cú Đập Địa Chấn Khắc Chế Iron Golem (Anti-Golem Earth Slam):**
   * Quét Iron Golem trong bán kính **8 blocks** (CD: 4 giây / 80 ticks).
   * Tung cú đập địa chấn hất tung Iron Golem lên trời (Motion Y = `+0.9`) và gây **50 Sát Thương** (Chỉ tác dụng lên Iron Golem, an toàn cho Người chơi).
-  * Mỗi đòn đánh trúng Iron Golem $\rightarrow$ Hồi **+50 HP**.
-  * Khi tiêu diệt Iron Golem $\rightarrow$ Hồi **+75 HP** (hiệu ứng hạt Totem + tiếng gầm rú).
+  * Mỗi đòn đánh trúng hoặc tiêu diệt Iron Golem $\rightarrow$ Hồi **+15 HP** cho Warden.
+* **Kháng 90% Sát Thương Không Phải Người Chơi (Rage Phase):**
+  * Khi Warden ở trạng thái Cuồng Nộ (Phase 2 / Rage, $\le 30\%$ HP), Warden được **miễn nhiễm 90% sát thương** từ tất cả các sinh vật không phải người chơi (Iron Golem, Mob, Wither, v.v., chỉ nhận 10% sát thương). Đòn đánh từ Người chơi vẫn gây 100% sát thương đầy đủ.
 * **Tiến Hóa Combo Sonic Boom (Combo 3+1 / 2+1):**
   * **Trước khi Huyết Tế:** Cứ sau **3 đòn đánh thường** $\rightarrow$ đòn tiếp theo (đòn 4) chắc chắn là **Sonic Boom**.
   * **Sau khi Huyết Tế hoàn tất:** Cứ sau **2 đòn đánh thường** $\rightarrow$ đòn tiếp theo (đòn 3) chắc chắn là **Sonic Boom**.

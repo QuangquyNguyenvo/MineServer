@@ -37,6 +37,8 @@ global_warden_melee_combo = {};
 global_warden_sonic_charge_tick = {};
 global_golem_hp = {};
 global_warden_golem_slam_cd = {};
+global_warden_last_health = {};
+global_warden_last_player_dmg_tick = {};
 
 // Danh sách các hiệu ứng xấu để phản ngược lại người chơi
 global_negative_effects = {
@@ -631,6 +633,7 @@ __on_player_deals_damage(player, amount, entity) -> (
         w_pos = pos(entity);
         p_pos = pos(player);
         dist = _distance(p_pos, w_pos);
+        global_warden_last_player_dmg_tick:w_uuid = global_tick_count;
         
         // 1. Kiểm tra trạng thái Huyết Tế Bất Tử (10s)
         is_channeling_heal = (global_warden_healing_ticks:w_uuid != null && global_warden_healing_ticks:w_uuid > 0);
@@ -877,6 +880,41 @@ __on_tick() -> (
         for(keys(global_warden_golem_slam_cd),
             if (!living_uuids:_, delete(global_warden_golem_slam_cd:_));
         );
+        for(keys(global_warden_last_health),
+            if (!living_uuids:_, delete(global_warden_last_health:_));
+        );
+        for(keys(global_warden_last_player_dmg_tick),
+            if (!living_uuids:_, delete(global_warden_last_player_dmg_tick:_));
+        );
+    );
+    
+    // 3.5. Giảm 90% sát thương từ sinh vật không phải người chơi trong trạng thái Cuồng Nộ (Rage / Phase 2)
+    for(wardens,
+        w = _;
+        w_uuid = w ~ 'uuid';
+        curr_hp = w ~ 'health';
+        last_hp = global_warden_last_health:w_uuid;
+        w_max = _get_attribute(w, 'max_health', 1500.0);
+        
+        if (last_hp != null && curr_hp < last_hp,
+            delta_dmg = last_hp - curr_hp;
+            is_player_dmg = (global_warden_last_player_dmg_tick:w_uuid == global_tick_count);
+            is_p2 = global_warden_phase2:w_uuid || (curr_hp / w_max <= 0.30);
+            
+            // Nếu trong Phase 2 và sát thương KHÔNG PHẢI do người chơi gây ra (Mob / Golem / Khác)
+            if (is_p2 && !is_player_dmg,
+                // Giảm 90% sát thương (hoàn lại 90% lượng máu bị mất)
+                refund_hp = delta_dmg * 0.90;
+                new_hp = min(w_max, curr_hp + refund_hp);
+                modify(w, 'health', new_hp);
+                curr_hp = new_hp;
+                
+                w_pos = pos(w);
+                sound('minecraft:item.shield.block', w_pos, 0.8, 1.2);
+                run(str('particle minecraft:enchanted_hit %f %f %f 0.4 0.8 0.4 0.1 6', w_pos:0, w_pos:1 + 1.2, w_pos:2));
+            );
+        );
+        global_warden_last_health:w_uuid = curr_hp;
     );
     
     // 4. Tiến trình hồi máu dần (10s = 200 ticks) khi Warden kích hoạt Huyết Tế Tối Thượng (150 -> 600 HP)
@@ -1182,13 +1220,13 @@ __on_tick() -> (
                 new_ghp = max(0.0, curr_ghp - 50.0);
                 modify(g, 'health', new_ghp);
                 
-                // Xử lý hồi máu cho Warden (Diệt Golem -> +75 HP, Đánh trúng -> +50 HP)
+                // Xử lý hồi máu cho Warden (Diệt Golem -> +15 HP, Đánh trúng -> +15 HP)
                 if (new_ghp <= 0 || query(g, 'removed'),
-                    modify(w, 'health', min(w_max, (w ~ 'health') + 75.0));
+                    modify(w, 'health', min(w_max, (w ~ 'health') + 15.0));
                     sound('minecraft:entity.warden.roar', w_pos, 2.0, 1.0);
                     run(str('particle minecraft:totem_of_undying %f %f %f 0.6 1.0 0.6 0.1 25', w_pos:0, w_pos:1 + 1.5, w_pos:2));
                 ,
-                    modify(w, 'health', min(w_max, (w ~ 'health') + 50.0));
+                    modify(w, 'health', min(w_max, (w ~ 'health') + 15.0));
                     sound('minecraft:entity.warden.heartbeat', w_pos, 1.5, 1.3);
                     run(str('particle minecraft:sculk_soul %f %f %f 0.5 0.5 0.5 0.05 10', w_pos:0, w_pos:1 + 1.5, w_pos:2));
                 );
@@ -1218,8 +1256,8 @@ __on_tick() -> (
             if (last_ghp != null,
                 if (curr_ghp < last_ghp,
                     if (curr_ghp <= 0 || query(g, 'removed'),
-                        // Tiêu diệt Iron Golem: Hồi 75 HP cho Warden (Không gửi thông báo chữ)
-                        modify(w, 'health', min(w_max, (w ~ 'health') + 75.0));
+                        // Tiêu diệt Iron Golem: Hồi 15 HP cho Warden (Không gửi thông báo chữ)
+                        modify(w, 'health', min(w_max, (w ~ 'health') + 15.0));
                         sound('minecraft:entity.warden.roar', w_pos, 2.0, 1.0);
                         run(str('particle minecraft:totem_of_undying %f %f %f 0.6 1.0 0.6 0.1 25', w_pos:0, w_pos:1 + 1.5, w_pos:2));
                         combo = (global_warden_melee_combo:w_uuid || 0) + 1;
@@ -1231,8 +1269,8 @@ __on_tick() -> (
                             global_warden_melee_combo:w_uuid = combo;
                         );
                     ,
-                        // Đánh trúng Iron Golem: Hồi 50 HP cho Warden
-                        modify(w, 'health', min(w_max, (w ~ 'health') + 50.0));
+                        // Đánh trúng Iron Golem: Hồi 15 HP cho Warden
+                        modify(w, 'health', min(w_max, (w ~ 'health') + 15.0));
                         sound('minecraft:entity.warden.heartbeat', w_pos, 1.5, 1.3);
                         run(str('particle minecraft:sculk_soul %f %f %f 0.5 0.5 0.5 0.05 10', w_pos:0, w_pos:1 + 1.5, w_pos:2));
                         combo = (global_warden_melee_combo:w_uuid || 0) + 1;
