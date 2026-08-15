@@ -14,8 +14,7 @@ __config() -> {
         'status'                -> _() -> status(),
         'trigger_blood_moon'    -> _() -> trigger_blood_moon(),
         'test_warden_phase_two' -> _() -> test_warden_p2(),
-        'test_warden_heal'      -> _() -> test_warden_heal(),
-        'test_warden_drop'      -> _() -> test_warden_drop()
+        'test_warden_heal'      -> _() -> test_warden_heal()
     },
     'allow_command_conflicts' -> true
 };
@@ -1264,9 +1263,9 @@ __on_tick() -> (
             g_uuid = g ~ 'uuid';
             curr_ghp = g ~ 'health';
             last_ghp = global_golem_hp:g_uuid;
+            if (last_ghp == null, last_ghp = _get_attribute(g, 'max_health', 100.0));
             
-            if (last_ghp != null,
-                if (curr_ghp < last_ghp,
+            if (curr_ghp < last_ghp,
                     if (curr_ghp <= 0 || query(g, 'removed'),
                         // Tiêu diệt Iron Golem: Hồi 15 HP cho Warden (Không gửi thông báo chữ)
                         modify(w, 'health', min(w_max, (w ~ 'health') + 15.0));
@@ -1295,7 +1294,6 @@ __on_tick() -> (
                         );
                     );
                 );
-            );
             global_golem_hp:g_uuid = curr_ghp;
         );
         
@@ -1408,20 +1406,6 @@ test_warden_heal() -> (
     msg = str('Đã đặt Warden (%s) vào Phase 2 với 140 HP để kiểm tra cơ chế Huyết Tế (< 10%% / < 150 HP) hồi lên 600 HP trong 10s và nhạc Sacrifice!', w ~ 'uuid');
     for(player('all'), print(_, '§a' + msg));
     print('[Server Console] ' + msg);
-);
-
-test_warden_drop() -> (
-    players = player('all');
-    target_p = if(length(players) > 0, players:0, null);
-    if (target_p != null,
-        _drop_warden_loot(pos(target_p), target_p);
-        msg = str('Đã kích hoạt test phần thưởng rơi ra của Warden tại vị trí của %s!', target_p ~ 'name');
-        for(player('all'), print(_, '§a' + msg));
-        print('[Server Console] ' + msg);
-    ,
-        msg = 'Không tìm thấy người chơi nào online để lấy vị trí spawn drop test!';
-        print('[Server Console] ' + msg);
-    );
 );
 
 status() -> (
