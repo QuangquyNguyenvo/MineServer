@@ -108,6 +108,8 @@ Toàn bộ logic được lập trình bằng Scarpet độc lập tại file [`
   * Mỗi đòn đánh trúng hoặc tiêu diệt Iron Golem $\rightarrow$ Hồi **+15 HP** cho Warden.
 * **Kháng 90% Sát Thương Không Phải Người Chơi (Rage Phase):**
   * Khi Warden ở trạng thái Cuồng Nộ (Phase 2 / Rage, $\le 30\%$ HP), Warden được **miễn nhiễm 90% sát thương** từ tất cả các sinh vật không phải người chơi (Iron Golem, Mob, Wither, v.v., chỉ nhận 10% sát thương). Đòn đánh từ Người chơi vẫn gây 100% sát thương đầy đủ.
+* **Trần Máu Tối Đa Khóa Cứng (Hard Cap 600 HP):**
+  * Khi Warden đã bước vào Phase 2 (RAGE) hoặc kích hoạt Huyết Tế, lượng máu của Warden cho dù được hồi phục từ bất kỳ nguồn nào (Huyết Tế, hút máu Iron Golem, Sonic Boom tầm xa, hồi phục tự nhiên) đều **không bao giờ được vượt quá 600 HP**.
 * **Tiến Hóa Combo Sonic Boom (Combo 3+1 / 2+1):**
   * **Trước khi Huyết Tế:** Cứ sau **3 đòn đánh thường** $\rightarrow$ đòn tiếp theo (đòn 4) chắc chắn là **Sonic Boom**.
   * **Sau khi Huyết Tế hoàn tất:** Cứ sau **2 đòn đánh thường** $\rightarrow$ đòn tiếp theo (đòn 3) chắc chắn là **Sonic Boom**.

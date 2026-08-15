@@ -98,6 +98,14 @@ _get_attribute(e, attr_name, default_val) -> (
     return(default_val);
 );
 
+// Helper lấy giới hạn máu tối đa cho phép của Warden (Phase 1: 1500 HP, Phase 2/Rage/Huyết Tế: Max 600 HP)
+_get_warden_max_allowed_health(w) -> (
+    if (w == null, return(1500.0));
+    w_uuid = w ~ 'uuid';
+    is_p2 = global_warden_phase2:w_uuid || (w ~ 'health') <= 450 || (global_warden_emergency_healed:w_uuid == true);
+    if (is_p2, 600.0, _get_attribute(w, 'max_health', 1500.0))
+);
+
 // Hàm khởi tạo Bossbar cho Warden (Màu text xanh dark_aqua, màu thanh bossbar xanh blue)
 _init_warden_bossbar() -> (
     run('bossbar add warden_boss {"text":"Warden","color":"dark_aqua","bold":true}');
@@ -179,7 +187,7 @@ _fire_warden_melee_sonic_boom(w, target) -> (
     
     w_uuid = w ~ 'uuid';
     is_p2 = global_warden_phase2:w_uuid;
-    w_max = _get_attribute(w, 'max_health', 1500.0);
+    w_max = _get_warden_max_allowed_health(w);
     
     // Nếu mục tiêu đứng xa (> 4.5m) -> Hồi +10 HP cho Warden
     if (dist > 4.5,
@@ -532,7 +540,7 @@ __on_player_takes_damage(player, amount, source, source_entity) -> (
         w_uuid = source_entity ~ 'uuid';
         w_pos = pos(source_entity);
         p_dist = _distance(pos(player), w_pos);
-        w_max = _get_attribute(source_entity, 'max_health', 1500.0);
+        w_max = _get_warden_max_allowed_health(source_entity);
         
         // Nếu đòn đánh ở cự ly xa (> 4.5m) -> Hồi +10 HP cho Warden
         if (p_dist > 4.5,
@@ -661,9 +669,9 @@ __on_player_deals_damage(player, amount, entity) -> (
         resistance = 0.0;
         if (is_phase2 && is_projectile,
             // Phase 2: Kháng 100% sát thương từ vật thể bắn
-            schedule(0, _(outer(entity), outer(hp), outer(max_hp)) -> (
+            schedule(0, _(outer(entity), outer(hp)) -> (
                 if (entity && !query(entity, 'removed'),
-                    modify(entity, 'health', min(max_hp, hp));
+                    modify(entity, 'health', min(_get_warden_max_allowed_health(entity), hp));
                 )
             ));
             sound('minecraft:item.shield.block', w_pos, 1.2, 0.8);
@@ -753,10 +761,10 @@ __on_player_deals_damage(player, amount, entity) -> (
                 )
             ,
                 heal_back = amount * resistance;
-                schedule(0, _(outer(entity), outer(heal_back), outer(max_hp)) -> (
+                schedule(0, _(outer(entity), outer(heal_back)) -> (
                     if (entity && !query(entity, 'removed'),
                         curr_hp = entity ~ 'health';
-                        modify(entity, 'health', min(max_hp, curr_hp + heal_back));
+                        modify(entity, 'health', min(_get_warden_max_allowed_health(entity), curr_hp + heal_back));
                     )
                 ));
             )
@@ -850,9 +858,13 @@ __on_tick() -> (
     players = player('all');
     wardens = _get_all_wardens();
     
-    // Miễn nhiễm ngạt nước 100% cho Warden bằng cách liên tục hồi phục Air
+    // Miễn nhiễm ngạt nước 100% cho Warden & Giữ trần máu 600 HP trong Phase 2/Rage/Huyết Tế
     for(wardens,
         modify(_, 'air', 300);
+        w_allowed = _get_warden_max_allowed_health(_);
+        if ((_ ~ 'health') > w_allowed,
+            modify(_, 'health', w_allowed);
+        );
     );
     
     // Dọn dẹp bộ nhớ UUID của Warden đã biến mất
@@ -894,7 +906,7 @@ __on_tick() -> (
         w_uuid = w ~ 'uuid';
         curr_hp = w ~ 'health';
         last_hp = global_warden_last_health:w_uuid;
-        w_max = _get_attribute(w, 'max_health', 1500.0);
+        w_max = _get_warden_max_allowed_health(w);
         
         if (last_hp != null && curr_hp < last_hp,
             delta_dmg = last_hp - curr_hp;
@@ -1186,7 +1198,7 @@ __on_tick() -> (
         w_uuid = w ~ 'uuid';
         w_pos = pos(w);
         w_dim = w ~ 'dimension';
-        w_max = _get_attribute(w, 'max_health', 1500.0);
+        w_max = _get_warden_max_allowed_health(w);
         is_post_sacrifice = (global_warden_emergency_healed:w_uuid && (global_warden_healing_ticks:w_uuid == null || global_warden_healing_ticks:w_uuid <= 0));
         max_combo = if(is_post_sacrifice, 2, 3);
         
