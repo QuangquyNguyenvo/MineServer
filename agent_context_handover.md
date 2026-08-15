@@ -116,6 +116,9 @@ Toàn bộ logic được lập trình bằng Scarpet độc lập tại file [`
   * Áp dụng khi đánh cả Người chơi lẫn Iron Golem.
 * **Sonic Boom Tầm Xa Hồi Máu (+10 HP Siphon):**
   * Khi mục tiêu là Người chơi đứng ở cự ly xa ($> 4.5\text{m}$), mỗi đòn Sonic Boom trúng đích sẽ **hồi phục `+10 HP` cho Warden** (không kích hoạt lặp lên Iron Golem).
+* **Hút Sinh Lực Khi Tiêu Diệt Người Chơi (+50 HP Siphon on Kill - Chống Spawn-Camp):**
+  * Khi có bất kỳ người chơi nào tử vong trong bán kính **30 blocks** quanh Warden $\rightarrow$ Warden hấp thụ linh hồn và được **hồi phục `+50.0 HP`** (vẫn tuân thủ giới hạn trần máu 600 HP trong Phase 2).
+  * Chỉ phát hiệu ứng âm thanh gầm/nhịp tim và hạt linh hồn, hoàn toàn **không gửi thông báo chữ** lên chat/màn hình người chơi.
 * **Sát Thương Chuẩn Kết Liễu:**
   * Sát thương chuẩn Sonic Boom (33% / 45% Max HP) có thể kết liễu người chơi trực tiếp (khiến máu về $\le 0$ sẽ tử vong ngay hoặc nổ Totem of Undying, không còn bị giữ bất tử ở 0.5 HP).
 

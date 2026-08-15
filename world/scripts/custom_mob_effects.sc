@@ -822,6 +822,33 @@ __on_player_deals_damage(player, amount, entity) -> (
     );
 );
 
+// ── XỬ LÝ HẤP THỤ SINH LỰC KHI NGƯỜI CHƠI TỬ VONG GẦN WARDEN (+50 HP SIPHON, KHÔNG THÔNG BÁO) ──
+__on_player_dies(player) -> (
+    if (player == null, return());
+    p_pos = pos(player);
+    p_dim = player ~ 'dimension';
+    
+    // Tìm các Warden trong phạm vi 30 blocks
+    nearby_wardens = filter(_get_all_wardens(), (_ ~ 'dimension') == p_dim && _distance(pos(_), p_pos) <= 30.0);
+    for(nearby_wardens,
+        w = _;
+        w_uuid = w ~ 'uuid';
+        w_pos = pos(w);
+        w_max = _get_warden_max_allowed_health(w);
+        curr_hp = w ~ 'health';
+        
+        // Hồi phục 50 HP (giới hạn cứng theo trần max_allowed: 600 HP trong Phase 2 / Rage / Sacrifice)
+        new_hp = min(w_max, curr_hp + 50.0);
+        modify(w, 'health', new_hp);
+        
+        // Hiệu ứng âm thanh và hạt linh hồn (Không gửi tin nhắn chat/actionbar)
+        sound('minecraft:entity.warden.heartbeat', w_pos, 2.0, 1.2);
+        sound('minecraft:entity.warden.roar', w_pos, 1.5, 1.0);
+        run(str('particle minecraft:sculk_soul %f %f %f 0.8 1.2 0.8 0.1 30', w_pos:0, w_pos:1 + 1.5, w_pos:2));
+        run(str('particle minecraft:totem_of_undying %f %f %f 0.6 1.0 0.6 0.2 40', w_pos:0, w_pos:1 + 1.5, w_pos:2));
+    );
+);
+
 // Quét định kỳ mỗi tick / định kỳ để quản lý Warden, Nhạc nền BGM và Trăng Máu
 global_tick_count = 0;
 
