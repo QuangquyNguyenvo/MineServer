@@ -1116,26 +1116,7 @@ __on_tick() -> (
         w_dim = w ~ 'dimension';
         w_max = _get_attribute(w, 'max_health', 1500.0);
         
-        // 1. Ưu tiên mục tiêu người chơi (Survival trong bán kính 30m)
-        if (global_tick_count % 5 == 0,
-            nearby_players = filter(players, _distance(pos(_), w_pos) <= 30 && (_ ~ 'dimension') == w_dim && query(_, 'gamemode') == 'survival');
-            if (length(nearby_players) > 0,
-                closest_p = nearby_players:0;
-                min_d = _distance(pos(closest_p), w_pos);
-                for(nearby_players,
-                    d = _distance(pos(_), w_pos);
-                    if (d < min_d, min_d = d; closest_p = _);
-                );
-                if (query(w, 'target') != closest_p,
-                    p_uuid_nbt = query(closest_p, 'nbt', 'UUID');
-                    if (p_uuid_nbt != null,
-                        modify(w, 'nbt_merge', str('{anger:{suspects:[{uuid:%s,anger:150}]}}', p_uuid_nbt));
-                    );
-                );
-            );
-        );
-        
-        // 2. Theo dõi và hấp thụ máu từ Iron Golem gần Warden (12m)
+        // 1. Theo dõi và hấp thụ máu từ Iron Golem gần Warden (12m)
         golems = entity_area('iron_golem', w_pos, [12, 6, 12]);
         for(golems,
             g = _;
