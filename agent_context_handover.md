@@ -105,7 +105,7 @@ Toàn bộ logic được lập trình bằng Scarpet độc lập tại file [`
 * **Cú Đập Địa Chấn Khắc Chế Iron Golem (Anti-Golem Earth Slam):**
   * Quét Iron Golem trong bán kính **8 blocks** (CD: 4 giây / 80 ticks).
   * Tung cú đập địa chấn hất tung Iron Golem lên trời (Motion Y = `+0.9`) và gây **50 Sát Thương** (Chỉ tác dụng lên Iron Golem, an toàn cho Người chơi).
-  * Mỗi đòn đánh trúng hoặc tiêu diệt Iron Golem $\rightarrow$ Hồi **+15 HP** cho Warden.
+  * Đánh trúng hoặc tiêu diệt Iron Golem $\rightarrow$ Hồi **+5 HP** cho Warden (Kèm thời gian hồi **Cooldown 1 giây / 20 ticks** giữa các lần hút máu để chống hồi máu dồn dập).
 * **Kháng 90% Sát Thương Không Phải Người Chơi (Rage Phase):**
   * Khi Warden ở trạng thái Cuồng Nộ (Phase 2 / Rage, $\le 30\%$ HP), Warden được **miễn nhiễm 90% sát thương** từ tất cả các sinh vật không phải người chơi (Iron Golem, Mob, Wither, v.v., chỉ nhận 10% sát thương). Đòn đánh từ Người chơi vẫn gây 100% sát thương đầy đủ.
 * **Trần Máu Tối Đa Khóa Cứng (Hard Cap 600 HP):**
@@ -115,7 +115,7 @@ Toàn bộ logic được lập trình bằng Scarpet độc lập tại file [`
   * **Sau khi Huyết Tế hoàn tất:** Cứ sau **2 đòn đánh thường** $\rightarrow$ đòn tiếp theo (đòn 3) chắc chắn là **Sonic Boom**.
   * Áp dụng khi đánh cả Người chơi lẫn Iron Golem.
 * **Sonic Boom Tầm Xa Hồi Máu (+10 HP Siphon):**
-  * Khi mục tiêu đứng ở cự ly xa ($> 4.5\text{m}$), mỗi đòn Sonic Boom trúng đích sẽ **hồi phục `+10 HP` cho Warden**.
+  * Khi mục tiêu là Người chơi đứng ở cự ly xa ($> 4.5\text{m}$), mỗi đòn Sonic Boom trúng đích sẽ **hồi phục `+10 HP` cho Warden** (không kích hoạt lặp lên Iron Golem).
 * **Sát Thương Chuẩn Kết Liễu:**
   * Sát thương chuẩn Sonic Boom (33% / 45% Max HP) có thể kết liễu người chơi trực tiếp (khiến máu về $\le 0$ sẽ tử vong ngay hoặc nổ Totem of Undying, không còn bị giữ bất tử ở 0.5 HP).
 

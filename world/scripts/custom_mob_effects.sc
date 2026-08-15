@@ -38,6 +38,7 @@ global_golem_hp = {};
 global_warden_golem_slam_cd = {};
 global_warden_last_health = {};
 global_warden_last_player_dmg_tick = {};
+global_warden_golem_heal_cd = {};
 
 // Danh sách các hiệu ứng xấu để phản ngược lại người chơi
 global_negative_effects = {
@@ -188,8 +189,8 @@ _fire_warden_melee_sonic_boom(w, target) -> (
     is_p2 = global_warden_phase2:w_uuid;
     w_max = _get_warden_max_allowed_health(w);
     
-    // Nếu mục tiêu đứng xa (> 4.5m) -> Hồi +10 HP cho Warden
-    if (dist > 4.5,
+    // Nếu mục tiêu là người chơi đứng xa (> 4.5m) -> Hồi +10 HP cho Warden
+    if (dist > 4.5 && target ~ 'type' == 'player',
         modify(w, 'health', min(w_max, (w ~ 'health') + 10.0));
         sound('minecraft:entity.warden.heartbeat', w_pos, 1.5, 1.3);
         run(str('particle minecraft:sculk_soul %f %f %f 0.5 0.5 0.5 0.05 10', w_pos:0, w_pos:1 + 1.5, w_pos:2));
@@ -897,6 +898,9 @@ __on_tick() -> (
         for(keys(global_warden_last_player_dmg_tick),
             if (!living_uuids:_, delete(global_warden_last_player_dmg_tick:_));
         );
+        for(keys(global_warden_golem_heal_cd),
+            if (!living_uuids:_, delete(global_warden_golem_heal_cd:_));
+        );
     );
     
     // 3.5. Giảm 90% sát thương từ sinh vật không phải người chơi trong trạng thái Cuồng Nộ (Rage / Phase 2)
@@ -1201,6 +1205,12 @@ __on_tick() -> (
         is_post_sacrifice = (global_warden_emergency_healed:w_uuid && (global_warden_healing_ticks:w_uuid == null || global_warden_healing_ticks:w_uuid <= 0));
         max_combo = if(is_post_sacrifice, 2, 3);
         
+        // Giảm Cooldown hồi máu từ Iron Golem
+        heal_cd = global_warden_golem_heal_cd:w_uuid;
+        if (heal_cd != null && heal_cd > 0,
+            global_warden_golem_heal_cd:w_uuid = heal_cd - 1;
+        );
+        
         // 1. Cú Đập Địa Chấn Khắc Chế Iron Golem (50 Sát Thương trong 8m, CD: 4s)
         slam_cd = global_warden_golem_slam_cd:w_uuid;
         if (slam_cd != null && slam_cd > 0,
@@ -1231,15 +1241,17 @@ __on_tick() -> (
                 new_ghp = max(0.0, curr_ghp - 50.0);
                 modify(g, 'health', new_ghp);
                 
-                // Xử lý hồi máu cho Warden (Diệt Golem -> +15 HP, Đánh trúng -> +15 HP)
-                if (new_ghp <= 0 || query(g, 'removed'),
-                    modify(w, 'health', min(w_max, (w ~ 'health') + 15.0));
-                    sound('minecraft:entity.warden.roar', w_pos, 2.0, 1.0);
-                    run(str('particle minecraft:totem_of_undying %f %f %f 0.6 1.0 0.6 0.1 25', w_pos:0, w_pos:1 + 1.5, w_pos:2));
-                ,
-                    modify(w, 'health', min(w_max, (w ~ 'health') + 15.0));
+                // Xử lý hồi máu cho Warden (5 HP, có Cooldown 1s / 20 ticks)
+                if (global_warden_golem_heal_cd:w_uuid == null || global_warden_golem_heal_cd:w_uuid <= 0,
+                    global_warden_golem_heal_cd:w_uuid = 20; // 1 giây Cooldown
+                    modify(w, 'health', min(w_max, (w ~ 'health') + 5.0));
                     sound('minecraft:entity.warden.heartbeat', w_pos, 1.5, 1.3);
                     run(str('particle minecraft:sculk_soul %f %f %f 0.5 0.5 0.5 0.05 10', w_pos:0, w_pos:1 + 1.5, w_pos:2));
+                );
+                
+                if (new_ghp <= 0 || query(g, 'removed'),
+                    sound('minecraft:entity.warden.roar', w_pos, 2.0, 1.0);
+                    run(str('particle minecraft:totem_of_undying %f %f %f 0.6 1.0 0.6 0.1 25', w_pos:0, w_pos:1 + 1.5, w_pos:2));
                 );
                 
                 // Tích lũy điểm Combo đòn đánh
@@ -1266,34 +1278,28 @@ __on_tick() -> (
             if (last_ghp == null, last_ghp = _get_attribute(g, 'max_health', 100.0));
             
             if (curr_ghp < last_ghp,
-                    if (curr_ghp <= 0 || query(g, 'removed'),
-                        // Tiêu diệt Iron Golem: Hồi 15 HP cho Warden (Không gửi thông báo chữ)
-                        modify(w, 'health', min(w_max, (w ~ 'health') + 15.0));
-                        sound('minecraft:entity.warden.roar', w_pos, 2.0, 1.0);
-                        run(str('particle minecraft:totem_of_undying %f %f %f 0.6 1.0 0.6 0.1 25', w_pos:0, w_pos:1 + 1.5, w_pos:2));
-                        combo = (global_warden_melee_combo:w_uuid || 0) + 1;
-                        if (combo >= max_combo,
-                            global_warden_melee_combo:w_uuid = 0;
-                            global_warden_sonic_charge_tick:w_uuid = 15;
-                            sound('minecraft:entity.warden.sonic_charge', w_pos, 2.0, 1.0);
-                        ,
-                            global_warden_melee_combo:w_uuid = combo;
-                        );
-                    ,
-                        // Đánh trúng Iron Golem: Hồi 15 HP cho Warden
-                        modify(w, 'health', min(w_max, (w ~ 'health') + 15.0));
-                        sound('minecraft:entity.warden.heartbeat', w_pos, 1.5, 1.3);
-                        run(str('particle minecraft:sculk_soul %f %f %f 0.5 0.5 0.5 0.05 10', w_pos:0, w_pos:1 + 1.5, w_pos:2));
-                        combo = (global_warden_melee_combo:w_uuid || 0) + 1;
-                        if (combo >= max_combo,
-                            global_warden_melee_combo:w_uuid = 0;
-                            global_warden_sonic_charge_tick:w_uuid = 15;
-                            sound('minecraft:entity.warden.sonic_charge', w_pos, 2.0, 1.0);
-                        ,
-                            global_warden_melee_combo:w_uuid = combo;
-                        );
-                    );
+                // Xử lý hồi máu cho Warden (5 HP, có Cooldown 1s / 20 ticks)
+                if (global_warden_golem_heal_cd:w_uuid == null || global_warden_golem_heal_cd:w_uuid <= 0,
+                    global_warden_golem_heal_cd:w_uuid = 20; // 1 giây Cooldown
+                    modify(w, 'health', min(w_max, (w ~ 'health') + 5.0));
+                    sound('minecraft:entity.warden.heartbeat', w_pos, 1.5, 1.3);
+                    run(str('particle minecraft:sculk_soul %f %f %f 0.5 0.5 0.5 0.05 10', w_pos:0, w_pos:1 + 1.5, w_pos:2));
                 );
+                
+                if (curr_ghp <= 0 || query(g, 'removed'),
+                    sound('minecraft:entity.warden.roar', w_pos, 2.0, 1.0);
+                    run(str('particle minecraft:totem_of_undying %f %f %f 0.6 1.0 0.6 0.1 25', w_pos:0, w_pos:1 + 1.5, w_pos:2));
+                );
+                
+                combo = (global_warden_melee_combo:w_uuid || 0) + 1;
+                if (combo >= max_combo,
+                    global_warden_melee_combo:w_uuid = 0;
+                    global_warden_sonic_charge_tick:w_uuid = 15;
+                    sound('minecraft:entity.warden.sonic_charge', w_pos, 2.0, 1.0);
+                ,
+                    global_warden_melee_combo:w_uuid = combo;
+                );
+            );
             global_golem_hp:g_uuid = curr_ghp;
         );
         
