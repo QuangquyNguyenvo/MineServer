@@ -1152,7 +1152,7 @@ __on_tick() -> (
         is_post_sacrifice = (global_warden_emergency_healed:w_uuid && (global_warden_healing_ticks:w_uuid == null || global_warden_healing_ticks:w_uuid <= 0));
         max_combo = if(is_post_sacrifice, 2, 3);
         
-        // 1. Cú Đập Địa Chấn Khắc Chế Iron Golem (200 Sát Thương trong 8m, CD: 4s)
+        // 1. Cú Đập Địa Chấn Khắc Chế Iron Golem (50 Sát Thương trong 8m, CD: 4s)
         slam_cd = global_warden_golem_slam_cd:w_uuid;
         if (slam_cd != null && slam_cd > 0,
             global_warden_golem_slam_cd:w_uuid = slam_cd - 1;
@@ -1177,9 +1177,9 @@ __on_tick() -> (
                 // Hất tung Iron Golem lên trời
                 modify(g, 'motion', gdx / gdist * 0.6, 0.9, gdz / gdist * 0.6);
                 
-                // Gây 200 sát thương lên Iron Golem
+                // Gây 50 sát thương lên Iron Golem
                 curr_ghp = g ~ 'health';
-                new_ghp = max(0.0, curr_ghp - 200.0);
+                new_ghp = max(0.0, curr_ghp - 50.0);
                 modify(g, 'health', new_ghp);
                 
                 // Xử lý hồi máu cho Warden (Diệt Golem -> +100 HP, Đánh trúng -> +50 HP)

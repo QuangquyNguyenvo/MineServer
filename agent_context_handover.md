@@ -104,7 +104,7 @@ Toàn bộ logic được lập trình bằng Scarpet độc lập tại file [`
 ### ⚔️ 2.5. Khắc Chế Iron Golem, Cú Đập Địa Chấn & Sonic Boom
 * **Cú Đập Địa Chấn Khắc Chế Iron Golem (Anti-Golem Earth Slam):**
   * Quét Iron Golem trong bán kính **8 blocks** (CD: 4 giây / 80 ticks).
-  * Tung cú đập địa chấn hất tung Iron Golem lên trời (Motion Y = `+0.9`) và gây **200 Sát Thương** (Chỉ tác dụng lên Iron Golem, an toàn cho Người chơi).
+  * Tung cú đập địa chấn hất tung Iron Golem lên trời (Motion Y = `+0.9`) và gây **50 Sát Thương** (Chỉ tác dụng lên Iron Golem, an toàn cho Người chơi).
   * Mỗi đòn đánh trúng Iron Golem $\rightarrow$ Hồi **+50 HP**.
   * Khi tiêu diệt Iron Golem $\rightarrow$ Hồi **+100 HP** (hiệu ứng hạt Totem + tiếng gầm rú).
 * **Tiến Hóa Combo Sonic Boom (Combo 3+1 / 2+1):**
