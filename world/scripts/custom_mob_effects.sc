@@ -240,19 +240,17 @@ _drop_warden_loot(w_pos, killer) -> (
     run(str('summon experience_orb %f %f %f {value:500}', bx, by, bz));
     run(str('summon experience_orb %f %f %f {value:500}', bx, by, bz));
     
-    // ── NHÓM 2: TRANG BỊ THẦN THOẠI GOD GEAR (TỈ LỆ 10% RƠI 1 TRONG 3 MÓN) ──
-    if (rand(1.0) < 0.10,
-        god_gear_roll = floor(rand(3));
-        if (god_gear_roll == 0,
-            run(str('summon item %f %f %f {Item:{id:"weaponsexpanded:netherite_scythe",count:1,components:{"minecraft:custom_name":\'{"text":"Lưỡi Đao Hư Không (Void Reaper)","color":"dark_purple","bold":true,"italic":false}\',"minecraft:lore":[\'{"text":"Được rèn từ mảnh vỡ xương sọ và linh hồn Sculk của Warden.","color":"gray","italic":true}\',\'{"text":"★ Trang Bị Thần Thoại (Mythic Tier) ★","color":"gold","bold":true}\'],"minecraft:enchantments":{levels:{"minecraft:sharpness":7,"minecraft:looting":4,"minecraft:sweeping_edge":4,"minecraft:unbreaking":5,"minecraft:mending":1}},"minecraft:rarity":"epic"}}}', bx, by, bz));
-            run('tellraw @a ["",{"text":"[THẦN KHÍ XUẤT THẾ] ","color":"gold","bold":true},{"text":"Warden đã rơi ra bảo khí Thần Thoại: ","color":"yellow"},{"text":"Lưỡi Đao Hư Không (Void Reaper)!","color":"dark_purple","bold":true}]');
-        , god_gear_roll == 1,
-            run(str('summon item %f %f %f {Item:{id:"minecraft:netherite_chestplate",count:1,components:{"minecraft:custom_name":\'{"text":"Giáp Ngực Hư Vô (Sculk Carapace)","color":"dark_aqua","bold":true,"italic":false}\',"minecraft:lore":[\'{"text":"Lớp mai giáp hắc ám hấp thụ chấn động từ cõi chết.","color":"gray","italic":true}\',\'{"text":"★ Trang Bị Thần Thoại (Mythic Tier) ★","color":"gold","bold":true}\'],"minecraft:enchantments":{levels:{"minecraft:protection":6,"minecraft:thorns":4,"minecraft:unbreaking":5,"minecraft:mending":1}},"minecraft:rarity":"epic"}}}', bx, by, bz));
-            run('tellraw @a ["",{"text":"[THẦN KHÍ XUẤT THẾ] ","color":"gold","bold":true},{"text":"Warden đã rơi ra bảo khí Thần Thoại: ","color":"yellow"},{"text":"Giáp Ngực Hư Vô (Sculk Carapace)!","color":"dark_aqua","bold":true}]');
-        ,
-            run(str('summon item %f %f %f {Item:{id:"minecraft:netherite_boots",count:1,components:{"minecraft:custom_name":\'{"text":"Ủng Bóng Ma (Ghost Walker Boots)","color":"dark_aqua","bold":true,"italic":false}\',"minecraft:lore":[\'{"text":"Bước đi êm ái như bóng ma, lướt qua mọi cạm bẫy Deep Dark.","color":"gray","italic":true}\',\'{"text":"★ Trang Bị Thần Thoại (Mythic Tier) ★","color":"gold","bold":true}\'],"minecraft:enchantments":{levels:{"minecraft:protection":5,"minecraft:feather_falling":5,"minecraft:swift_sneak":5,"minecraft:soul_speed":3,"minecraft:depth_strider":3,"minecraft:mending":1}},"minecraft:rarity":"epic"}}}', bx, by, bz));
-            run('tellraw @a ["",{"text":"[THẦN KHÍ XUẤT THẾ] ","color":"gold","bold":true},{"text":"Warden đã rơi ra bảo khí Thần Thoại: ","color":"yellow"},{"text":"Ủng Bóng Ma (Ghost Walker Boots)!","color":"dark_aqua","bold":true}]');
-        );
+    // ── NHÓM 2: TRANG BỊ THẦN THOẠI GOD GEAR (100% RƠI 1 TRONG 3 MÓN THẦN KHÍ) ──
+    god_gear_roll = floor(rand(3));
+    if (god_gear_roll == 0,
+        run(str('summon item %f %f %f {Item:{id:"weaponsexpanded:netherite_scythe",count:1,components:{"minecraft:custom_name":\'{"text":"Lưỡi Đao Hư Không (Void Reaper)","color":"dark_purple","bold":true,"italic":false}\',"minecraft:lore":[\'{"text":"Được rèn từ mảnh vỡ xương sọ và linh hồn Sculk của Warden.","color":"gray","italic":true}\',\'{"text":"★ Trang Bị Thần Thoại (Mythic Tier) ★","color":"gold","bold":true}\'],"minecraft:enchantments":{"minecraft:sharpness":7,"minecraft:looting":4,"minecraft:sweeping_edge":4,"minecraft:unbreaking":5,"minecraft:mending":1},"minecraft:rarity":"epic"}}}', bx, by, bz));
+        run('tellraw @a ["",{"text":"[THẦN KHÍ XUẤT THẾ] ","color":"gold","bold":true},{"text":"Warden đã rơi ra bảo khí Thần Thoại: ","color":"yellow"},{"text":"Lưỡi Đao Hư Không (Void Reaper)!","color":"dark_purple","bold":true}]');
+    , god_gear_roll == 1,
+        run(str('summon item %f %f %f {Item:{id:"minecraft:netherite_chestplate",count:1,components:{"minecraft:custom_name":\'{"text":"Giáp Ngực Hư Vô (Sculk Carapace)","color":"dark_aqua","bold":true,"italic":false}\',"minecraft:lore":[\'{"text":"Lớp mai giáp hắc ám hấp thụ chấn động từ cõi chết.","color":"gray","italic":true}\',\'{"text":"★ Trang Bị Thần Thoại (Mythic Tier) ★","color":"gold","bold":true}\'],"minecraft:enchantments":{"minecraft:protection":6,"minecraft:thorns":4,"minecraft:unbreaking":5,"minecraft:mending":1},"minecraft:rarity":"epic"}}}', bx, by, bz));
+        run('tellraw @a ["",{"text":"[THẦN KHÍ XUẤT THẾ] ","color":"gold","bold":true},{"text":"Warden đã rơi ra bảo khí Thần Thoại: ","color":"yellow"},{"text":"Giáp Ngực Hư Vô (Sculk Carapace)!","color":"dark_aqua","bold":true}]');
+    ,
+        run(str('summon item %f %f %f {Item:{id:"minecraft:netherite_boots",count:1,components:{"minecraft:custom_name":\'{"text":"Ủng Bóng Ma (Ghost Walker Boots)","color":"dark_aqua","bold":true,"italic":false}\',"minecraft:lore":[\'{"text":"Bước đi êm ái như bóng ma, lướt qua mọi cạm bẫy Deep Dark.","color":"gray","italic":true}\',\'{"text":"★ Trang Bị Thần Thoại (Mythic Tier) ★","color":"gold","bold":true}\'],"minecraft:enchantments":{"minecraft:protection":5,"minecraft:feather_falling":5,"minecraft:swift_sneak":5,"minecraft:soul_speed":3,"minecraft:depth_strider":3,"minecraft:mending":1},"minecraft:rarity":"epic"}}}', bx, by, bz));
+        run('tellraw @a ["",{"text":"[THẦN KHÍ XUẤT THẾ] ","color":"gold","bold":true},{"text":"Warden đã rơi ra bảo khí Thần Thoại: ","color":"yellow"},{"text":"Ủng Bóng Ma (Ghost Walker Boots)!","color":"dark_aqua","bold":true}]');
     );
     
     // ── NHÓM 3: KHO BÁU & TÀI NGUYÊN (TỈ LỆ 50% MỖI MÓN) ──
@@ -770,9 +768,9 @@ __on_player_deals_damage(player, amount, entity) -> (
                     if (r < 0.05,
                         has_mending = rand(1.0) < 0.10;
                         if (has_mending,
-                            run(str('summon item %f %f %f {Item:{id:"minecraft:bow",count:1,components:{"minecraft:enchantments":{levels:{"minecraft:power":5,"minecraft:punch":2,"minecraft:mending":1}}}}}', pos:0, pos:1, pos:2))
+                            run(str('summon item %f %f %f {Item:{id:"minecraft:bow",count:1,components:{"minecraft:enchantments":{"minecraft:power":5,"minecraft:punch":2,"minecraft:mending":1}}}}', pos:0, pos:1, pos:2))
                         ,
-                            run(str('summon item %f %f %f {Item:{id:"minecraft:bow",count:1,components:{"minecraft:enchantments":{levels:{"minecraft:power":5,"minecraft:punch":2}}}}}', pos:0, pos:1, pos:2))
+                            run(str('summon item %f %f %f {Item:{id:"minecraft:bow",count:1,components:{"minecraft:enchantments":{"minecraft:power":5,"minecraft:punch":2}}}}', pos:0, pos:1, pos:2))
                         )
                     )
                 );
@@ -868,8 +866,28 @@ __on_tick() -> (
                 run(str('particle minecraft:sculk_soul %f %f %f 0.6 0.8 0.6 0.05 10', w_p:0, w_p:1 + 1.2, w_p:2));
                 run(str('particle minecraft:totem_of_undying %f %f %f 0.5 0.8 0.5 0.1 6', w_p:0, w_p:1 + 1.5, w_p:2));
             );
-            if (heal_ticks % 20 == 0,
-                sound('minecraft:entity.warden.heartbeat', w_p, 1.5, 1.3);
+            // ── VÒNG XOÁY HUYẾT TẾ (SCULK SINGULARITY VORTEX) ──
+            if (heal_ticks % 5 == 0,
+                w_dim = w ~ 'dimension';
+                for(players,
+                    p = _;
+                    if ((p ~ 'dimension') == w_dim && query(p, 'gamemode') == 'survival',
+                        p_p = pos(p);
+                        p_dist = _distance(p_p, w_p);
+                        if (p_dist <= 40 && p_dist > 2.5,
+                            p_dx = p_p:0 - w_p:0;
+                            p_dy = p_p:1 - w_p:1;
+                            p_dz = p_p:2 - w_p:2;
+                            pull_force = min(1.2, max(0.4, 0.5 + (p_dist / 40.0) * 0.5));
+                            modify(p, 'motion', -p_dx / p_dist * pull_force, -0.2, -p_dz / p_dist * pull_force);
+                            run(str('particle minecraft:sculk_soul %f %f %f %f %f %f 0.1 8', p_p:0, p_p:1 + 1.0, p_p:2, -p_dx / p_dist, -p_dy / p_dist, -p_dz / p_dist));
+                        );
+                    );
+                );
+            );
+            
+            if (heal_ticks % 30 == 0,
+                sound('minecraft:block.sculk_shrieker.shriek', w_p, 1.2, 0.8);
             );
             
             if (heal_ticks == 1,
