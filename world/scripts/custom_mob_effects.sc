@@ -240,17 +240,19 @@ _drop_warden_loot(w_pos, killer) -> (
     run(str('summon experience_orb %f %f %f {value:500}', bx, by, bz));
     run(str('summon experience_orb %f %f %f {value:500}', bx, by, bz));
     
-    // ── NHÓM 2: TRANG BỊ THẦN THOẠI GOD GEAR (100% RƠI 1 TRONG 3 MÓN THẦN KHÍ) ──
-    god_gear_roll = floor(rand(3));
-    if (god_gear_roll == 0,
-        run(str('summon item %f %f %f {Item:{id:"weaponsexpanded:netherite_scythe",count:1,components:{"minecraft:custom_name":\'{"text":"Lưỡi Đao Hư Không (Void Reaper)","color":"dark_purple","bold":true,"italic":false}\',"minecraft:lore":[\'{"text":"Được rèn từ mảnh vỡ xương sọ và linh hồn Sculk của Warden.","color":"gray","italic":true}\',\'{"text":"★ Trang Bị Thần Thoại (Mythic Tier) ★","color":"gold","bold":true}\'],"minecraft:enchantments":{"minecraft:sharpness":7,"minecraft:looting":4,"minecraft:sweeping_edge":4,"minecraft:unbreaking":5,"minecraft:mending":1},"minecraft:rarity":"epic"}}}', bx, by, bz));
-        run('tellraw @a ["",{"text":"[THẦN KHÍ XUẤT THẾ] ","color":"gold","bold":true},{"text":"Warden đã rơi ra bảo khí Thần Thoại: ","color":"yellow"},{"text":"Lưỡi Đao Hư Không (Void Reaper)!","color":"dark_purple","bold":true}]');
-    , god_gear_roll == 1,
-        run(str('summon item %f %f %f {Item:{id:"minecraft:netherite_chestplate",count:1,components:{"minecraft:custom_name":\'{"text":"Giáp Ngực Hư Vô (Sculk Carapace)","color":"dark_aqua","bold":true,"italic":false}\',"minecraft:lore":[\'{"text":"Lớp mai giáp hắc ám hấp thụ chấn động từ cõi chết.","color":"gray","italic":true}\',\'{"text":"★ Trang Bị Thần Thoại (Mythic Tier) ★","color":"gold","bold":true}\'],"minecraft:enchantments":{"minecraft:protection":6,"minecraft:thorns":4,"minecraft:unbreaking":5,"minecraft:mending":1},"minecraft:rarity":"epic"}}}', bx, by, bz));
-        run('tellraw @a ["",{"text":"[THẦN KHÍ XUẤT THẾ] ","color":"gold","bold":true},{"text":"Warden đã rơi ra bảo khí Thần Thoại: ","color":"yellow"},{"text":"Giáp Ngực Hư Vô (Sculk Carapace)!","color":"dark_aqua","bold":true}]');
-    ,
-        run(str('summon item %f %f %f {Item:{id:"minecraft:netherite_boots",count:1,components:{"minecraft:custom_name":\'{"text":"Ủng Bóng Ma (Ghost Walker Boots)","color":"dark_aqua","bold":true,"italic":false}\',"minecraft:lore":[\'{"text":"Bước đi êm ái như bóng ma, lướt qua mọi cạm bẫy Deep Dark.","color":"gray","italic":true}\',\'{"text":"★ Trang Bị Thần Thoại (Mythic Tier) ★","color":"gold","bold":true}\'],"minecraft:enchantments":{"minecraft:protection":5,"minecraft:feather_falling":5,"minecraft:swift_sneak":5,"minecraft:soul_speed":3,"minecraft:depth_strider":3,"minecraft:mending":1},"minecraft:rarity":"epic"}}}', bx, by, bz));
-        run('tellraw @a ["",{"text":"[THẦN KHÍ XUẤT THẾ] ","color":"gold","bold":true},{"text":"Warden đã rơi ra bảo khí Thần Thoại: ","color":"yellow"},{"text":"Ủng Bóng Ma (Ghost Walker Boots)!","color":"dark_aqua","bold":true}]');
+    // ── NHÓM 2: TRANG BỊ THẦN THOẠI GOD GEAR (TỈ LỆ 10% RƠI 1 TRONG 3 MÓN THẦN KHÍ) ──
+    if (rand(1.0) < 0.10,
+        god_gear_roll = floor(rand(3));
+        if (god_gear_roll == 0,
+            run(str('summon item %f %f %f {Item:{id:"weaponsexpanded:netherite_scythe",count:1,components:{"minecraft:custom_name":\'{"text":"Lưỡi Đao Hư Không (Void Reaper)","color":"dark_purple","bold":true,"italic":false}\',"minecraft:lore":[\'{"text":"Được rèn từ mảnh vỡ xương sọ và linh hồn Sculk của Warden.","color":"gray","italic":true}\',\'{"text":"★ Trang Bị Thần Thoại (Mythic Tier) ★","color":"gold","bold":true}\'],"minecraft:enchantments":{"minecraft:sharpness":7,"minecraft:looting":4,"minecraft:sweeping_edge":4,"minecraft:unbreaking":5,"minecraft:mending":1},"minecraft:rarity":"epic"}}}', bx, by, bz));
+            run('tellraw @a ["",{"text":"[THẦN KHÍ XUẤT THẾ] ","color":"gold","bold":true},{"text":"Warden đã rơi ra bảo khí Thần Thoại: ","color":"yellow"},{"text":"Lưỡi Đao Hư Không (Void Reaper)!","color":"dark_purple","bold":true}]');
+        , god_gear_roll == 1,
+            run(str('summon item %f %f %f {Item:{id:"minecraft:netherite_chestplate",count:1,components:{"minecraft:custom_name":\'{"text":"Giáp Ngực Hư Vô (Sculk Carapace)","color":"dark_aqua","bold":true,"italic":false}\',"minecraft:lore":[\'{"text":"Lớp mai giáp hắc ám hấp thụ chấn động từ cõi chết.","color":"gray","italic":true}\',\'{"text":"★ Trang Bị Thần Thoại (Mythic Tier) ★","color":"gold","bold":true}\'],"minecraft:enchantments":{"minecraft:protection":6,"minecraft:thorns":4,"minecraft:unbreaking":5,"minecraft:mending":1},"minecraft:rarity":"epic"}}}', bx, by, bz));
+            run('tellraw @a ["",{"text":"[THẦN KHÍ XUẤT THẾ] ","color":"gold","bold":true},{"text":"Warden đã rơi ra bảo khí Thần Thoại: ","color":"yellow"},{"text":"Giáp Ngực Hư Vô (Sculk Carapace)!","color":"dark_aqua","bold":true}]');
+        ,
+            run(str('summon item %f %f %f {Item:{id:"minecraft:netherite_boots",count:1,components:{"minecraft:custom_name":\'{"text":"Ủng Bóng Ma (Ghost Walker Boots)","color":"dark_aqua","bold":true,"italic":false}\',"minecraft:lore":[\'{"text":"Bước đi êm ái như bóng ma, lướt qua mọi cạm bẫy Deep Dark.","color":"gray","italic":true}\',\'{"text":"★ Trang Bị Thần Thoại (Mythic Tier) ★","color":"gold","bold":true}\'],"minecraft:enchantments":{"minecraft:protection":5,"minecraft:feather_falling":5,"minecraft:swift_sneak":5,"minecraft:soul_speed":3,"minecraft:depth_strider":3,"minecraft:mending":1},"minecraft:rarity":"epic"}}}', bx, by, bz));
+            run('tellraw @a ["",{"text":"[THẦN KHÍ XUẤT THẾ] ","color":"gold","bold":true},{"text":"Warden đã rơi ra bảo khí Thần Thoại: ","color":"yellow"},{"text":"Ủng Bóng Ma (Ghost Walker Boots)!","color":"dark_aqua","bold":true}]');
+        );
     );
     
     // ── NHÓM 3: KHO BÁU & TÀI NGUYÊN (TỈ LỆ 50% MỖI MÓN) ──
