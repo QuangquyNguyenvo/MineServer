@@ -101,13 +101,20 @@ Toàn bộ logic được lập trình bằng Scarpet độc lập tại file [`
 
 ---
 
-### ⚔️ 2.5. Khắc Chế Iron Golem & Sonic Boom Cận Chiến (Combo 3+1)
-* **Khắc chế Iron Golem (Iron Siphon):**
-  * Mỗi đòn Warden đánh trúng Iron Golem $\rightarrow$ Hồi **+50 HP**.
-  * Khi tiêu diệt Iron Golem $\rightarrow$ Hồi **+200 HP** (hiệu ứng hạt Totem + tiếng gầm rú).
-* **Sonic Boom Cận Chiến (Combo 3+1):**
-  * Warden có thể kích hoạt Sonic Boom ở mọi cự ly (kể cả cận chiến 0m).
-  * Cứ sau **3 đòn đánh cận chiến** $\rightarrow$ Warden nạp năng lượng trong 15 ticks (`entity.warden.sonic_charge`) và đòn tiếp theo (đòn thứ 4) **chắc chắn sẽ là Sonic Boom** gây sát thương chuẩn (33% / 45% Max HP), trừ 50% hồi máu trong 5s và hất tung mục tiêu ra xa.
+### ⚔️ 2.5. Khắc Chế Iron Golem, Cú Đập Địa Chấn & Sonic Boom
+* **Cú Đập Địa Chấn Khắc Chế Iron Golem (Anti-Golem Earth Slam):**
+  * Quét Iron Golem trong bán kính **8 blocks** (CD: 4 giây / 80 ticks).
+  * Tung cú đập địa chấn hất tung Iron Golem lên trời (Motion Y = `+0.9`) và gây **200 Sát Thương** (Chỉ tác dụng lên Iron Golem, an toàn cho Người chơi).
+  * Mỗi đòn đánh trúng Iron Golem $\rightarrow$ Hồi **+50 HP**.
+  * Khi tiêu diệt Iron Golem $\rightarrow$ Hồi **+100 HP** (hiệu ứng hạt Totem + tiếng gầm rú).
+* **Tiến Hóa Combo Sonic Boom (Combo 3+1 / 2+1):**
+  * **Trước khi Huyết Tế:** Cứ sau **3 đòn đánh thường** $\rightarrow$ đòn tiếp theo (đòn 4) chắc chắn là **Sonic Boom**.
+  * **Sau khi Huyết Tế hoàn tất:** Cứ sau **2 đòn đánh thường** $\rightarrow$ đòn tiếp theo (đòn 3) chắc chắn là **Sonic Boom**.
+  * Áp dụng khi đánh cả Người chơi lẫn Iron Golem.
+* **Sonic Boom Tầm Xa Hồi Máu (+10 HP Siphon):**
+  * Khi mục tiêu đứng ở cự ly xa ($> 4.5\text{m}$), mỗi đòn Sonic Boom trúng đích sẽ **hồi phục `+10 HP` cho Warden**.
+* **Sát Thương Chuẩn Kết Liễu:**
+  * Sát thương chuẩn Sonic Boom (33% / 45% Max HP) có thể kết liễu người chơi trực tiếp (khiến máu về $\le 0$ sẽ tử vong ngay hoặc nổ Totem of Undying, không còn bị giữ bất tử ở 0.5 HP).
 
 ---
 
