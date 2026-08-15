@@ -680,13 +680,6 @@ __on_player_deals_damage(player, amount, entity) -> (
             return('cancel');
         , held_item ~ 'potion',
             resistance = 0.80; // Kháng 80% phép thuật / thuốc
-        ,
-            ratio = hp / max_hp;
-            if (ratio > 0.70,
-                resistance = 0.30;
-            , ratio < 0.50,
-                resistance = 0.50;
-            );
         );
         
         actual_damage = amount * (1.0 - resistance);
@@ -913,10 +906,11 @@ __on_tick() -> (
         
         if (last_hp != null && curr_hp < last_hp,
             delta_dmg = last_hp - curr_hp;
-            is_player_dmg = (global_warden_last_player_dmg_tick:w_uuid == global_tick_count);
-            is_p2 = global_warden_phase2:w_uuid || (curr_hp / w_max <= 0.30);
+            last_p_tick = global_warden_last_player_dmg_tick:w_uuid;
+            is_player_dmg = (last_p_tick != null && (global_tick_count - last_p_tick <= 3));
+            is_p2 = global_warden_phase2:w_uuid || (curr_hp / w_max <= 0.30) || (global_warden_emergency_healed:w_uuid == true);
             
-            // Nếu trong Phase 2 và sát thương KHÔNG PHẢI do người chơi gây ra (Mob / Golem / Khác)
+            // Nếu trong Phase 2 / Rage và sát thương KHÔNG PHẢI do người chơi gây ra (Mob / Golem / Non-player)
             if (is_p2 && !is_player_dmg,
                 // Giảm 90% sát thương (hoàn lại 90% lượng máu bị mất)
                 refund_hp = delta_dmg * 0.90;
