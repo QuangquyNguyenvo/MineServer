@@ -106,7 +106,7 @@ Toàn bộ logic được lập trình bằng Scarpet độc lập tại file [`
   * Quét Iron Golem trong bán kính **8 blocks** (CD: 4 giây / 80 ticks).
   * Tung cú đập địa chấn hất tung Iron Golem lên trời (Motion Y = `+0.9`) và gây **50 Sát Thương** (Chỉ tác dụng lên Iron Golem, an toàn cho Người chơi).
   * Mỗi đòn đánh trúng Iron Golem $\rightarrow$ Hồi **+50 HP**.
-  * Khi tiêu diệt Iron Golem $\rightarrow$ Hồi **+100 HP** (hiệu ứng hạt Totem + tiếng gầm rú).
+  * Khi tiêu diệt Iron Golem $\rightarrow$ Hồi **+75 HP** (hiệu ứng hạt Totem + tiếng gầm rú).
 * **Tiến Hóa Combo Sonic Boom (Combo 3+1 / 2+1):**
   * **Trước khi Huyết Tế:** Cứ sau **3 đòn đánh thường** $\rightarrow$ đòn tiếp theo (đòn 4) chắc chắn là **Sonic Boom**.
   * **Sau khi Huyết Tế hoàn tất:** Cứ sau **2 đòn đánh thường** $\rightarrow$ đòn tiếp theo (đòn 3) chắc chắn là **Sonic Boom**.
