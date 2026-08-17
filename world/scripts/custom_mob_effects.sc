@@ -1028,26 +1028,29 @@ __on_tick() -> (
         )
     );
     
-    // 6. Quản lý Boss Health Bar, Phase 2 và Hệ Thống Nhạc Nền BGM Looping
+    // 6. Quản lý Boss Health Bar, Phase 2, Huyết Tế và Hệ Thống Nhạc Nền BGM Looping (Hỗ trợ Đa Warden)
     if (global_tick_count % 5 == 0,
-        if (length(wardens) > 0,
-            w = wardens:0;
+        // 6.1. Kiểm tra Phase 2 & Huyết Tế cho TẤT CẢ các Warden đang sống
+        for(wardens,
+            w = _;
             w_uuid = w ~ 'uuid';
             w_hp = w ~ 'health';
             w_pos = pos(w);
             w_max = _get_attribute(w, 'max_health', 1500.0);
             
+            // Kích hoạt Phase 2 Cuồng Nộ khi máu <= 30% (450 HP)
             if (w_hp <= (w_max * 0.30) && !global_warden_phase2:w_uuid,
                 _trigger_warden_rage(w, w_pos, w_uuid);
             );
             
             is_p2 = global_warden_phase2:w_uuid;
             
+            // Kích hoạt Huyết Tế Tối Thượng khi Phase 2 và máu < 10% (150 HP)
             if (is_p2 && w_hp < (w_max * 0.10) && w_hp > 0 && !global_warden_emergency_healed:w_uuid,
                 global_warden_emergency_healed:w_uuid = true;
                 global_warden_healing_ticks:w_uuid = 200; // 10 giây
                 
-                // KÍCH HOẠT BẤT TỬ TUYỆT ĐỐI NGAY LẬP TỨC
+                // Bất tử tuyệt đối ngay lập tức
                 modify(w, 'nbt_merge', '{Invulnerable:1b}');
                 
                 sound('minecraft:item.totem.use', w_pos, 2.0, 0.8);
@@ -1063,72 +1066,93 @@ __on_tick() -> (
                 for(players,
                     p = _;
                     p_name = p ~ 'name';
-                    if (_distance(pos(p), w_pos) <= 40,
+                    if ((p ~ 'dimension') == (w ~ 'dimension') && _distance(pos(p), w_pos) <= 40,
                         run(str('execute as %s at @s run stopsound @s record', p_name));
                         run(str('execute as %s at @s run playsound minecraft:custom.warden_sacrifice record @s ~ ~ ~ 1000.0 1.0', p_name));
                         global_player_warden_music:p_name = 'sacrifice';
                         global_player_music_timer:p_name = 3500;
                         print(p, '§4§l[Warden] Kích hoạt Huyết Tế Tối Thượng! Chướng khí độc lan tỏa 40m và bắt đầu hấp thụ sinh lực về 600 HP (40% Máu)!');
-                    )
+                    );
                 );
             );
+        );
+        
+        // 6.2. Quản lý Bossbar và BGM cho TỪNG Người Chơi (Tìm Warden gần nhất)
+        bossbar_players = [];
+        for(players,
+            p = _;
+            p_name = p ~ 'name';
+            p_pos = pos(p);
+            p_dim = p ~ 'dimension';
             
-            // Cập nhật Bossbar
-            if (is_p2,
-                run('bossbar set minecraft:warden_boss name {"text":"Warden (Phase 2 - Cuồng Nộ)","color":"red","bold":true}');
-                run('bossbar set minecraft:warden_boss color red');
-            ,
-                run('bossbar set minecraft:warden_boss name {"text":"Warden","color":"dark_aqua","bold":true}');
-                run('bossbar set minecraft:warden_boss color blue');
-            );
+            // Tìm tất cả Warden cùng dimension trong phạm vi 50 blocks
+            nearby_w = filter(wardens, (_ ~ 'dimension') == p_dim && _distance(pos(_), p_pos) <= 50.0);
             
-            run(str('bossbar set minecraft:warden_boss value %d', floor(w_hp)));
-            run('bossbar set minecraft:warden_boss visible true');
-            run(str('bossbar set minecraft:warden_boss players @a[x=%f,y=%f,z=%f,distance=..40]', w_pos:0, w_pos:1, w_pos:2));
-            
-            // ── QUẢN LÝ NHẠC NỀN BGM LOOPING CHO NGƯỜI CHƠI TRONG VÙNG 40M ──
-            has_sacrificed = global_warden_emergency_healed:w_uuid;
-            req_track = if(has_sacrificed, 'sacrifice', 'theme');
-            req_sound = if(has_sacrificed, 'minecraft:custom.warden_sacrifice', 'minecraft:custom.warden_theme');
-            track_dur = if(has_sacrificed, 3500, 4180);
-            
-            for(players,
-                p = _;
-                p_name = p ~ 'name';
-                p_dist = _distance(pos(p), w_pos);
+            if (length(nearby_w) > 0,
+                // Chọn Warden gần nhất với người chơi này
+                closest_w = nearby_w:0;
+                closest_dist = _distance(pos(closest_w), p_pos);
+                for(nearby_w,
+                    d = _distance(pos(_), p_pos);
+                    if (d < closest_dist,
+                        closest_w = _;
+                        closest_dist = d;
+                    );
+                );
+                
+                w_uuid = closest_w ~ 'uuid';
+                w_hp = closest_w ~ 'health';
+                is_p2 = global_warden_phase2:w_uuid;
+                has_sacrificed = global_warden_emergency_healed:w_uuid;
+                
+                bossbar_players += p_name;
+                
+                // Cập nhật Bossbar hiển thị
+                if (is_p2,
+                    run('bossbar set minecraft:warden_boss name {"text":"Warden (Phase 2 - Cuồng Nộ)","color":"red","bold":true}');
+                    run('bossbar set minecraft:warden_boss color red');
+                ,
+                    run('bossbar set minecraft:warden_boss name {"text":"Warden","color":"dark_aqua","bold":true}');
+                    run('bossbar set minecraft:warden_boss color blue');
+                );
+                run(str('bossbar set minecraft:warden_boss value %d', floor(w_hp)));
+                
+                // Quản lý BGM cho người chơi này
+                req_track = if(has_sacrificed, 'sacrifice', 'theme');
+                req_sound = if(has_sacrificed, 'minecraft:custom.warden_sacrifice', 'minecraft:custom.warden_theme');
+                track_dur = if(has_sacrificed, 3500, 4180);
+                
                 curr_track = global_player_warden_music:p_name;
                 tmr = global_player_music_timer:p_name;
                 
-                if (p_dist <= 40,
-                    if (curr_track != req_track || tmr == null || tmr <= 0,
-                        if (curr_track != null,
-                            run(str('execute as %s at @s run stopsound @s record', p_name));
-                        );
-                        run(str('execute as %s at @s run playsound %s record @s ~ ~ ~ 1000.0 1.0', p_name, req_sound));
-                        global_player_warden_music:p_name = req_track;
-                        global_player_music_timer:p_name = track_dur;
-                    );
-                ,
+                if (curr_track != req_track || tmr == null || tmr <= 0,
                     if (curr_track != null,
-                        run(str('execute as %s at @s run stopsound @s record minecraft:custom.warden_theme', p_name));
-                        run(str('execute as %s at @s run stopsound @s record minecraft:custom.warden_sacrifice', p_name));
-                        delete(global_player_warden_music:p_name);
-                        delete(global_player_music_timer:p_name);
+                        run(str('execute as %s at @s run stopsound @s record', p_name));
                     );
+                    run(str('execute as %s at @s run playsound %s record @s ~ ~ ~ 1000.0 1.0', p_name, req_sound));
+                    global_player_warden_music:p_name = req_track;
+                    global_player_music_timer:p_name = track_dur;
+                );
+            ,
+                // Không có Warden nào gần người chơi này -> Tắt BGM
+                curr_track = global_player_warden_music:p_name;
+                if (curr_track != null,
+                    run(str('execute as %s at @s run stopsound @s record minecraft:custom.warden_theme', p_name));
+                    run(str('execute as %s at @s run stopsound @s record minecraft:custom.warden_sacrifice', p_name));
+                    delete(global_player_warden_music:p_name);
+                    delete(global_player_music_timer:p_name);
                 );
             );
+        );
+        
+        // 6.3. Cập nhật danh sách người chơi nhìn thấy Bossbar
+        if (length(bossbar_players) > 0,
+            run('bossbar set minecraft:warden_boss visible true');
+            run(str('bossbar set minecraft:warden_boss players %s', join(' ', bossbar_players)));
         ,
             run('bossbar set minecraft:warden_boss visible false');
             run('bossbar set minecraft:warden_boss players');
-            
-            for(keys(global_player_warden_music),
-                p_name = _;
-                run(str('execute as %s at @s run stopsound @s record minecraft:custom.warden_theme', p_name));
-                run(str('execute as %s at @s run stopsound @s record minecraft:custom.warden_sacrifice', p_name));
-                delete(global_player_warden_music:p_name);
-                delete(global_player_music_timer:p_name);
-            );
-        )
+        );
     );
     
     for(players,
