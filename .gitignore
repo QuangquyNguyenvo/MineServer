@@ -26,6 +26,7 @@ world_gen_settings.dat
 
 # Backup mod trung lap, khong can thiet cho script cai mod
 mods/_duplicates_backup/
+mods/watermedia_binaries*.jar
 
 # World save data (except datapacks and scripts)
 world/data/
