@@ -201,3 +201,11 @@ Toàn bộ hướng dẫn tích hợp hiển thị trạng thái server (`ancien
 * **REST API Endpoint:** `https://api.mcsrvstat.us/3/ancient.pikamc.vn:25238`
 * **Avatar API:** `https://mc-heads.net/avatar/{username}/32`
 
+---
+
+## 8. 📜 Tài Liệu Changelog Boss Wither & Warden (Boss Mechanics Changelog)
+
+Bản tổng hợp chi tiết toàn bộ các cơ chế thay đổi sức mạnh, chỉ số cân bằng, combo đòn đánh, các phase chiến đấu, hiệu ứng âm thanh/hình ảnh và gói phần thưởng thần thoại của Boss **Wither** và **Warden** được lưu trữ đầy đủ tại:
+👉 [`CHANGELOG_BOSS_MECHANICS.md`](file:///C:/Users/ADMIN/MineServer/CHANGELOG_BOSS_MECHANICS.md)
+
+
