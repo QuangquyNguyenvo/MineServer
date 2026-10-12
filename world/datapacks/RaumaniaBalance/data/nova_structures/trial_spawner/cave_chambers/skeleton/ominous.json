@@ -1,0 +1,41 @@
+{
+  "loot_tables_to_eject": [
+    {
+      "data": "nova_structures:spawners/shrine/tier_6/ominous",
+      "weight": 5
+    },
+    {
+      "data": "nova_structures:keys/ominous_shrine_key",
+      "weight": 1
+    }
+  ],
+  "simultaneous_mobs": 3,
+  "total_mobs": 5,
+  "simultaneous_mobs_added_per_player": 0.5,
+  "total_mobs_added_per_player": 1,
+   "items_to_drop_when_ominous": "nova_structures:spawner_projectile/shrine/projectiles_shrine_6",
+  "ticks_between_spawn": 10,
+  "spawn_potentials": [
+    {
+      "data": {
+        "equipment": {
+          "slot_drop_chances": 0,
+          "loot_table": "nova_structures:equipment/shrine/tier_6_ranged"
+        },
+        "entity": {
+          "id": "minecraft:skeleton",
+          "Tags": [
+            "trial_ominous"
+          ],
+          "equipment": {
+            "mainhand": {
+              "count": 1,
+              "id": "bow"
+            }
+          }
+        }
+      },
+      "weight": 1
+    }
+  ]
+}

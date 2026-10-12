@@ -1,0 +1,6 @@
+{
+  "pack": {
+    "pack_format": 107,
+    "description": "Adds player-distance gate (128 blocks) to Animated Java global on_tick, fixing severe idle-tick lag from Fortress of War rigs. Overrides data/animated_java/function/global/on_tick.mcfunction only."
+  }
+}

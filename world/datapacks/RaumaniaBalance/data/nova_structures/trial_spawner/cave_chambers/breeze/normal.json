@@ -1,0 +1,30 @@
+{
+  "loot_tables_to_eject": [
+    {
+      "data": "nova_structures:spawners/shrine/tier_6/normal",
+      "weight": 5
+    },
+    {
+      "data": "nova_structures:keys/shrine_key",
+      "weight": 1
+    }
+  ],
+  "simultaneous_mobs": 1,
+  "total_mobs": 2,
+  "simultaneous_mobs_added_per_player": 0.5,
+  "total_mobs_added_per_player": 1,
+  "ticks_between_spawn": 10,
+  "spawn_potentials": [
+    {
+      "data": {
+        "entity": {
+          "id": "minecraft:breeze",
+          "Tags": [
+            "trial_normal"
+          ]
+        }
+      },
+      "weight": 1
+    }
+  ]
+}

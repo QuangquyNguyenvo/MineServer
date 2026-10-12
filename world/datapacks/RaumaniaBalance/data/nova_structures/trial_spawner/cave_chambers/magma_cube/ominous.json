@@ -1,0 +1,32 @@
+{
+  "loot_tables_to_eject": [
+    {
+      "data": "nova_structures:spawners/shrine/tier_6/ominous",
+      "weight": 5
+    },
+    {
+      "data": "nova_structures:keys/ominous_shrine_key",
+      "weight": 1
+    }
+  ],
+  "simultaneous_mobs": 5,
+  "total_mobs": 7,
+  "simultaneous_mobs_added_per_player": 1,
+  "total_mobs_added_per_player": 2,
+  "items_to_drop_when_ominous": "nova_structures:spawner_projectile/shrine/projectiles_shrine_6",
+  "ticks_between_spawn": 10,
+  "spawn_potentials": [
+    {
+      "data": {
+        "entity": {
+			    "Size": 2,
+			    "id": "minecraft:magma_cube",
+          "Tags": [
+            "trial_ominous"
+          ]
+        }
+      },
+      "weight": 1
+    }
+  ]
+}

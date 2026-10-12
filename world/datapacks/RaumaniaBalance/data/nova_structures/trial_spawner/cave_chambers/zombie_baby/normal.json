@@ -1,0 +1,43 @@
+{
+  "loot_tables_to_eject": [
+    {
+      "data": "nova_structures:spawners/shrine/tier_6/normal",
+      "weight": 5
+    },
+    {
+      "data": "nova_structures:keys/shrine_key",
+      "weight": 1
+    }
+  ],
+  "simultaneous_mobs": 3,
+  "total_mobs": 5,
+  "simultaneous_mobs_added_per_player": 0.5,
+  "total_mobs_added_per_player": 1,
+  "ticks_between_spawn": 10,
+  "spawn_potentials": [
+    {
+      "data": {
+        "entity": {
+			    "IsBaby": true,
+			    "id": "minecraft:zombie",
+          "Tags": [
+            "trial_normal"
+          ]
+        },
+        "equipment": {
+          "loot_table": "nova_structures:equipment/normal_mobs/melee",
+          "slot_drop_chances": {
+            "body": 0.085,
+            "chest": 0.085,
+            "feet": 0.085,
+            "head": 0.085,
+            "legs": 0.085,
+            "mainhand": 0.085,
+            "offhand": 0.085
+          }
+        }
+      },
+      "weight": 1
+    }
+  ]
+}
