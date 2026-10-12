@@ -39,6 +39,8 @@ global_warden_golem_slam_cd = {};
 global_warden_last_health = {};
 global_warden_last_player_dmg_tick = {};
 global_warden_golem_heal_cd = {};
+global_warden_last_attacker = {};
+global_last_player_hit = {};
 
 // Danh sách các hiệu ứng xấu để phản ngược lại người chơi
 global_negative_effects = {
@@ -131,19 +133,64 @@ _save_blood_moon_data() -> (
     write_file('bloodmoon', 'json', {'next_day' -> global_blood_moon_day});
 );
 
-// Helper lấy lượng kinh nghiệm cộng thêm (50% của lượng gốc)
+// Helper lấy lượng kinh nghiệm cộng thêm trong Trăng Máu (gấp 2 lượng gốc => tổng x3)
 _get_additional_xp(mob_type) -> (
     xp_map = {
-        'zombie' -> 2, 'creeper' -> 2, 'skeleton' -> 2, 'spider' -> 2,
-        'enderman' -> 2, 'cave_spider' -> 2, 'drowned' -> 2, 'husk' -> 2,
-        'stray' -> 2, 'zombie_villager' -> 2, 'witch' -> 2,
-        'blaze' -> 2, 'ghast' -> 2, 'guardian' -> 5, 'elder_guardian' -> 50,
-        'ravager' -> 10, 'evoker' -> 5, 'piglin_brute' -> 10,
-        'wither' -> 25, 'ender_dragon' -> 250
+        'zombie' -> 10, 'creeper' -> 10, 'skeleton' -> 10, 'spider' -> 10,
+        'enderman' -> 10, 'cave_spider' -> 10, 'drowned' -> 10, 'husk' -> 10,
+        'stray' -> 10, 'zombie_villager' -> 10, 'witch' -> 10, 'bogged' -> 10,
+        'phantom' -> 10, 'slime' -> 4, 'silverfish' -> 10, 'pillager' -> 10,
+        'vindicator' -> 10, 'blaze' -> 20, 'ghast' -> 10, 'guardian' -> 20,
+        'elder_guardian' -> 20, 'ravager' -> 40, 'evoker' -> 20, 'piglin_brute' -> 40,
+        'wither' -> 100, 'ender_dragon' -> 1000
     };
     val = xp_map:mob_type;
-    if (val != null, val, 2)
+    if (val != null, val, 10)
 );
+
+// Helper rải orb kinh nghiệm. NBT của experience_orb dùng key "Value" (chữ V hoa);
+// viết "value" thường thì game bỏ qua và orb rơi ra 0 XP.
+_drop_xp(p, amount) -> (
+    while (amount > 0, 100,
+        v = min(amount, 500);
+        run(str('summon experience_orb %f %f %f {Value:%d}', p:0, p:1, p:2, v));
+        amount = amount - v;
+    );
+);
+
+// XP thưởng theo lượng máu tối đa thật của quái (đã tính buff BuffMobs, Trăng Máu, mutant...):
+// quái trên 40 máu cho thêm 0.5 XP mỗi 1 máu, tối đa 1000 (cùng tỉ lệ Warden 1500 máu ~ 1000 XP).
+// Warden/Wither/Rồng có phần thưởng riêng nên bỏ qua.
+global_hp_xp_excluded = {'warden' -> true, 'wither' -> true, 'ender_dragon' -> true};
+_get_health_xp(e) -> (
+    if (global_hp_xp_excluded:(e ~ 'type'), return(0));
+    max_hp = _get_attribute(e, 'max_health', 20.0);
+    if (max_hp <= 40, 0, min(1000, floor(max_hp * 0.5)))
+);
+
+// Quái chết trong vòng 5 giây sau khi bị người chơi đánh thì tính là người chơi giết
+// (bắt được cả kill bằng cung, lửa, thorns), không phụ thuộc phép tính máu/giáp lúc ra đòn.
+_on_hostile_death(e, reason) -> (
+    e_uuid = e ~ 'uuid';
+    hit_tick = global_last_player_hit:e_uuid;
+    delete(global_last_player_hit:e_uuid);
+    if (hit_tick == null || global_tick_count - hit_tick > 100, return());
+    xp = _get_health_xp(e);
+    day = floor(day_time() / 24000);
+    daytime = day_time() % 24000;
+    if ((e ~ 'dimension') ~ 'overworld' && day == global_blood_moon_day && daytime >= 12000 && daytime < 23000,
+        xp = xp + _get_additional_xp(e ~ 'type');
+    );
+    if (xp > 0, _drop_xp(pos(e), xp));
+);
+
+// entity_event đăng ký ngay trong load handler (entity chưa vào world hẳn) bị mất, nên dời 1 tick.
+// Mỗi entity chỉ giữ 1 handler on_death cho mỗi app: Warden đăng ký sau nên handler của nó thắng.
+_register_death(e, fn) -> schedule(0, _(outer(e), outer(fn)) -> (
+    if (e && !query(e, 'removed'), entity_event(e, 'on_death', fn));
+));
+
+_on_hostile_load(e, new) -> _register_death(e, '_on_hostile_death');
 
 // Helper gây chướng khí Huyết Tế Tối Thượng lên người chơi trong phạm vi 40m
 _apply_warden_blood_sacrifice_debuffs(w_pos) -> (
@@ -259,10 +306,7 @@ _drop_warden_loot(w_pos, killer) -> (
     template_count = if(rand(1.0) < 0.5, 1, 2);
     run(str('summon item %f %f %f {Item:{id:"minecraft:netherite_upgrade_smithing_template",count:%d}}', bx, by, bz, template_count));
     
-    run(str('summon experience_orb %f %f %f {value:500}', bx, by, bz));
-    run(str('summon experience_orb %f %f %f {value:500}', bx, by, bz));
-    run(str('summon experience_orb %f %f %f {value:500}', bx, by, bz));
-    run(str('summon experience_orb %f %f %f {value:500}', bx, by, bz));
+    _drop_xp([bx, by, bz], 1000);
     
     // ── NHÓM 2: TRANG BỊ THẦN THOẠI GOD GEAR (TỈ LỆ 10% RƠI 1 TRONG 3 MÓN THẦN KHÍ) ──
     if (rand(1.0) < 0.10,
@@ -358,7 +402,19 @@ _on_dragon_load(e, new) -> (
     )
 );
 
+// Warden chết vì bất kỳ nguồn nào (cháy, thorns, pet, golem...) sau khi đã qua Huyết Tế
+// vẫn rơi phần thưởng; đòn kết liễu của người chơi đã rơi trước đó thì bỏ qua nhờ cờ loot_dropped.
+_on_warden_death(e, reason) -> (
+    w_uuid = e ~ 'uuid';
+    if (global_warden_emergency_healed:w_uuid && !global_warden_loot_dropped:w_uuid,
+        global_warden_loot_dropped:w_uuid = true;
+        killer_name = global_warden_last_attacker:w_uuid;
+        _drop_warden_loot(pos(e), if(killer_name != null, player(killer_name), null));
+    );
+);
+
 _on_warden_load(e, new) -> (
+    _register_death(e, '_on_warden_death');
     if (new,
         schedule(0, _(outer(e)) -> (
             if (e && !query(e, 'removed'),
@@ -415,14 +471,30 @@ _setup_app() -> (
     _init_warden_bossbar();
     _load_blood_moon_data();
     
-    entity_load_handler('enderman', '_on_enderman_load');
-    entity_load_handler('shulker', '_on_shulker_load');
-    entity_load_handler('wither', '_on_wither_load');
-    entity_load_handler('ender_dragon', '_on_dragon_load');
-    entity_load_handler('warden', '_on_warden_load');
-    
-    for(['zombie', 'skeleton', 'creeper', 'spider', 'cave_spider', 'witch', 'drowned', 'husk', 'stray', 'phantom', 'slime', 'silverfish', 'bogged'],
-        entity_load_handler(_, '_on_overworld_mob_load')
+    // Mỗi loại entity chỉ giữ được 1 load handler (đăng ký sau ghi đè đăng ký trước),
+    // nên dùng 1 handler chung cho mọi quái rồi tự chia theo loại.
+    entity_load_handler('monster', '_on_monster_load');
+);
+
+global_type_load_handlers = {
+    'enderman' -> '_on_enderman_load', 'shulker' -> '_on_shulker_load',
+    'wither' -> '_on_wither_load', 'ender_dragon' -> '_on_dragon_load',
+    'warden' -> '_on_warden_load'
+};
+global_blood_moon_mob_types = {
+    'zombie' -> true, 'skeleton' -> true, 'creeper' -> true, 'spider' -> true,
+    'cave_spider' -> true, 'witch' -> true, 'drowned' -> true, 'husk' -> true,
+    'stray' -> true, 'phantom' -> true, 'slime' -> true, 'silverfish' -> true, 'bogged' -> true
+};
+
+_on_monster_load(e, new) -> (
+    _on_hostile_load(e, new);
+    type = e ~ 'type';
+    handler = global_type_load_handlers:type;
+    if (handler != null,
+        call(handler, e, new),
+        global_blood_moon_mob_types:type,
+        _on_overworld_mob_load(e, new)
     );
 );
 
@@ -632,6 +704,7 @@ __on_player_takes_damage(player, amount, source, source_entity) -> (
 __on_player_deals_damage(player, amount, entity) -> (
     if (entity == null, return());
     type = entity ~ 'type';
+    global_last_player_hit:(entity ~ 'uuid') = global_tick_count;
     
     // ── XỬ LÝ TOÀN DIỆN CƠ CHẾ BOSS WARDEN KHI BỊ NGƯỜI CHƠI TẤN CÔNG ──
     if (type == 'warden',
@@ -642,6 +715,7 @@ __on_player_deals_damage(player, amount, entity) -> (
         p_pos = pos(player);
         dist = _distance(p_pos, w_pos);
         global_warden_last_player_dmg_tick:w_uuid = global_tick_count;
+        global_warden_last_attacker:w_uuid = player ~ 'name';
         
         // 1. Kiểm tra trạng thái Huyết Tế Bất Tử (10s)
         is_channeling_heal = (global_warden_healing_ticks:w_uuid != null && global_warden_healing_ticks:w_uuid > 0);
@@ -777,10 +851,7 @@ __on_player_deals_damage(player, amount, entity) -> (
             
             if (is_blood_moon,
                 pos = pos(entity);
-                
-                extra_xp = _get_additional_xp(type);
-                run(str('summon experience_orb %f %f %f {value:%d}', pos:0, pos:1, pos:2, extra_xp));
-                
+
                 r = rand(1.0);
                 
                 if (type ~ 'zombie' || type == 'husk' || type == 'drowned' || type == 'zombie_villager',
@@ -912,6 +983,12 @@ __on_tick() -> (
         );
         for(keys(global_warden_loot_dropped),
             if (!living_uuids:_, delete(global_warden_loot_dropped:_));
+        );
+        for(keys(global_warden_last_attacker),
+            if (!living_uuids:_, delete(global_warden_last_attacker:_));
+        );
+        for(keys(global_last_player_hit),
+            if (global_tick_count - global_last_player_hit:_ > 200, delete(global_last_player_hit:_));
         );
         for(keys(global_warden_melee_combo),
             if (!living_uuids:_, delete(global_warden_melee_combo:_));

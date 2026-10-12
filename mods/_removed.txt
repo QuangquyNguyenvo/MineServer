@@ -8,3 +8,4 @@ carrycats
 combatnouveau
 morevillagersre
 shouldercats
+sereneseasons-fabric
