@@ -1,11 +1,19 @@
-# che 1 mod ma script tu dong chua kip ghi nhan.
-# danh sach base-name cua cac mod da bi go han khoi server (khong phai doi version).
+﻿# Danh sach base-name cua cac mod da bi go HAN khoi server (khong phai doi version).
+# Moi dong 1 base-name (chu thuong, tinh theo cung thuat toan Get-ModBaseName ben
+# UpdateMinecraftMods.ps1). File nay duoc commit-mods.ps1 tu dong cap nhat khi phat
 # hien mod bien mat hoan toan khoi mods/ - khong can sua tay, tru khi muon xoa cuong
-# moi dong 1 base-name (chu thuong, tinh theo cung thuat toan get-modbasename ben
-# updateminecraftmods.ps1). file nay duoc commit-mods.ps1 tu dong cap nhat khi phat
+# che 1 mod ma script tu dong chua kip ghi nhan.
 carry cats
 carrycats
 combatnouveau
+connectiblechains-fabric
+mavapi
+mavm
+moogs_structures-fabric
+moogsendstructures
+moogsmissingvillages
+moogssoaringstructures
 morevillagersre
-shouldercats
 sereneseasons-fabric
+shouldercats
+tab
