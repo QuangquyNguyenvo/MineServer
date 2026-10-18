@@ -13,7 +13,7 @@ import { McpServer, createMcpHandler } from "@modelcontextprotocol/server";
 import { toNodeHandler } from "@modelcontextprotocol/node";
 import { fileURLToPath } from "node:url";
 
-const VERSION = "2.0.0";
+const VERSION = "2.0.1";
 const PORT = Number(process.env.MCP_PORT || 25240);
 const AGENT_DIR = path.dirname(fileURLToPath(import.meta.url));
 const SERVER_DIR = path.resolve(AGENT_DIR, "..");
@@ -100,7 +100,16 @@ function buildRconPacket(id, type, body) {
     return packet;
 }
 
+// Minecraft dung CHUNG 1 bo dem output cho moi ket noi RCON -> gui song song thi ket qua
+// bi tron vao nhau. Xep hang de moi lenh chay xong moi toi lenh sau.
+let rconChain = Promise.resolve();
 function rconCommand(command, timeoutMs = 15000) {
+    const run = rconChain.then(() => rconCommandRaw(command, timeoutMs));
+    rconChain = run.catch(() => {});
+    return run;
+}
+
+function rconCommandRaw(command, timeoutMs = 15000) {
     return new Promise((resolve, reject) => {
         if (!RCON_PASSWORD) return reject(new Error("RCON chua cau hinh (thieu .rcon_password)"));
         const socket = net.createConnection({ host: RCON_HOST, port: RCON_PORT });
