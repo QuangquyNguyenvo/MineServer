@@ -5,7 +5,12 @@ set -euo pipefail
 
 MCP_NAME="pikamc-agent"
 MCP_URL="http://ancient.pikamc.vn:25240/mcp"
-MCP_TOKEN="toiyeufembi"
+# Token KHONG luu trong repo (repo public). Admin gui rieng, chay: MCP_TOKEN=xxx bash setup.sh
+MCP_TOKEN="${MCP_TOKEN:-}"
+if [ -z "$MCP_TOKEN" ]; then
+  echo "[mcp-setup] Thieu MCP_TOKEN (hoi admin), bo qua." >&2
+  exit 0
+fi
 
 if ! command -v claude >/dev/null 2>&1; then
   echo "[mcp-setup] Không tìm thấy lệnh 'claude' trong PATH, bỏ qua đăng ký MCP." >&2

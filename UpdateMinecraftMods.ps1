@@ -137,11 +137,15 @@ function Show-Logo {
     if ((Get-ConsoleWidth) -lt $maxLen) {
         Write-Centered "OLONGBELL" Cyan
     } else {
+        # Hien tung dong cho co chuyen dong (bo qua khi output bi redirect)
+        $animate = $true
+        try { $animate = -not [Console]::IsOutputRedirected } catch { }
         for ($i = 0; $i -lt $logo.Count; $i++) {
             Write-Centered $logo[$i] $colors[$i % $colors.Count]
+            if ($animate) { Start-Sleep -Milliseconds 55 }
         }
     }
-    Write-Centered "May Chu OlongBell" DarkGray
+    Write-Centered "OlongBell Minecraft Server" DarkGray
     Write-Host ""
 }
 
@@ -186,6 +190,12 @@ function Test-ModFileName($name) {
     return ($name -like "*.jar" -or $name -like "*.jar.disabled")
 }
 
+# Cho $ms mili-giay. GUI gan WaitHook de vua cho vua bom su kien WPF (animation muot ~60fps)
+$script:WaitHook = $null
+function Invoke-Wait([int]$ms) {
+    if ($script:WaitHook) { & $script:WaitHook $ms } else { Start-Sleep -Milliseconds $ms }
+}
+
 # Chay 1 scriptblock o runspace rieng, goi $OnTick lien tuc (spinner / giu GUI khong do)
 function Invoke-InBackground {
     param([scriptblock]$Script, [object[]]$Arguments = @(), [scriptblock]$OnTick)
@@ -196,7 +206,7 @@ function Invoke-InBackground {
         $handle = $ps.BeginInvoke()
         while (-not $handle.IsCompleted) {
             if ($OnTick) { & $OnTick }
-            Start-Sleep -Milliseconds 80
+            Invoke-Wait 80
         }
         $out = $ps.EndInvoke($handle)
         if ($ps.Streams.Error.Count -gt 0) { throw $ps.Streams.Error[0].Exception }
@@ -320,11 +330,11 @@ function Get-SyncPlan {
         $lf = $localByName[$name]
         if ($OnTick) { & $OnTick }
         if ($null -eq $lf) {
-            $toDownload += [pscustomobject]@{ File = $rm; Reason = "moi" }
+            $toDownload += [pscustomobject]@{ File = $rm; Reason = "new" }
         } elseif ($lf.Length -ne $rm.size) {
-            $toDownload += [pscustomobject]@{ File = $rm; Reason = "khac dung luong" }
+            $toDownload += [pscustomobject]@{ File = $rm; Reason = "size changed" }
         } elseif ((Get-LocalSha $lf $cache $newCache) -ne $rm.sha) {
-            $toDownload += [pscustomobject]@{ File = $rm; Reason = "noi dung da chinh sua" }
+            $toDownload += [pscustomobject]@{ File = $rm; Reason = "content modified" }
             $changed++
         }
     }
@@ -339,41 +349,65 @@ function Get-SyncPlan {
     }
 }
 
-# Worker tai 1 file: tai ra .tmp -> kiem dung luong + SHA -> doi ten. Thu lai toi da N lan.
+# Worker tai 1 file: doc stream tung khoi 64KB, ghi so byte da nhan vao bang $Progress
+# (dung chung giua cac luong) -> UI ve thanh tien do theo byte that, ke ca file lon.
+# Tai ra .tmp -> kiem dung luong + SHA -> doi ten. Thu lai toi da N lan.
 $DownloadWorker = {
-    param($HelperCode, $Url, $DestDir, $Name, $Size, $Sha, $MaxRetries, $UserAgent)
+    param($HelperCode, $Url, $DestDir, $Name, $Size, $Sha, $MaxRetries, $UserAgent, $Progress)
     . ([scriptblock]::Create($HelperCode))
     [Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12
     $dest = Join-Path $DestDir $Name
     $tmp = "$dest.tmp"
     $err = ""
     for ($a = 1; $a -le $MaxRetries; $a++) {
+        $Progress[$Name] = [long]0
         try {
             if ($a -gt 1) { Start-Sleep -Seconds ([Math]::Min(2 * ($a - 1), 5)) }
-            $wc = New-Object System.Net.WebClient
-            $wc.Headers.Add("User-Agent", $UserAgent)
-            try { $wc.DownloadFile($Url, $tmp) } finally { $wc.Dispose() }
+            $req = [System.Net.HttpWebRequest]::Create($Url)
+            $req.UserAgent = $UserAgent
+            $req.Timeout = 30000
+            $req.ReadWriteTimeout = 30000
+            $resp = $req.GetResponse()
+            $in = $resp.GetResponseStream()
+            $out = [System.IO.File]::Create($tmp)
+            try {
+                $buf = New-Object byte[] 65536
+                $got = [long]0
+                while (($n = $in.Read($buf, 0, $buf.Length)) -gt 0) {
+                    $out.Write($buf, 0, $n)
+                    $got += $n
+                    $Progress[$Name] = $got
+                }
+            } finally {
+                $out.Dispose()
+                $in.Dispose()
+                $resp.Dispose()
+            }
             $len = (Get-Item -LiteralPath $tmp).Length
-            if ($Size -gt 0 -and $len -ne $Size) { throw "Sai dung luong ($len / $Size byte), co the mat mang giua chung" }
-            if ($Sha -and (Get-GitBlobSha $tmp) -ne $Sha) { throw "Sai SHA, file tai ve khong khop ban tren repo" }
+            if ($Size -gt 0 -and $len -ne $Size) { throw "Size mismatch ($len / $Size bytes) - connection dropped?" }
+            if ($Sha -and (Get-GitBlobSha $tmp) -ne $Sha) { throw "SHA mismatch - downloaded file differs from the repo" }
             if (Test-Path -LiteralPath $dest) { Remove-Item -LiteralPath $dest -Force -ErrorAction Stop }
             Rename-Item -LiteralPath $tmp -NewName $Name -ErrorAction Stop
             $fi = Get-Item -LiteralPath $dest
+            $Progress[$Name] = [long]$len
             return [pscustomobject]@{ Name = $Name; Success = $true; Bytes = $len; Attempts = $a; Error = ""; Sha = $Sha; Size = $fi.Length; Ticks = $fi.LastWriteTimeUtc.Ticks }
         } catch {
             $err = $_.Exception.Message
-            if ($err -match "being used by another process|dang duoc su dung") { $err = "File dang bi khoa (tat Minecraft roi chay lai)" }
+            if ($err -match "being used by another process") { $err = "File is locked - close Minecraft and run again" }
             if (Test-Path -LiteralPath $tmp) { Remove-Item -LiteralPath $tmp -Force -ErrorAction SilentlyContinue }
         }
     }
+    $Progress[$Name] = [long]0
     return [pscustomobject]@{ Name = $Name; Success = $false; Bytes = 0; Attempts = $MaxRetries; Error = $err }
 }
 
-# Tai song song bang RunspacePool. $OnDone(result, done, total) goi moi khi xong 1 file.
+# Tai song song bang RunspacePool.
+# $OnDone(result, done, total) moi khi xong 1 file; $OnBytes(bytesDone) moi vong lap (~10 lan/giay).
 function Invoke-ParallelDownloads {
-    param($Items, $RepoInfo, [string]$TargetDir, [int]$Throttle = 4, [scriptblock]$OnDone, [scriptblock]$OnTick)
+    param($Items, $RepoInfo, [string]$TargetDir, [int]$Throttle = 4, [scriptblock]$OnDone, [scriptblock]$OnTick, [scriptblock]$OnBytes)
     $results = @()
     if ($Items.Count -eq 0) { return , $results }
+    $progress = [hashtable]::Synchronized(@{})
     $pool = [runspacefactory]::CreateRunspacePool(1, [Math]::Max(1, $Throttle))
     $pool.Open()
     try {
@@ -382,7 +416,7 @@ function Invoke-ParallelDownloads {
             $ps = [powershell]::Create()
             $ps.RunspacePool = $pool
             [void]$ps.AddScript($DownloadWorker)
-            foreach ($arg in @($HelperCode, (Get-RawUrl $RepoInfo $f.name), $TargetDir, $f.name, [long]$f.size, $f.sha, 3, $UserAgent)) { [void]$ps.AddArgument($arg) }
+            foreach ($arg in @($HelperCode, (Get-RawUrl $RepoInfo $f.name), $TargetDir, $f.name, [long]$f.size, $f.sha, 3, $UserAgent, $progress)) { [void]$ps.AddArgument($arg) }
             [pscustomobject]@{ PS = $ps; Handle = $ps.BeginInvoke(); Name = $f.name; Done = $false }
         }
         $done = 0
@@ -392,7 +426,7 @@ function Invoke-ParallelDownloads {
                 $r = $null
                 try { $r = $j.PS.EndInvoke($j.Handle) | Select-Object -Last 1 } catch { }
                 if ($null -eq $r) {
-                    $msg = if ($j.PS.Streams.Error.Count -gt 0) { $j.PS.Streams.Error[0].ToString() } else { "Loi khong ro" }
+                    $msg = if ($j.PS.Streams.Error.Count -gt 0) { $j.PS.Streams.Error[0].ToString() } else { "Unknown error" }
                     $r = [pscustomobject]@{ Name = $j.Name; Success = $false; Bytes = 0; Attempts = 0; Error = $msg }
                 }
                 $j.PS.Dispose()
@@ -401,8 +435,22 @@ function Invoke-ParallelDownloads {
                 $results += $r
                 if ($OnDone) { & $OnDone $r $done $jobs.Count }
             }
+            if ($OnBytes) {
+                # Khoa SyncRoot khi doc: cac luong tai dang ghi vao bang cung luc
+                $vals = $null
+                [System.Threading.Monitor]::Enter($progress.SyncRoot)
+                try {
+                    $vals = New-Object object[] $progress.Count
+                    $progress.Values.CopyTo($vals, 0)
+                } finally {
+                    [System.Threading.Monitor]::Exit($progress.SyncRoot)
+                }
+                $sum = [long]0
+                foreach ($v in $vals) { $sum += [long]$v }
+                & $OnBytes $sum
+            }
             if ($OnTick) { & $OnTick }
-            Start-Sleep -Milliseconds 100
+            Invoke-Wait 100
         }
     } finally {
         $pool.Close()
@@ -416,71 +464,85 @@ function Format-Size([double]$bytes) {
     return "{0:N0} KB" -f ($bytes / 1KB)
 }
 
-# Toan bo qua trinh dong bo. $Log(msg, color), $OnTick(), $OnProgress(done, total, text)
+# Toan bo qua trinh dong bo.
+#   $Log(msg, color)    $OnTick()    $OnPhase(connect|scan|download|done|error)
+#   $OnProgress(filesDone, filesTotal, lastName, bytesDone, bytesTotal)
 function Invoke-ModSync {
-    param([string]$TargetDir, [int]$Parallel = 4, [scriptblock]$Log, [scriptblock]$OnTick, [scriptblock]$OnProgress)
+    param([string]$TargetDir, [int]$Parallel = 4, [scriptblock]$Log, [scriptblock]$OnTick, [scriptblock]$OnProgress, [scriptblock]$OnPhase)
+    $phase = { param($p) if ($OnPhase) { & $OnPhase $p } }
     $sw = [System.Diagnostics.Stopwatch]::StartNew()
     $summary = [pscustomobject]@{ Ok = $false; Downloaded = 0; Bytes = 0; Deleted = 0; Failed = @(); Seconds = 0; RepoCount = 0 }
 
     if (Get-Process -Name javaw -ErrorAction SilentlyContinue) {
-        & $Log "[CANH BAO] Minecraft (javaw) dang chay - mod dang dung se bi khoa, nen tat game truoc." Yellow
+        & $Log "[WARN] Minecraft (javaw) is running - mods in use will be locked. Close the game first." Yellow
     }
-
     if (-not (Test-Path -LiteralPath $TargetDir)) {
-        & $Log "[DIR] Tao thu muc moi: $TargetDir" Gray
+        & $Log "[DIR] Creating folder: $TargetDir" Gray
         New-Item -ItemType Directory -Path $TargetDir -Force | Out-Null
     }
 
-    & $Log "Dang ket noi GitHub..." Cyan
+    & $phase "connect"
+    & $Log "Connecting to GitHub..." Cyan
     try {
         $repoInfo = Get-RepoModList -OnTick $OnTick
     } catch {
         $m = "$_"
-        if ($m -match "403|rate limit") { $m = "GitHub gioi han 60 lan/gio moi IP. Doi khoang 1 tieng roi chay lai." }
-        & $Log "[LOI] Khong doc duoc danh sach mod: $m" Red
+        if ($m -match "403|rate limit") { $m = "GitHub allows 60 requests/hour per IP. Wait about an hour and try again." }
+        & $Log "[ERROR] Could not read the mod list: $m" Red
+        & $phase "error"
         return $summary
     }
     if (-not $repoInfo.Files -or $repoInfo.Files.Count -eq 0) {
-        & $Log "[LOI] Thu muc mods tren GitHub trong." Red
+        & $Log "[ERROR] The mods folder on GitHub is empty." Red
+        & $phase "error"
         return $summary
     }
     $refShort = "$($repoInfo.Ref)"; if ($refShort.Length -gt 7) { $refShort = $refShort.Substring(0, 7) }
-    & $Log "[OK] Ket noi GitHub thanh cong (ban $refShort)." Green
+    & $Log "[OK] Connected to GitHub (version $refShort)." Green
 
-    & $Log "Dang kiem tra mod o may (so SHA, lan dau hoi lau)..." Cyan
+    & $phase "scan"
+    & $Log "Checking local mods (SHA compare, slower on first run)..." Cyan
     $plan = Get-SyncPlan -RepoInfo $repoInfo -TargetDir $TargetDir -OnTick $OnTick
     $summary.RepoCount = $plan.RepoMods.Count
-    & $Log "[STATS] Server: $($plan.RepoMods.Count) mod | May ban: $($plan.LocalFiles.Count) mod" Green
-    & $Log "[SYNC] Can tai: $($plan.ToDownload.Count) (trong do $($plan.Changed) mod da bi chinh sua) | Can xoa: $($plan.ToDelete.Count)" Yellow
+    & $Log "[STATS] Server: $($plan.RepoMods.Count) mods | Your PC: $($plan.LocalFiles.Count) mods" Green
+    & $Log "[SYNC] To download: $($plan.ToDownload.Count) ($($plan.Changed) modified) | To delete: $($plan.ToDelete.Count)" Yellow
 
     foreach ($df in $plan.ToDelete) {
         try {
             Remove-Item -LiteralPath $df.FullName -Force -ErrorAction Stop
             $plan.Cache.Remove($df.Name)
             $summary.Deleted++
-            & $Log "  - Da xoa: $($df.Name)" DarkRed
+            & $Log "  - Deleted: $($df.Name)" DarkRed
         } catch {
-            & $Log "  [X] Khong xoa duoc $($df.Name) (tat Minecraft roi chay lai)" Red
+            & $Log "  [X] Could not delete $($df.Name) (close Minecraft and run again)" Red
             $summary.Failed += $df.Name
         }
     }
 
     if ($plan.ToDownload.Count -gt 0) {
-        $total = ($plan.ToDownload | ForEach-Object { [long]$_.File.size } | Measure-Object -Sum).Sum
-        & $Log "Dang tai $($plan.ToDownload.Count) mod ($(Format-Size $total)), $Parallel luong song song..." Cyan
+        $total = [long](($plan.ToDownload | ForEach-Object { [long]$_.File.size } | Measure-Object -Sum).Sum)
+        $n = $plan.ToDownload.Count
+        & $Log "Downloading $n mods ($(Format-Size $total)), $Parallel at a time..." Cyan
         foreach ($it in $plan.ToDownload) {
-            if ($it.Reason -ne "moi") { & $Log "  * $($it.File.name): $($it.Reason)" DarkGray }
+            if ($it.Reason -ne "new") { & $Log "  * $($it.File.name): $($it.Reason)" DarkGray }
         }
-        if ($OnProgress) { & $OnProgress 0 $plan.ToDownload.Count "" }
+        & $phase "download"
+        $script:syncState = @{ Done = 0; Last = ""; Bytes = [long]0 }
+        if ($OnProgress) { & $OnProgress 0 $n "" 0 $total }
         $results = Invoke-ParallelDownloads -Items $plan.ToDownload -RepoInfo $repoInfo -TargetDir $TargetDir -Throttle $Parallel -OnTick $OnTick -OnDone {
-            param($r, $done, $n)
+            param($r, $done, $cnt)
+            $script:syncState.Done = $done
+            $script:syncState.Last = $r.Name
             if ($r.Success) {
-                $retry = if ($r.Attempts -gt 1) { " (lan thu $($r.Attempts))" } else { "" }
-                & $Log "  -> [$done/$n] $($r.Name) ($(Format-Size $r.Bytes))$retry" White
+                $retry = if ($r.Attempts -gt 1) { " (attempt $($r.Attempts))" } else { "" }
+                & $Log "  -> [$done/$cnt] $($r.Name) ($(Format-Size $r.Bytes))$retry" White
             } else {
-                & $Log "  [X] [$done/$n] $($r.Name): $($r.Error)" Red
+                & $Log "  [X] [$done/$cnt] $($r.Name): $($r.Error)" Red
             }
-            if ($OnProgress) { & $OnProgress $done $n $r.Name }
+        } -OnBytes {
+            param($bytes)
+            $script:syncState.Bytes = $bytes
+            if ($OnProgress) { & $OnProgress $script:syncState.Done $n $script:syncState.Last $bytes $total }
         }
         foreach ($r in $results) {
             if ($r.Success) {
@@ -491,67 +553,256 @@ function Invoke-ModSync {
                 $summary.Failed += $r.Name
             }
         }
+        if ($OnProgress) { & $OnProgress $n $n "" $total $total }
     } elseif ($OnProgress) {
-        & $OnProgress 1 1 ""
+        & $OnProgress 1 1 "" 1 1
     }
 
     Write-ShaCache $TargetDir $plan.Cache
     $sw.Stop()
     $summary.Seconds = [Math]::Round($sw.Elapsed.TotalSeconds, 1)
     $summary.Ok = ($summary.Failed.Count -eq 0)
+    & $phase $(if ($summary.Ok) { "done" } else { "error" })
     return $summary
+}
+
+# ===================================================================================
+#  TU DONG TIM THU MUC GAME (khong hardcode o C)
+# ===================================================================================
+#  Nguon: (1) thu muc da chon lan truoc, (2) cau hinh launcher (TLauncher/Legacy
+#  *.properties co "gamedir", launcher_profiles.json cua launcher chinh hang),
+#  (3) quet nhanh moi o cung (C, D, E...) toi da 4 cap tim thu muc game Minecraft
+#  (co "versions" + "mods"/"options.txt"), (4) duong dan mac dinh.
+# ===================================================================================
+$UpdaterConfigPath = Join-Path $env:APPDATA "OlongBell\mod-updater.json"
+
+# Code dang chuoi de chay duoc trong runspace nen (GUI van chay animation khi dang quet)
+$DetectCode = @'
+function Get-LauncherLabel([string]$path) {
+    $p = $path.ToLower()
+    if ($p -like '*\.tlauncher\legacy\*') { return 'Legacy Launcher' }
+    if ($p -like '*tlauncher*') { return 'TLauncher' }
+    if ($p -like '*curseforge*') { return 'CurseForge' }
+    if ($p -like '*modrinth*') { return 'Modrinth' }
+    if ($p -like '*prism*' -or $p -like '*multimc*') { return 'Prism/MultiMC' }
+    if ($env:APPDATA -and $p.StartsWith((Join-Path $env:APPDATA '.minecraft').ToLower())) { return 'Minecraft (default)' }
+    return "Folder on $($path.Substring(0, 2).ToUpper())"
+}
+
+function Test-GameDir([string]$dir) {
+    try {
+        if (-not [IO.Directory]::Exists((Join-Path $dir 'versions'))) { return $false }
+        # Thu muc server (co server.properties) khong phai game client
+        if ([IO.File]::Exists((Join-Path $dir 'server.properties'))) { return $false }
+        return ([IO.Directory]::Exists((Join-Path $dir 'mods')) -or [IO.File]::Exists((Join-Path $dir 'options.txt')))
+    } catch { return $false }
+}
+
+function Find-ModFolders([string]$lastPath) {
+    $seen = @{}
+    $found = New-Object System.Collections.Generic.List[object]
+    $add = {
+        param([string]$modsDir, [string]$source)
+        if ([string]::IsNullOrWhiteSpace($modsDir)) { return }
+        try { $full = [IO.Path]::GetFullPath($modsDir.Trim().Trim('"')).TrimEnd('\') } catch { return }
+        $key = $full.ToLower()
+        if ($seen.ContainsKey($key)) { return }
+        $count = 0
+        if ([IO.Directory]::Exists($full)) {
+            try { $count = @([IO.Directory]::GetFiles($full, '*.jar')).Count } catch { }
+        } elseif (-not [IO.Directory]::Exists((Split-Path $full -Parent))) {
+            return
+        }
+        $seen[$key] = $true
+        $found.Add([pscustomobject]@{ Path = $full; Label = (Get-LauncherLabel $full); Mods = $count; Source = $source })
+    }
+
+    if ($lastPath) { & $add $lastPath 'lan truoc' }
+
+    # Cau hinh launcher
+    $tl = Join-Path $env:APPDATA '.tlauncher'
+    if (Test-Path -LiteralPath $tl) {
+        Get-ChildItem -LiteralPath $tl -Filter '*.properties' -Recurse -Depth 3 -File -ErrorAction SilentlyContinue | ForEach-Object {
+            Get-Content -LiteralPath $_.FullName -ErrorAction SilentlyContinue | ForEach-Object {
+                if ($_ -match '^\s*[\w.\-]*game\.?dir[\w.\-]*\s*[=:]\s*(.+)$') {
+                    # .properties escape: "D\:\\Games" -> "D:\Games"
+                    $dir = $Matches[1].Trim() -replace '\\(.)', '$1'
+                    if ($dir -match '^[A-Za-z]:') { & $add (Join-Path $dir 'mods') 'cau hinh launcher' }
+                }
+            }
+        }
+    }
+    $profiles = Join-Path $env:APPDATA '.minecraft\launcher_profiles.json'
+    if (Test-Path -LiteralPath $profiles) {
+        try {
+            $j = Get-Content -LiteralPath $profiles -Raw | ConvertFrom-Json
+            foreach ($p in $j.profiles.PSObject.Properties) {
+                if ($p.Value.gameDir) { & $add (Join-Path $p.Value.gameDir 'mods') 'launcher chinh hang' }
+            }
+        } catch { }
+    }
+
+    # Quet o cung: BFS toi da 4 cap, bo qua thu muc he thong, gioi han so thu muc + thoi gian
+    $skip = @('windows', 'program files', 'program files (x86)', 'programdata', '$recycle.bin', 'system volume information',
+              'node_modules', '.git', 'steamapps', 'appdata', 'recovery', 'perflogs', 'msocache', 'intel', 'amd', 'nvidia')
+    $deadline = [DateTime]::UtcNow.AddSeconds(6)
+    foreach ($drive in [IO.DriveInfo]::GetDrives()) {
+        if ($drive.DriveType -ne 'Fixed' -or -not $drive.IsReady) { continue }
+        $queue = New-Object System.Collections.Generic.Queue[object]
+        $queue.Enqueue(@($drive.RootDirectory.FullName, 0))
+        $visited = 0
+        while ($queue.Count -gt 0 -and $visited -lt 25000 -and [DateTime]::UtcNow -lt $deadline) {
+            $item = $queue.Dequeue()
+            $dir = $item[0]
+            $depth = $item[1]
+            $visited++
+            if ($depth -gt 0 -and (Test-GameDir $dir)) { & $add (Join-Path $dir 'mods') 'quet o dia'; continue }
+            if ($depth -ge 4) { continue }
+            try {
+                foreach ($sub in [IO.Directory]::EnumerateDirectories($dir)) {
+                    $name = [IO.Path]::GetFileName($sub).ToLower()
+                    if ($skip -contains $name) { continue }
+                    $queue.Enqueue(@($sub, ($depth + 1)))
+                }
+            } catch { }
+        }
+    }
+
+    # Mac dinh (van hien de nguoi moi chua co thu muc nao)
+    & $add (Join-Path $env:APPDATA '.tlauncher\legacy\Minecraft\game\mods') 'mac dinh'
+    & $add (Join-Path $env:APPDATA '.minecraft\mods') 'mac dinh'
+
+    # Thu muc lan truoc dung dau, sau do uu tien thu muc co nhieu mod
+    $last = @($found | Where-Object { $_.Source -eq 'lan truoc' })
+    $rest = @($found | Where-Object { $_.Source -ne 'lan truoc' } | Sort-Object @{ Expression = 'Mods'; Descending = $true })
+    return @($last + $rest)
+}
+'@
+. ([scriptblock]::Create($DetectCode))
+
+function Get-LastModsPath {
+    try { return (Get-Content -LiteralPath $UpdaterConfigPath -Raw -ErrorAction Stop | ConvertFrom-Json).LastPath } catch { return $null }
+}
+function Save-LastModsPath([string]$path) {
+    try {
+        $dir = Split-Path $UpdaterConfigPath -Parent
+        if (-not (Test-Path -LiteralPath $dir)) { New-Item -ItemType Directory -Path $dir -Force | Out-Null }
+        (@{ LastPath = $path } | ConvertTo-Json) | Set-Content -LiteralPath $UpdaterConfigPath -Encoding ASCII
+    } catch { }
+}
+
+# Quet trong runspace nen ($OnTick giu spinner / animation chay)
+function Find-ModFoldersAsync([scriptblock]$OnTick) {
+    $r = Invoke-InBackground -OnTick $OnTick -Arguments @($DetectCode, (Get-LastModsPath)) -Script {
+        param($code, $last)
+        . ([scriptblock]::Create($code))
+        Find-ModFolders $last
+    }
+    return @($r | Where-Object { $_ })
 }
 
 # ===================================================================================
 #  CONSOLE MODE
 # ===================================================================================
 function Run-ConsoleUpdate($targetDir) {
-    Write-Banner "MOD UPDATER v26.2" "Cong cu dong bo & cap nhat Mod tu dong (Console)" Cyan
+    Write-Banner "MOD UPDATER v26.2" "Automatic mod sync for the OlongBell server (console)" Cyan
 
     if ([string]::IsNullOrEmpty($targetDir)) {
-        Write-Host " Chon launcher game cua ban:" -ForegroundColor Yellow
-        Write-Host "  [1] Legacy Launcher (Mac dinh)" -ForegroundColor Gray
-        Write-Host "  [2] Official (Minecraft Ban Quyen)" -ForegroundColor Gray
-        Write-Host "  [3] TLauncher" -ForegroundColor Gray
-        Write-Host "  [4] Duong dan tu chon (Custom)" -ForegroundColor Gray
-        $choice = Read-Host " Nhap lua chon (1-4, Enter de lay Mac dinh [1])"
+        $script:spin = 0
+        $sp = @('|', '/', '-', [string][char]92)
+        $cands = Find-ModFoldersAsync -OnTick { Write-Host -NoNewline "`r $($sp[$script:spin % 4]) Looking for Minecraft folders on all drives..." -ForegroundColor Cyan; $script:spin++ }
+        Write-Host -NoNewline ("`r" + (' ' * ((Get-ConsoleWidth) - 1)) + "`r")
+        Write-Host " Pick your mods folder (found $($cands.Count)):" -ForegroundColor Yellow
+        for ($i = 0; $i -lt $cands.Count; $i++) {
+            $c = $cands[$i]
+            Write-Host ("  [{0}] {1,-20} {2} ({3} mods)" -f ($i + 1), $c.Label, $c.Path, $c.Mods) -ForegroundColor Gray
+        }
+        Write-Host "  [C] Enter another path" -ForegroundColor Gray
+        $choice = Read-Host " Your choice (Enter = [1])"
 
-        $targetDir = $legacyPath
-        if ($choice -eq "2") {
-            $targetDir = $premiumPath
-        } elseif ($choice -eq "3") {
-            $targetDir = $tlauncherPath
-        } elseif ($choice -eq "4") {
-            $targetDir = Read-Host " Nhap duong dan day du cua thu muc mods"
-            if (-not (Test-Path -LiteralPath $targetDir)) {
-                Write-Host " [LOI] Duong dan khong ton tai!" -ForegroundColor Red
+        if ($choice -match '^[cC]$') {
+            $targetDir = (Read-Host " Full path of your mods folder").Trim().Trim('"')
+            if (-not $targetDir -or -not (Test-Path -LiteralPath (Split-Path $targetDir -Parent))) {
+                Write-Host " [ERROR] That path does not exist!" -ForegroundColor Red
                 return
             }
+        } else {
+            $idx = 0
+            if ($choice -match '^\d+$') { $idx = [int]$choice - 1 }
+            if ($idx -lt 0 -or $idx -ge $cands.Count) { $idx = 0 }
+            $targetDir = if ($cands.Count -gt 0) { $cands[$idx].Path } else { $legacyPath }
         }
     }
+    Save-LastModsPath $targetDir
 
     Write-Divider '-' DarkGray
-    Write-Host " [DIR] Thu muc dich: " -ForegroundColor Yellow -NoNewline
+    Write-Host " [DIR] Target folder: " -ForegroundColor Yellow -NoNewline
     Write-Host $targetDir -ForegroundColor White
     Write-Divider '-' DarkGray
 
+    # Thanh tien do theo byte, chay tai cho o dong cuoi; log in phia tren.
+    # Ky tu khoi lay bang [char] luc chay de source van thuan ASCII (xem Get-LogoLines)
     $script:spin = 0
-    $spinner = @('|', '/', '-', '\')
-    $log = { param($msg, $color) Write-Host -NoNewline "`r   `r"; Write-Host " $msg" -ForegroundColor $color }
-    $tick = { Write-Host -NoNewline "`r $($spinner[$script:spin % 4]) " -ForegroundColor Cyan; $script:spin++ }
+    $script:bar = $null
+    $spinner = @('|', '/', '-', [string][char]92)
+    $full = [char]0x2588
+    $light = [char]0x2591
+    $clearLine = { Write-Host -NoNewline ("`r" + (' ' * ((Get-ConsoleWidth) - 1)) + "`r") }
+    $drawBar = {
+        $sp = $spinner[$script:spin % $spinner.Count]
+        if (-not $script:bar) {
+            Write-Host -NoNewline "`r $sp " -ForegroundColor Cyan
+            return
+        }
+        $b = $script:bar
+        $w = Get-ConsoleWidth
+        $bw = [Math]::Max(10, [Math]::Min(36, $w - 48))
+        $ratio = [Math]::Min(1.0, $b.Shown / [Math]::Max(1, $b.Total))
+        $filled = [int][Math]::Floor($bw * $ratio)
+        Write-Host -NoNewline "`r $sp " -ForegroundColor Cyan
+        Write-Host -NoNewline ([string]$full * $filled) -ForegroundColor Green
+        Write-Host -NoNewline ([string]$light * ($bw - $filled)) -ForegroundColor DarkGray
+        Write-Host -NoNewline (" {0,3}%  {1}/{2}  {3}/s  [{4}/{5}] " -f [int]($ratio * 100), (Format-Size $b.Bytes), (Format-Size $b.Total), (Format-Size $b.Speed), $b.Done, $b.N) -ForegroundColor White
+    }
+    $log = { param($msg, $color) & $clearLine; Write-Host " $msg" -ForegroundColor $color; & $drawBar }
+    # Moi tick: xoay spinner + thanh "duoi" muot toi gia tri that
+    $tick = {
+        $script:spin++
+        if ($script:bar) { $script:bar.Shown += ($script:bar.Bytes - $script:bar.Shown) * 0.35 }
+        & $drawBar
+    }
+    $prog = {
+        param($done, $n, $name, $bytes, $total)
+        $now = [DateTime]::UtcNow
+        if (-not $script:bar) { $script:bar = @{ Shown = 0.0; Speed = 0.0; T = $now; B = [long]0 } }
+        $b = $script:bar
+        $dt = ($now - $b.T).TotalSeconds
+        if ($dt -ge 0.5) {
+            $inst = ($bytes - $b.B) / $dt
+            $b.Speed = if ($b.Speed -eq 0) { $inst } else { $b.Speed * 0.7 + $inst * 0.3 }
+            $b.T = $now
+            $b.B = $bytes
+        }
+        $b.Done = $done; $b.N = $n; $b.Bytes = $bytes; $b.Total = $total
+    }
 
     try {
-        $s = Invoke-ModSync -TargetDir $targetDir -Parallel $Parallel -Log $log -OnTick $tick
+        $s = Invoke-ModSync -TargetDir $targetDir -Parallel $Parallel -Log $log -OnTick $tick -OnProgress $prog
     } catch {
-        Write-Host " [LOI NGHIEM TRONG] $_" -ForegroundColor Red
+        & $clearLine
+        Write-Host " [FATAL] $_" -ForegroundColor Red
         return
     }
-    Write-Host -NoNewline "`r   `r"
+    if ($script:bar -and $script:bar.N -gt 1) { $script:bar.Shown = $script:bar.Total; & $drawBar; Write-Host "" }
+    & $clearLine
+    $script:bar = $null
     if ($s.RepoCount -eq 0) { return }
 
+    $animate = $true
+    try { $animate = -not [Console]::IsOutputRedirected } catch { }
     Write-Divider '-' DarkGray
     $finalLocalFiles = @(Get-ChildItem -LiteralPath $targetDir -File | Where-Object { Test-ModFileName $_.Name } | Sort-Object Name)
-    Write-Section "DANH SACH MOD HIEN TAI TREN MAY BAN ($($finalLocalFiles.Count) mods)" Green
+    Write-Section "MODS ON YOUR PC ($($finalLocalFiles.Count))" Green
     $w = Get-ConsoleWidth
     $colWidth = [Math]::Max(20, [int](($w - 9) / 2))
     for ($idx = 0; $idx -lt $finalLocalFiles.Count; $idx += 2) {
@@ -560,30 +811,31 @@ function Run-ConsoleUpdate($targetDir) {
         if ($col1.Length -gt $colWidth) { $col1 = $col1.Substring(0, $colWidth - 3) + "..." }
         if ($col2.Length -gt $colWidth) { $col2 = $col2.Substring(0, $colWidth - 3) + "..." }
         Write-Host "   - $($col1.PadRight($colWidth)) - $col2" -ForegroundColor DarkGray
+        if ($animate) { Start-Sleep -Milliseconds 8 }
     }
 
     Write-Host ""
-    Write-Section "TONG KET" Cyan
-    Write-Host "   Da tai       : $($s.Downloaded) mod, $(Format-Size $s.Bytes)" -ForegroundColor White
-    Write-Host "   Da xoa       : $($s.Deleted) mod" -ForegroundColor White
-    Write-Host "   Thoi gian    : $($s.Seconds)s" -ForegroundColor White
+    Write-Section "SUMMARY" Cyan
+    Write-Host "   Downloaded : $($s.Downloaded) mods, $(Format-Size $s.Bytes)" -ForegroundColor White
+    Write-Host "   Deleted    : $($s.Deleted) mods" -ForegroundColor White
+    Write-Host "   Time       : $($s.Seconds)s" -ForegroundColor White
     if ($s.Failed.Count -gt 0) {
-        Write-Host "   That bai     : $($s.Failed.Count) -> $($s.Failed -join ', ')" -ForegroundColor Red
-        Write-Host "   -> Chay lai script de thu lai." -ForegroundColor Yellow
+        Write-Host "   Failed     : $($s.Failed.Count) -> $($s.Failed -join ', ')" -ForegroundColor Red
+        Write-Host "   -> Run the script again to retry." -ForegroundColor Yellow
     }
     Write-Host ""
     Write-Divider '=' Green
     if ($s.Failed.Count -gt 0) {
-        Write-Centered "DONG BO HOAN TAT (CO $($s.Failed.Count) LOI)" Yellow
+        Write-Centered "SYNC FINISHED WITH $($s.Failed.Count) ERROR(S)" Yellow
     } else {
-        Write-Centered "HOAN THANH DONG BO HOA MODS" Green
+        Write-Centered "ALL MODS ARE UP TO DATE" Green
     }
-    Write-Centered "Chuc ban choi game vui ve!" Green
+    Write-Centered "Have fun!" Green
     Write-Divider '=' Green
 }
 
 # ===================================================================================
-#  GUI MODE (WPF)
+#  GUI MODE (WPF) - phong cach neobrutalism: nen kem, vien den day, bong do cung, bo goc
 # ===================================================================================
 Show-Logo
 
@@ -594,27 +846,160 @@ if ($guiSupported -and $isSta -and -not $NoGui -and [System.Environment]::UserIn
         [xml]$xaml = @'
 <Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="OlongBell - Mod Updater" Height="520" Width="680"
-        Background="#18181B" Foreground="#F4F4F5"
+        Title="OlongBell - Mod Updater" Height="660" Width="760"
+        Background="#FFF4E0" Foreground="#111111"
         WindowStartupLocation="CenterScreen" ResizeMode="CanMinimize" FontFamily="Segoe UI">
     <Window.Resources>
+        <!-- Nut: mat nut + bong den lech 5px; re chuot -> nut truot ve phia bong, bam -> lun han -->
         <Style TargetType="Button">
-            <Setter Property="Background" Value="#27272A"/>
-            <Setter Property="Foreground" Value="#F4F4F5"/>
-            <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Padding" Value="10,5"/>
-            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Background" Value="#FFFFFF"/>
+            <Setter Property="Foreground" Value="#111111"/>
+            <Setter Property="FontWeight" Value="Bold"/>
             <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Grid Margin="0,0,5,5">
+                            <Border Background="#111111" CornerRadius="10" Margin="5,5,-5,-5"/>
+                            <Border x:Name="face" Background="{TemplateBinding Background}" BorderBrush="#111111" BorderThickness="3" CornerRadius="10">
+                                <Border.RenderTransform>
+                                    <TranslateTransform x:Name="move"/>
+                                </Border.RenderTransform>
+                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" Margin="12,4"/>
+                            </Border>
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Trigger.EnterActions>
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation Storyboard.TargetName="move" Storyboard.TargetProperty="X" To="2" Duration="0:0:0.12"/>
+                                            <DoubleAnimation Storyboard.TargetName="move" Storyboard.TargetProperty="Y" To="2" Duration="0:0:0.12"/>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </Trigger.EnterActions>
+                                <Trigger.ExitActions>
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation Storyboard.TargetName="move" Storyboard.TargetProperty="X" To="0" Duration="0:0:0.2"/>
+                                            <DoubleAnimation Storyboard.TargetName="move" Storyboard.TargetProperty="Y" To="0" Duration="0:0:0.2"/>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </Trigger.ExitActions>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Trigger.EnterActions>
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation Storyboard.TargetName="move" Storyboard.TargetProperty="X" To="5" Duration="0:0:0.06"/>
+                                            <DoubleAnimation Storyboard.TargetName="move" Storyboard.TargetProperty="Y" To="5" Duration="0:0:0.06"/>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </Trigger.EnterActions>
+                                <Trigger.ExitActions>
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation Storyboard.TargetName="move" Storyboard.TargetProperty="X" To="2" Duration="0:0:0.25">
+                                                <DoubleAnimation.EasingFunction><BackEase EasingMode="EaseOut" Amplitude="0.8"/></DoubleAnimation.EasingFunction>
+                                            </DoubleAnimation>
+                                            <DoubleAnimation Storyboard.TargetName="move" Storyboard.TargetProperty="Y" To="2" Duration="0:0:0.25">
+                                                <DoubleAnimation.EasingFunction><BackEase EasingMode="EaseOut" Amplitude="0.8"/></DoubleAnimation.EasingFunction>
+                                            </DoubleAnimation>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </Trigger.ExitActions>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="face" Property="Background" Value="#E7E2D6"/>
+                                <Setter Property="Foreground" Value="#8A8578"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
         </Style>
+
+        <!-- Chip chon thu muc (RadioButton): trang -> vang khi chon, co bong cung -->
         <Style TargetType="RadioButton">
-            <Setter Property="Foreground" Value="#D4D4D8"/>
-            <Setter Property="Margin" Value="0,5,15,5"/>
+            <Setter Property="Foreground" Value="#111111"/>
+            <Setter Property="Margin" Value="0,0,8,8"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="RadioButton">
+                        <Grid x:Name="chipRoot" Margin="0,0,4,4">
+                            <Border x:Name="sh" Background="#111111" CornerRadius="9" Margin="4,4,-4,-4" Opacity="0"/>
+                            <Border x:Name="chip" Background="#FFFFFF" BorderBrush="#111111" BorderThickness="2.5" CornerRadius="9" Padding="10,6">
+                                <Border.RenderTransform>
+                                    <TranslateTransform x:Name="lift"/>
+                                </Border.RenderTransform>
+                                <StackPanel Orientation="Horizontal">
+                                    <Border x:Name="dot" Width="14" Height="14" CornerRadius="7" BorderBrush="#111111" BorderThickness="2.5" Background="#FFFFFF" Margin="0,0,9,0" VerticalAlignment="Center"/>
+                                    <ContentPresenter VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Border>
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="chip" Property="Background" Value="#FFF0B8"/>
+                            </Trigger>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="chip" Property="Background" Value="#FFD23F"/>
+                                <Setter TargetName="dot" Property="Background" Value="#111111"/>
+                                <Trigger.EnterActions>
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation Storyboard.TargetName="sh" Storyboard.TargetProperty="Opacity" To="1" Duration="0:0:0.12"/>
+                                            <DoubleAnimation Storyboard.TargetName="lift" Storyboard.TargetProperty="Y" From="3" To="0" Duration="0:0:0.25">
+                                                <DoubleAnimation.EasingFunction><BackEase EasingMode="EaseOut" Amplitude="1"/></DoubleAnimation.EasingFunction>
+                                            </DoubleAnimation>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </Trigger.EnterActions>
+                                <Trigger.ExitActions>
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation Storyboard.TargetName="sh" Storyboard.TargetProperty="Opacity" To="0" Duration="0:0:0.12"/>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </Trigger.ExitActions>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="chipRoot" Property="Opacity" Value="0.5"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Nhan tieu de cua tung khoi -->
+        <Style x:Key="Label" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="FontWeight" Value="Black"/>
+            <Setter Property="Foreground" Value="#111111"/>
+            <Setter Property="Margin" Value="0,0,0,8"/>
         </Style>
     </Window.Resources>
 
-    <Grid Margin="25">
+    <!-- Ca giao dien hien dan + truot len khi mo cua so -->
+    <Grid Name="rootGrid" Margin="24,20,24,18" Opacity="0">
+        <Grid.RenderTransform>
+            <TranslateTransform Y="22"/>
+        </Grid.RenderTransform>
+        <Grid.Triggers>
+            <EventTrigger RoutedEvent="FrameworkElement.Loaded">
+                <BeginStoryboard>
+                    <Storyboard>
+                        <DoubleAnimation Storyboard.TargetProperty="Opacity" From="0" To="1" Duration="0:0:0.45"/>
+                        <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.Y)" From="22" To="0" Duration="0:0:0.6">
+                            <DoubleAnimation.EasingFunction><BackEase EasingMode="EaseOut" Amplitude="0.5"/></DoubleAnimation.EasingFunction>
+                        </DoubleAnimation>
+                    </Storyboard>
+                </BeginStoryboard>
+            </EventTrigger>
+        </Grid.Triggers>
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
@@ -622,54 +1007,133 @@ if ($guiSupported -and $isSta -and -not $NoGui -and [System.Environment]::UserIn
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <StackPanel Grid.Row="0" Margin="0,0,0,15">
-            <StackPanel Orientation="Horizontal">
-                <Border Background="#3B82F6" Width="4" Margin="0,0,10,0"/>
-                <StackPanel>
-                    <TextBlock Text="OLONGBELL" FontSize="22" FontWeight="Bold" Foreground="#3B82F6"/>
-                    <TextBlock Text="MOD UPDATER v26.2 - Dong bo &amp; cap nhat mod 1-Click" FontSize="12" Foreground="#A1A1AA" Margin="0,2,0,0"/>
+        <!-- Tieu de: "sticker" vang nghieng, lac nhe khi mo -->
+        <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,16">
+            <Grid Margin="0,0,14,0" RenderTransformOrigin="0.5,0.5">
+                <Grid.RenderTransform>
+                    <RotateTransform Angle="-3"/>
+                </Grid.RenderTransform>
+                <Grid.Triggers>
+                    <EventTrigger RoutedEvent="FrameworkElement.Loaded">
+                        <BeginStoryboard>
+                            <Storyboard>
+                                <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(RotateTransform.Angle)" From="-14" To="-3" Duration="0:0:0.8" BeginTime="0:0:0.15">
+                                    <DoubleAnimation.EasingFunction><ElasticEase EasingMode="EaseOut" Oscillations="2" Springiness="4"/></DoubleAnimation.EasingFunction>
+                                </DoubleAnimation>
+                            </Storyboard>
+                        </BeginStoryboard>
+                    </EventTrigger>
+                </Grid.Triggers>
+                <Border Background="#111111" CornerRadius="10" Margin="5,5,-5,-5"/>
+                <Border Background="#FFD23F" BorderBrush="#111111" BorderThickness="3" CornerRadius="10" Padding="16,4,16,6">
+                    <TextBlock Text="OLONGBELL" FontSize="28" FontWeight="Black" Foreground="#111111"/>
+                </Border>
+            </Grid>
+            <StackPanel VerticalAlignment="Center">
+                <StackPanel Orientation="Horizontal">
+                    <Border Background="#FF5D8F" BorderBrush="#111111" BorderThickness="2.5" CornerRadius="20" Padding="10,2">
+                        <TextBlock Text="MOD UPDATER v26.2" FontSize="11" FontWeight="Black" Foreground="#111111"/>
+                    </Border>
+                    <Border Name="accentBar" Width="14" Height="14" CornerRadius="7" Background="#B8F35C" BorderBrush="#111111" BorderThickness="2.5" Margin="8,0,0,0" VerticalAlignment="Center"/>
                 </StackPanel>
+                <TextBlock Text="One-click mod sync for the OlongBell server" FontSize="13" FontWeight="SemiBold" Foreground="#3D3A33" Margin="2,5,0,0"/>
             </StackPanel>
         </StackPanel>
 
-        <GroupBox Grid.Row="1" Header="Chon Launcher" BorderBrush="#27272A" Foreground="#A1A1AA" Padding="10" Margin="0,0,0,10">
-            <WrapPanel>
-                <RadioButton Name="radLegacy" Content="Legacy Launcher" IsChecked="True"/>
-                <RadioButton Name="radPremium" Content="Official (Ban Quyen)"/>
-                <RadioButton Name="radTLauncher" Content="TLauncher"/>
-                <RadioButton Name="radCustom" Content="Duong dan tu chon"/>
-            </WrapPanel>
-        </GroupBox>
-
-        <Grid Grid.Row="2" Margin="0,0,0,15">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="Auto"/>
-            </Grid.ColumnDefinitions>
-            <TextBox Name="txtPath" Grid.Column="0" Height="28" Padding="5,3" Background="#09090B" Foreground="#F4F4F5" BorderBrush="#27272A" VerticalContentAlignment="Center" IsReadOnly="True"/>
-            <Button Name="btnBrowse" Grid.Column="1" Content="Duyet..." Margin="5,0,0,0" Width="80" Height="28" IsEnabled="False"/>
+        <!-- Khoi 1: chon thu muc mods (tu dong tim tren moi o dia) -->
+        <Grid Grid.Row="1" Margin="0,0,5,18">
+            <Border Background="#111111" CornerRadius="12" Margin="5,5,-5,-5"/>
+            <Border Background="#FFFFFF" BorderBrush="#111111" BorderThickness="3" CornerRadius="12" Padding="16,14,16,10">
+                <StackPanel>
+                    <TextBlock Style="{StaticResource Label}" Text="1. PICK YOUR MODS FOLDER"/>
+                    <WrapPanel Name="pathChips">
+                        <TextBlock Name="txtScanning" Text="Looking for Minecraft folders on all drives..." FontWeight="SemiBold" Foreground="#6B6658" Margin="2,4,0,10"/>
+                    </WrapPanel>
+                    <Grid Margin="0,2,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <Border Grid.Column="0" Background="#FFF9EC" BorderBrush="#111111" BorderThickness="2.5" CornerRadius="9" Margin="0,0,10,5" Height="38">
+                            <TextBox Name="txtPath" Background="Transparent" BorderThickness="0" Padding="8,0" VerticalContentAlignment="Center" IsReadOnly="True" FontFamily="Cascadia Mono, Consolas" FontSize="12" Foreground="#111111"/>
+                        </Border>
+                        <Button Name="btnBrowse" Grid.Column="1" Content="Browse..." Height="43" Background="#8FD3FF" FontSize="12"/>
+                    </Grid>
+                </StackPanel>
+            </Border>
         </Grid>
 
-        <GroupBox Grid.Row="3" Header="Nhat ky cap nhat" BorderBrush="#27272A" Foreground="#A1A1AA" Margin="0,0,0,15">
-            <TextBox Name="txtLog" Background="#09090B" Foreground="#E4E4E7" BorderThickness="0" AcceptsReturn="True" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" IsReadOnly="True" Padding="8" FontFamily="Consolas" FontSize="11"/>
-        </GroupBox>
-
-        <Grid Grid.Row="4" Margin="0,0,0,15">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="Auto"/>
-            </Grid.ColumnDefinitions>
-            <ProgressBar Name="progress" Grid.Column="0" Height="15" Background="#27272A" Foreground="#10B981" BorderThickness="0"/>
-            <TextBlock Name="txtProgressVal" Grid.Column="1" Text="0/0" VerticalAlignment="Center" Margin="10,0,0,0" FontWeight="Bold" Foreground="#10B981"/>
+        <!-- Khoi 2: nhat ky kieu cua so terminal -->
+        <Grid Grid.Row="2" Margin="0,0,5,18">
+            <Border Background="#111111" CornerRadius="12" Margin="5,5,-5,-5"/>
+            <Border Background="#1A1A1A" BorderBrush="#111111" BorderThickness="3" CornerRadius="12">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    <Border Grid.Row="0" Background="#FFFFFF" BorderBrush="#111111" BorderThickness="0,0,0,3" CornerRadius="9,9,0,0" Padding="12,7">
+                        <StackPanel Orientation="Horizontal">
+                            <Ellipse Width="12" Height="12" Fill="#FF5D8F" Stroke="#111111" StrokeThickness="2" Margin="0,0,6,0"/>
+                            <Ellipse Width="12" Height="12" Fill="#FFD23F" Stroke="#111111" StrokeThickness="2" Margin="0,0,6,0"/>
+                            <Ellipse Width="12" Height="12" Fill="#B8F35C" Stroke="#111111" StrokeThickness="2" Margin="0,0,12,0"/>
+                            <TextBlock Text="2. LOG" FontSize="12" FontWeight="Black" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Border>
+                    <TextBox Name="txtLog" Grid.Row="1" Background="Transparent" Foreground="#E9E4D8" BorderThickness="0" AcceptsReturn="True" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" IsReadOnly="True" Padding="12,8" FontFamily="Cascadia Mono, Consolas" FontSize="11"/>
+                </Grid>
+            </Border>
         </Grid>
 
-        <Grid Grid.Row="5">
+        <!-- Khoi 3: thanh tien do soc cheo chay + so dem -->
+        <Grid Grid.Row="3" Margin="0,0,0,16">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
-            <TextBlock Name="txtStatus" Grid.Column="0" Text="Nhan nut de bat dau dong bo..." VerticalAlignment="Center" Foreground="#A1A1AA" FontSize="12" TextTrimming="CharacterEllipsis"/>
-            <Button Name="btnStart" Grid.Column="1" Content="Kiem tra &amp; Cap nhat" Background="#3B82F6" Foreground="White" Width="180" Height="35" FontSize="13"/>
+            <Grid Grid.Column="0" Margin="0,0,5,5">
+                <Border Background="#111111" CornerRadius="10" Margin="4,4,-4,-4"/>
+                <Border Name="barTrack" Height="28" Background="#FFFFFF" BorderBrush="#111111" BorderThickness="3" CornerRadius="10" ClipToBounds="True">
+                    <Grid>
+                        <Border Name="barFill" HorizontalAlignment="Left" Width="0" CornerRadius="6" Background="#4D96FF">
+                            <Border Name="barStripes" Opacity="0">
+                                <Border.Background>
+                                    <LinearGradientBrush MappingMode="Absolute" StartPoint="0,0" EndPoint="14,14" SpreadMethod="Repeat">
+                                        <LinearGradientBrush.Transform>
+                                            <TranslateTransform X="0"/>
+                                        </LinearGradientBrush.Transform>
+                                        <GradientStop Color="#00FFFFFF" Offset="0"/>
+                                        <GradientStop Color="#00FFFFFF" Offset="0.5"/>
+                                        <GradientStop Color="#FFFFFFFF" Offset="0.5"/>
+                                        <GradientStop Color="#FFFFFFFF" Offset="1"/>
+                                    </LinearGradientBrush>
+                                </Border.Background>
+                            </Border>
+                        </Border>
+                        <Border Name="barSweep" HorizontalAlignment="Left" Width="80" Background="#FFD23F" BorderBrush="#111111" BorderThickness="3,0,3,0" Opacity="0">
+                            <Border.RenderTransform>
+                                <TranslateTransform X="-80"/>
+                            </Border.RenderTransform>
+                        </Border>
+                    </Grid>
+                </Border>
+            </Grid>
+            <Grid Grid.Column="1" Margin="12,0,0,0">
+                <Border Background="#111111" CornerRadius="10" Margin="4,4,0,1"/>
+                <Border Name="progChip" Background="#FFFFFF" BorderBrush="#111111" BorderThickness="3" CornerRadius="10" Margin="0,0,4,5" MinWidth="86" Padding="10,0">
+                    <TextBlock Name="txtProgressVal" Text="0/0" FontSize="14" FontWeight="Black" HorizontalAlignment="Center" VerticalAlignment="Center" FontFamily="Cascadia Mono, Consolas"/>
+                </Border>
+            </Grid>
+        </Grid>
+
+        <!-- Hang cuoi: trang thai + nut chinh mau hong -->
+        <Grid Grid.Row="4">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <TextBlock Name="txtStatus" Grid.Column="0" Text="Pick a folder, then hit the button" VerticalAlignment="Center" Foreground="#111111" FontSize="13" FontWeight="Bold" TextTrimming="CharacterEllipsis" Margin="0,0,12,0"/>
+            <Button Name="btnStart" Grid.Column="1" Content="CHECK &amp; UPDATE" Background="#FF5D8F" Width="230" Height="54" FontSize="14" FontWeight="Black"/>
         </Grid>
     </Grid>
 </Window>
@@ -687,81 +1151,245 @@ if ($guiLoaded) {
         Set-Variable -Name $_.Name -Value $window.FindName($_.Name) -Scope Script
     }
 
-    $txtPath.Text = $legacyPath
-    $divider = "=" * 78
-    $txtLog.Text = ((Get-LogoLines) -join "`r`n") + "`r`n$divider`r`nSan sang cap nhat mod... Click 'Kiem tra & Cap nhat' de bat dau.`r`n$divider`r`n"
+    function New-Brush([string]$hex) {
+        return New-Object System.Windows.Media.SolidColorBrush ([System.Windows.Media.ColorConverter]::ConvertFromString($hex))
+    }
 
-    $radLegacy.add_Checked({ $txtPath.Text = $legacyPath; $btnBrowse.IsEnabled = $false })
-    $radPremium.add_Checked({ $txtPath.Text = $premiumPath; $btnBrowse.IsEnabled = $false })
-    $radTLauncher.add_Checked({ $txtPath.Text = $tlauncherPath; $btnBrowse.IsEnabled = $false })
-    $radCustom.add_Checked({ $btnBrowse.IsEnabled = $true })
+    # =================================================================================
+    #  Dong co chuyen dong tu ve: moi khung hinh dat thang gia tri (Width, X, Scale).
+    #  Khong dung WPF Storyboard cho phan chay trong luc dong bo vi khi vong lap dang
+    #  bom su kien bang tay, animation cua WPF khong duoc ve len man hinh (thanh dung yen).
+    # =================================================================================
+    $script:fx = @{
+        FillCur = 0.0; FillTarget = 0.0; Mode = 'off'; Busy = $false
+        SweepX = -80.0; StripeX = 0.0; T0 = [DateTime]::UtcNow; Last = [DateTime]::UtcNow
+    }
+    $stripeBrush = $barStripes.Background
+    if ($stripeBrush.IsFrozen) { $stripeBrush = $stripeBrush.Clone(); $barStripes.Background = $stripeBrush }
+    $stripeTT = New-Object System.Windows.Media.TranslateTransform
+    $stripeBrush.Transform = $stripeTT
+    $sweepTT = New-Object System.Windows.Media.TranslateTransform -80, 0
+    $barSweep.RenderTransform = $sweepTT
+    $dotScale = New-Object System.Windows.Media.ScaleTransform 1, 1
+    $accentBar.RenderTransformOrigin = New-Object System.Windows.Point 0.5, 0.5
+    $accentBar.RenderTransform = $dotScale
+
+    function Step-Fx {
+        $f = $script:fx
+        $now = [DateTime]::UtcNow
+        $dt = [Math]::Min(0.1, ($now - $f.Last).TotalSeconds)
+        if ($dt -le 0) { return }
+        $f.Last = $now
+        $inner = [Math]::Max(0.0, $barTrack.ActualWidth - 6)
+        # thanh day: tien dan toi muc tieu (nhanh khi xa, cham khi gan)
+        $f.FillCur += ($f.FillTarget - $f.FillCur) * [Math]::Min(1.0, $dt * 9)
+        if ([Math]::Abs($f.FillTarget - $f.FillCur) -lt 0.0005) { $f.FillCur = $f.FillTarget }
+        $barFill.Width = $inner * $f.FillCur
+        if ($f.Mode -eq 'download') {
+            $f.StripeX = ($f.StripeX + $dt * 40) % 28
+            $stripeTT.X = $f.StripeX
+        } elseif ($f.Mode -eq 'scan') {
+            $f.SweepX += $dt * 420
+            if ($f.SweepX -gt $barTrack.ActualWidth) { $f.SweepX = -$barSweep.Width }
+            $sweepTT.X = $f.SweepX
+        }
+        $s = 1.0
+        if ($f.Busy) { $s = 1 + 0.35 * [Math]::Abs([Math]::Sin(($now - $f.T0).TotalSeconds * 4)) }
+        $dotScale.ScaleX = $s
+        $dotScale.ScaleY = $s
+    }
+
+    # Cho WPF xu ly su kien (ve lai, nhan click) trong luc vong lap dong bo dang chay
+    function Update-UI {
+        Step-Fx
+        [System.Windows.Threading.Dispatcher]::CurrentDispatcher.Invoke([System.Action] {}, [System.Windows.Threading.DispatcherPriority]::Background)
+    }
+    # Thay Start-Sleep bang vong ve ~60 khung/giay
+    $script:WaitHook = {
+        param($ms)
+        $end = [DateTime]::UtcNow.AddMilliseconds($ms)
+        do { Update-UI; Start-Sleep -Milliseconds 14 } while ([DateTime]::UtcNow -lt $end)
+    }
+    # Luc ranh (khong dong bo) van chay hieu ung bang timer
+    $fxTimer = New-Object System.Windows.Threading.DispatcherTimer
+    $fxTimer.Interval = [TimeSpan]::FromMilliseconds(16)
+    $fxTimer.add_Tick({ Step-Fx })
+    $fxTimer.Start()
+
+    function Set-Busy([bool]$on) { $script:fx.Busy = $on }
+    function Set-BarRatio([double]$r, [switch]$Instant) {
+        $script:fx.FillTarget = [Math]::Max(0.0, [Math]::Min(1.0, $r))
+        if ($Instant) { $script:fx.FillCur = $script:fx.FillTarget }
+    }
+    # 'scan' = khoi vang chay qua lai (chua biet tien do) | 'download' = soc cheo chay | 'off'
+    function Set-BarMode([string]$mode) {
+        $script:fx.Mode = $mode
+        $barSweep.Opacity = if ($mode -eq 'scan') { 1 } else { 0 }
+        $barStripes.Opacity = if ($mode -eq 'download') { 0.35 } else { 0 }
+        if ($mode -eq 'scan') { $script:fx.SweepX = -$barSweep.Width }
+    }
+    function Set-AccentColor([string]$hex) {
+        $barFill.Background = New-Brush $hex
+        $accentBar.Background = New-Brush $hex
+        $progChip.Background = New-Brush $hex
+    }
+    function Set-Status([string]$text, [string]$hex = "#111111") {
+        $txtStatus.Text = $text
+        $txtStatus.Foreground = New-Brush $hex
+    }
+    function Set-ControlsEnabled([bool]$on) {
+        $btnStart.IsEnabled = $on
+        $btnBrowse.IsEnabled = $on
+        foreach ($c in $pathChips.Children) { $c.IsEnabled = $on }
+    }
+
+    # ---------- chip thu muc ----------
+    function Add-PathChip($cand, [bool]$select) {
+        $panel = New-Object System.Windows.Controls.StackPanel
+        $t1 = New-Object System.Windows.Controls.TextBlock
+        $t1.Text = "$($cand.Label)  -  $($cand.Mods) mods"
+        $t1.FontWeight = 'Bold'
+        $t1.FontSize = 12
+        $t2 = New-Object System.Windows.Controls.TextBlock
+        $t2.Text = $cand.Path
+        $t2.FontSize = 10.5
+        $t2.Foreground = New-Brush "#4A463C"
+        $t2.MaxWidth = 300
+        $t2.TextTrimming = 'CharacterEllipsis'
+        $t2.ToolTip = $cand.Path
+        [void]$panel.Children.Add($t1)
+        [void]$panel.Children.Add($t2)
+        $rb = New-Object System.Windows.Controls.RadioButton
+        $rb.GroupName = "modsPath"
+        $rb.Content = $panel
+        $rb.Tag = $cand.Path
+        $rb.add_Checked({ param($s, $e) $txtPath.Text = $s.Tag })
+        [void]$pathChips.Children.Add($rb)
+        if ($select) { $rb.IsChecked = $true }
+        return $rb
+    }
 
     $btnBrowse.add_Click({
         Add-Type -AssemblyName System.Windows.Forms
         $dialog = New-Object System.Windows.Forms.FolderBrowserDialog
-        $dialog.Description = "Chon thu muc mods cua game Minecraft"
+        $dialog.Description = "Pick your Minecraft mods folder (e.g. D:\Games\Minecraft\mods)"
         if ($dialog.ShowDialog() -eq [System.Windows.Forms.DialogResult]::OK) {
-            $txtPath.Text = $dialog.SelectedPath
+            $p = $dialog.SelectedPath
+            # Chon nham thu muc game (co versions) -> tu tro vao mods ben trong
+            if ((Split-Path $p -Leaf) -ne 'mods' -and (Test-Path -LiteralPath (Join-Path $p 'versions'))) { $p = Join-Path $p 'mods' }
+            $count = @(Get-ChildItem -LiteralPath $p -Filter *.jar -File -ErrorAction SilentlyContinue).Count
+            [void](Add-PathChip ([pscustomobject]@{ Path = $p; Label = 'Custom'; Mods = $count }) $true)
         }
     })
 
-    # Cho WPF xu ly su kien de cua so khong bi "Not Responding" trong luc dong bo
-    function Update-UI {
-        [System.Windows.Threading.Dispatcher]::CurrentDispatcher.Invoke([System.Action] {}, [System.Windows.Threading.DispatcherPriority]::Background)
-    }
+    # ---------- khi mo cua so: logo "go chu" + quet o dia tim thu muc ----------
+    $divider = "=" * 78
+    $script:introLines = @(Get-LogoLines) + @($divider, "Ready! Pick your mods folder, then hit 'CHECK & UPDATE'.", $divider)
+    $script:introIdx = 0
+    $script:introTimer = New-Object System.Windows.Threading.DispatcherTimer
+    $script:introTimer.Interval = [TimeSpan]::FromMilliseconds(70)
+    $script:introTimer.add_Tick({
+        if ($script:introIdx -ge $script:introLines.Count) { $script:introTimer.Stop(); return }
+        $txtLog.AppendText($script:introLines[$script:introIdx] + "`r`n")
+        $script:introIdx++
+    })
 
-    function Set-ControlsEnabled([bool]$on) {
-        $btnStart.IsEnabled = $on
-        $radLegacy.IsEnabled = $on
-        $radPremium.IsEnabled = $on
-        $radTLauncher.IsEnabled = $on
-        $radCustom.IsEnabled = $on
-        $btnBrowse.IsEnabled = ($on -and $radCustom.IsChecked)
-    }
+    $window.add_ContentRendered({
+        $script:introTimer.Start()
+        Set-ControlsEnabled $false
+        Set-Busy $true
+        Set-BarMode 'scan'
+        Set-Status "Looking for Minecraft folders on all drives..." "#1D4ED8"
+        $cands = @()
+        try { $cands = Find-ModFoldersAsync -OnTick { Update-UI } } catch { }
+        $pathChips.Children.Remove($txtScanning)
+        if ($cands.Count -eq 0) {
+            $cands = @([pscustomobject]@{ Path = $legacyPath; Label = 'Legacy Launcher'; Mods = 0 })
+        }
+        $first = $true
+        foreach ($c in ($cands | Select-Object -First 6)) {
+            [void](Add-PathChip $c $first)
+            $first = $false
+            Invoke-Wait 70
+        }
+        Set-BarMode 'off'
+        Set-Busy $false
+        Set-ControlsEnabled $true
+        $word = if ($cands.Count -eq 1) { "folder" } else { "folders" }
+        Set-Status "Found $($cands.Count) $word. Double-check the path, then hit the button."
+    })
 
     $btnStart.add_Click({
+        $script:introTimer.Stop()
+        if ([string]::IsNullOrWhiteSpace($txtPath.Text)) { Set-Status "Pick a mods folder first!" "#C2410C"; return }
+        Save-LastModsPath $txtPath.Text
         Set-ControlsEnabled $false
-        $txtStatus.Text = "Dang kiem tra cap nhat..."
-        $txtLog.Text = "--- BAT DAU CAP NHAT ---`r`n"
-        $progress.Value = 0
+        $txtLog.Text = "--- SYNC STARTED ---`r`n"
         $txtProgressVal.Text = "..."
-        Update-UI
+        $script:spd = @{ T = [DateTime]::UtcNow; B = [long]0; Speed = 0.0 }
 
         $log = { param($msg, $color) $txtLog.AppendText("$msg`r`n"); $txtLog.ScrollToEnd(); Update-UI }
         $tick = { Update-UI }
         $prog = {
-            param($done, $n, $name)
-            $progress.Maximum = [Math]::Max(1, $n)
-            $progress.Value = $done
-            $txtProgressVal.Text = "$done/$n"
-            if ($name) { $txtStatus.Text = "Xong: $name" }
+            param($done, $n, $name, $bytes, $total)
+            Set-BarRatio ($bytes / [Math]::Max(1, $total))
+            $pct = [int](100 * $bytes / [Math]::Max(1, $total))
+            $txtProgressVal.Text = "$pct%"
+            # toc do tai (lam min de khong nhay so lien tuc)
+            $now = [DateTime]::UtcNow
+            $dt = ($now - $script:spd.T).TotalSeconds
+            if ($dt -ge 0.5) {
+                $inst = ($bytes - $script:spd.B) / $dt
+                $script:spd.Speed = if ($script:spd.Speed -eq 0) { $inst } else { $script:spd.Speed * 0.7 + $inst * 0.3 }
+                $script:spd.T = $now
+                $script:spd.B = $bytes
+            }
+            if ($n -gt 1 -or $total -gt 1) {
+                Set-Status ("Downloading {0}/{1} mods  -  {2} / {3}  -  {4}/s" -f $done, $n, (Format-Size $bytes), (Format-Size $total), (Format-Size $script:spd.Speed)) "#1D4ED8"
+            }
+        }
+        $phase = {
+            param($p)
+            switch ($p) {
+                "connect" { Set-AccentColor "#4D96FF"; Set-BarRatio 0 -Instant; Set-Busy $true; Set-BarMode 'scan'; Set-Status "Connecting to GitHub..." "#1D4ED8" }
+                "scan" { Set-Status "Comparing your mods with the server (SHA)..." "#1D4ED8" }
+                "download" { Set-BarMode 'download' }
+                "done" { Set-Busy $false; Set-BarMode 'off'; Set-BarRatio 1; Set-AccentColor "#B8F35C" }
+                "error" { Set-Busy $false; Set-BarMode 'off'; Set-AccentColor "#FF9F1C" }
+            }
             Update-UI
         }
 
         try {
-            $s = Invoke-ModSync -TargetDir $txtPath.Text -Parallel $Parallel -Log $log -OnTick $tick -OnProgress $prog
+            $s = Invoke-ModSync -TargetDir $txtPath.Text -Parallel $Parallel -Log $log -OnTick $tick -OnProgress $prog -OnPhase $phase
             if ($s.RepoCount -eq 0) {
-                $txtStatus.Text = "Loi ket noi GitHub."
+                Set-Status "Could not reach GitHub." "#C2410C"
             } else {
-                & $log "`r`n--- TONG KET ---" White
-                & $log "Da tai $($s.Downloaded) mod ($(Format-Size $s.Bytes)), xoa $($s.Deleted) mod, trong $($s.Seconds)s" White
+                & $log "`r`n--- SUMMARY ---" White
+                & $log "Downloaded $($s.Downloaded) mods ($(Format-Size $s.Bytes)), deleted $($s.Deleted), in $($s.Seconds)s" White
                 if ($s.Failed.Count -gt 0) {
-                    & $log "That bai: $($s.Failed -join ', ')" Red
-                    $txtStatus.Text = "Hoan tat, con $($s.Failed.Count) loi."
-                    [System.Windows.MessageBox]::Show("Dong bo xong nhung con $($s.Failed.Count) loi. Xem log, tat Minecraft neu dang mo, roi bam lai.", "Hoan tat co loi", [System.Windows.MessageBoxButton]::OK, [System.Windows.MessageBoxImage]::Warning) | Out-Null
+                    & $log "Failed: $($s.Failed -join ', ')" Red
+                    $txtProgressVal.Text = "!"
+                    Set-Status "Done with $($s.Failed.Count) error(s) - check the log." "#C2410C"
+                    [System.Windows.MessageBox]::Show("Sync finished with $($s.Failed.Count) error(s). Check the log, close Minecraft if it is open, then try again.", "Finished with errors", [System.Windows.MessageBoxButton]::OK, [System.Windows.MessageBoxImage]::Warning) | Out-Null
                 } else {
-                    $txtStatus.Text = "Cap nhat thanh cong!"
-                    [System.Windows.MessageBox]::Show("Dong bo hoa mods Minecraft thanh cong!", "Thong bao", [System.Windows.MessageBoxButton]::OK, [System.Windows.MessageBoxImage]::Information) | Out-Null
+                    $txtProgressVal.Text = "DONE!"
+                    Set-Status "All mods up to date! Downloaded $($s.Downloaded), deleted $($s.Deleted)." "#15803D"
+                    [System.Windows.MessageBox]::Show("All mods are up to date. Have fun!", "OlongBell", [System.Windows.MessageBoxButton]::OK, [System.Windows.MessageBoxImage]::Information) | Out-Null
                 }
             }
         } catch {
-            & $log "[LOI NGHIEM TRONG] $_" Red
-            $txtStatus.Text = "Gap loi trong qua trinh cap nhat."
+            & $log "[FATAL] $_" Red
+            Set-Busy $false
+            Set-BarMode 'off'
+            Set-AccentColor "#FF9F1C"
+            Set-Status "Something went wrong during the sync." "#C2410C"
         }
         Set-ControlsEnabled $true
     })
 
     $window.ShowDialog() | Out-Null
+    $fxTimer.Stop()
 } else {
     Run-ConsoleUpdate
 }

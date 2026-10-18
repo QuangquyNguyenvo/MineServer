@@ -1,0 +1,11 @@
+{
+  "name": "pikamc-agent",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@modelcontextprotocol/node": "^2.0.0",
+    "@modelcontextprotocol/sdk": "latest",
+    "@modelcontextprotocol/server": "^2.0.0"
+  }
+}

@@ -25,6 +25,24 @@ Server này chạy dịch vụ **MCP (Model Context Protocol) Agent** qua HTTP c
 
 ---
 
+## 🧰 Tools (agent v2)
+
+| Tool | Tác dụng |
+| :--- | :--- |
+| `ping` | Kiểm tra agent sống |
+| `server_status` | Người chơi, MSPT, RAM, lịch restart (dùng đầu tiên khi check lag) |
+| `minecraft_command` | Lệnh console qua RCON. Lệnh chỉ đọc chạy luôn; lệnh thay đổi cần `confirm_dangerous=true` (chỉ khi người dùng đã đồng ý); `stop`/`restart` luôn bị chặn |
+| `read_log` | Đọc cuối `logs/latest.log`, lọc regex |
+| `reload_datapacks` | `/reload` (không kick người chơi) |
+| `schedule_restart` | Restart an toàn: có người → đếm ngược (≥60s, mặc định 5 phút) + báo trong game; `when_empty` → chờ server trống |
+| `cancel_restart` / `restart_status` | Hủy / xem lịch restart |
+| `reload_agent` | Khởi động lại riêng agent (Minecraft vẫn chạy) |
+
+> [!NOTE]
+> Token nằm ở `.agent/.token` trên server (không có trong repo). Đổi token: sửa file đó, agent tự nhận ngay, không cần restart. Source agent: `server/mcp-agent/`.
+
+---
+
 ## 🛠️ Hướng Dẫn Cài Đặt (Quick Setup)
 
 ### 1️⃣ Cài đặt cho Claude Code
@@ -36,7 +54,7 @@ Chạy lệnh bên dưới trong terminal tại thư mục dự án của bạn:
 ```bash
 claude mcp add --transport http pikamc-agent http://ancient.pikamc.vn:25240/mcp \
   --scope local \
-  -H "Authorization: Bearer toiyeufembi"
+  -H "Authorization: Bearer <TOKEN>"
 ```
 
 > [!TIP]
@@ -57,7 +75,7 @@ Mở mục cấu hình MCP Servers trong Antigravity (**Settings** → **MCP Ser
     "pikamc-agent": {
       "url": "http://ancient.pikamc.vn:25240/mcp",
       "headers": {
-        "Authorization": "Bearer toiyeufembi"
+        "Authorization": "Bearer <TOKEN>"
       }
     }
   }
