@@ -146,6 +146,7 @@ function Show-Logo {
         }
     }
     Write-Centered "OlongBell Minecraft Server" DarkGray
+    Write-Centered "made by @stuwupidwjbu" DarkGray
     Write-Host ""
 }
 
@@ -1037,6 +1038,7 @@ if ($guiSupported -and $isSta -and -not $NoGui -and [System.Environment]::UserIn
                     <Border Name="accentBar" Width="14" Height="14" CornerRadius="7" Background="#B8F35C" BorderBrush="#111111" BorderThickness="2.5" Margin="8,0,0,0" VerticalAlignment="Center"/>
                 </StackPanel>
                 <TextBlock Text="One-click mod sync for the OlongBell server" FontSize="13" FontWeight="SemiBold" Foreground="#3D3A33" Margin="2,5,0,0"/>
+                <TextBlock Text="made by @stuwupidwjbu" FontSize="10.5" FontWeight="SemiBold" FontStyle="Italic" Foreground="#8A8578" Margin="2,2,0,0"/>
             </StackPanel>
         </StackPanel>
 
