@@ -582,24 +582,49 @@ $DetectCode = @'
 function Get-LauncherLabel([string]$path) {
     $p = $path.ToLower()
     if ($p -like '*\.tlauncher\legacy\*') { return 'Legacy Launcher' }
+    if ($p -like '*atlauncher*') { return 'ATLauncher' }
     if ($p -like '*tlauncher*') { return 'TLauncher' }
     if ($p -like '*curseforge*') { return 'CurseForge' }
-    if ($p -like '*modrinth*') { return 'Modrinth' }
-    if ($p -like '*prism*' -or $p -like '*multimc*') { return 'Prism/MultiMC' }
+    if ($p -like '*modrinth*' -or $p -like '*theseus*') { return 'Modrinth' }
+    if ($p -like '*prismlauncher*' -or $p -like '*polymc*') { return 'Prism Launcher' }
+    if ($p -like '*multimc*') { return 'MultiMC' }
+    if ($p -like '*gdlauncher*') { return 'GDLauncher' }
     if ($env:APPDATA -and $p.StartsWith((Join-Path $env:APPDATA '.minecraft').ToLower())) { return 'Minecraft (default)' }
     return "Folder on $($path.Substring(0, 2).ToUpper())"
 }
 
+# Thu muc game CLIENT? Launcher thuong: versions + (mods|options.txt).
+# Launcher dang "instance" (CurseForge, Modrinth, Prism...) khong co versions trong
+# instance: chap nhan mods + (options.txt|config). Thu muc server thi loai.
 function Test-GameDir([string]$dir) {
     try {
-        if (-not [IO.Directory]::Exists((Join-Path $dir 'versions'))) { return $false }
-        # Thu muc server (co server.properties) khong phai game client
         if ([IO.File]::Exists((Join-Path $dir 'server.properties'))) { return $false }
-        return ([IO.Directory]::Exists((Join-Path $dir 'mods')) -or [IO.File]::Exists((Join-Path $dir 'options.txt')))
+        $hasMods = [IO.Directory]::Exists((Join-Path $dir 'mods'))
+        $hasOptions = [IO.File]::Exists((Join-Path $dir 'options.txt'))
+        if ([IO.Directory]::Exists((Join-Path $dir 'versions'))) { return ($hasMods -or $hasOptions) }
+        return ($hasMods -and ($hasOptions -or [IO.Directory]::Exists((Join-Path $dir 'config'))))
     } catch { return $false }
 }
 
-function Find-ModFolders([string]$lastPath) {
+# Cac goc "instances" cua launcher pho bien; moi instance co the de game o
+# <inst>, <inst>\.minecraft, <inst>\minecraft hoac <inst>\instance
+function Get-InstanceRoots {
+    $a = $env:APPDATA
+    $u = $env:USERPROFILE
+    return @(
+        (Join-Path $a 'PrismLauncher\instances'),
+        (Join-Path $a 'PolyMC\instances'),
+        (Join-Path $a 'ATLauncher\instances'),
+        (Join-Path $a 'ModrinthApp\profiles'),
+        (Join-Path $a 'com.modrinth.theseus\profiles'),
+        (Join-Path $a 'gdlauncher_next\instances'),
+        (Join-Path $a 'gdlauncher_carbon\data\instances'),
+        (Join-Path $u 'curseforge\minecraft\Instances'),
+        (Join-Path $u 'Documents\Curse\Minecraft\Instances')
+    )
+}
+
+function Find-ModFolders([string]$lastPath, [string[]]$ScanRoots) {
     $seen = @{}
     $found = New-Object System.Collections.Generic.List[object]
     $add = {
@@ -617,10 +642,17 @@ function Find-ModFolders([string]$lastPath) {
         $seen[$key] = $true
         $found.Add([pscustomobject]@{ Path = $full; Label = (Get-LauncherLabel $full); Mods = $count; Source = $source })
     }
+    # Kiem 1 thu muc "instance": game o chinh no hoac 1 cap con quen thuoc
+    $addInstance = {
+        param([string]$inst, [string]$source)
+        foreach ($cand in @($inst, (Join-Path $inst '.minecraft'), (Join-Path $inst 'minecraft'), (Join-Path $inst 'instance'))) {
+            if (Test-GameDir $cand) { & $add (Join-Path $cand 'mods') $source; return }
+        }
+    }
 
-    if ($lastPath) { & $add $lastPath 'lan truoc' }
+    if ($lastPath) { & $add $lastPath 'last used' }
 
-    # Cau hinh launcher
+    # 1. Cau hinh launcher
     $tl = Join-Path $env:APPDATA '.tlauncher'
     if (Test-Path -LiteralPath $tl) {
         Get-ChildItem -LiteralPath $tl -Filter '*.properties' -Recurse -Depth 3 -File -ErrorAction SilentlyContinue | ForEach-Object {
@@ -628,7 +660,7 @@ function Find-ModFolders([string]$lastPath) {
                 if ($_ -match '^\s*[\w.\-]*game\.?dir[\w.\-]*\s*[=:]\s*(.+)$') {
                     # .properties escape: "D\:\\Games" -> "D:\Games"
                     $dir = $Matches[1].Trim() -replace '\\(.)', '$1'
-                    if ($dir -match '^[A-Za-z]:') { & $add (Join-Path $dir 'mods') 'cau hinh launcher' }
+                    if ($dir -match '^[A-Za-z]:') { & $add (Join-Path $dir 'mods') 'launcher config' }
                 }
             }
         }
@@ -636,46 +668,72 @@ function Find-ModFolders([string]$lastPath) {
     $profiles = Join-Path $env:APPDATA '.minecraft\launcher_profiles.json'
     if (Test-Path -LiteralPath $profiles) {
         try {
-            $j = Get-Content -LiteralPath $profiles -Raw | ConvertFrom-Json
+            $j = Get-Content -LiteralPath $profiles -Raw -ErrorAction Stop | ConvertFrom-Json
             foreach ($p in $j.profiles.PSObject.Properties) {
-                if ($p.Value.gameDir) { & $add (Join-Path $p.Value.gameDir 'mods') 'launcher chinh hang' }
+                if ($p.Value.gameDir) { & $add (Join-Path $p.Value.gameDir 'mods') 'launcher config' }
             }
         } catch { }
     }
 
-    # Quet o cung: BFS toi da 4 cap, bo qua thu muc he thong, gioi han so thu muc + thoi gian
+    # 2. Instance cua cac launcher pho bien
+    foreach ($root in (Get-InstanceRoots)) {
+        if (-not [IO.Directory]::Exists($root)) { continue }
+        try {
+            foreach ($inst in [IO.Directory]::EnumerateDirectories($root)) { & $addInstance $inst 'launcher instances' }
+        } catch { }
+    }
+
+    # 3. Quet o cung: BFS toi da 5 cap. Moi o co ngan sach rieng (thoi gian + so thu muc)
+    #    de o C nhieu file khong an het thoi gian cua o D. O khac C quet truoc.
+    #    Gap thu muc "instances" thi kiem tung instance ben trong (MultiMC/Prism portable).
+    if (-not $ScanRoots) {
+        $sys = "$env:SystemDrive\".ToUpper()
+        $drives = @([IO.DriveInfo]::GetDrives() | Where-Object { $_.DriveType -eq 'Fixed' -and $_.IsReady } | ForEach-Object { $_.RootDirectory.FullName })
+        $ScanRoots = @($drives | Where-Object { $_.ToUpper() -ne $sys }) + @($drives | Where-Object { $_.ToUpper() -eq $sys })
+    }
     $skip = @('windows', 'program files', 'program files (x86)', 'programdata', '$recycle.bin', 'system volume information',
-              'node_modules', '.git', 'steamapps', 'appdata', 'recovery', 'perflogs', 'msocache', 'intel', 'amd', 'nvidia')
-    $deadline = [DateTime]::UtcNow.AddSeconds(6)
-    foreach ($drive in [IO.DriveInfo]::GetDrives()) {
-        if ($drive.DriveType -ne 'Fixed' -or -not $drive.IsReady) { continue }
+              'node_modules', '.git', 'steamapps', 'appdata', 'recovery', 'perflogs', 'msocache', 'intel', 'amd', 'nvidia',
+              '$windows.~bt', '$windows.~ws', 'windows.old', 'onedrivetemp', '.cache', '.gradle', '.m2', '.nuget', 'site-packages')
+    foreach ($rootDir in $ScanRoots) {
+        $deadline = [DateTime]::UtcNow.AddSeconds(3.5)
         $queue = New-Object System.Collections.Generic.Queue[object]
-        $queue.Enqueue(@($drive.RootDirectory.FullName, 0))
+        $queue.Enqueue(@($rootDir, 0))
         $visited = 0
-        while ($queue.Count -gt 0 -and $visited -lt 25000 -and [DateTime]::UtcNow -lt $deadline) {
+        while ($queue.Count -gt 0 -and $visited -lt 60000 -and [DateTime]::UtcNow -lt $deadline) {
             $item = $queue.Dequeue()
             $dir = $item[0]
             $depth = $item[1]
             $visited++
-            if ($depth -gt 0 -and (Test-GameDir $dir)) { & $add (Join-Path $dir 'mods') 'quet o dia'; continue }
-            if ($depth -ge 4) { continue }
-            try {
-                foreach ($sub in [IO.Directory]::EnumerateDirectories($dir)) {
-                    $name = [IO.Path]::GetFileName($sub).ToLower()
-                    if ($skip -contains $name) { continue }
-                    $queue.Enqueue(@($sub, ($depth + 1)))
+            # Doc thu muc con 1 lan; chi kiem ky (doc them file) khi thay mods/versions
+            try { $subs = [IO.Directory]::GetDirectories($dir) } catch { continue }
+            $names = @{}
+            foreach ($sub in $subs) { $names[[IO.Path]::GetFileName($sub).ToLower()] = $true }
+            if ($depth -gt 0) {
+                if (($names.ContainsKey('mods') -or $names.ContainsKey('versions')) -and (Test-GameDir $dir)) {
+                    & $add (Join-Path $dir 'mods') 'disk scan'
+                    continue
                 }
-            } catch { }
+                $leaf = [IO.Path]::GetFileName($dir).ToLower()
+                if ($leaf -eq 'instances' -or $leaf -eq 'profiles') {
+                    foreach ($inst in $subs) { & $addInstance $inst 'disk scan' }
+                    continue
+                }
+            }
+            if ($depth -ge 5) { continue }
+            foreach ($sub in $subs) {
+                if ($skip -contains [IO.Path]::GetFileName($sub).ToLower()) { continue }
+                $queue.Enqueue(@($sub, ($depth + 1)))
+            }
         }
     }
 
-    # Mac dinh (van hien de nguoi moi chua co thu muc nao)
-    & $add (Join-Path $env:APPDATA '.tlauncher\legacy\Minecraft\game\mods') 'mac dinh'
-    & $add (Join-Path $env:APPDATA '.minecraft\mods') 'mac dinh'
+    # 4. Mac dinh (van hien de nguoi moi chua co thu muc nao)
+    & $add (Join-Path $env:APPDATA '.tlauncher\legacy\Minecraft\game\mods') 'default'
+    & $add (Join-Path $env:APPDATA '.minecraft\mods') 'default'
 
     # Thu muc lan truoc dung dau, sau do uu tien thu muc co nhieu mod
-    $last = @($found | Where-Object { $_.Source -eq 'lan truoc' })
-    $rest = @($found | Where-Object { $_.Source -ne 'lan truoc' } | Sort-Object @{ Expression = 'Mods'; Descending = $true })
+    $last = @($found | Where-Object { $_.Source -eq 'last used' })
+    $rest = @($found | Where-Object { $_.Source -ne 'last used' } | Sort-Object @{ Expression = 'Mods'; Descending = $true })
     return @($last + $rest)
 }
 '@
@@ -1309,7 +1367,7 @@ if ($guiLoaded) {
             $cands = @([pscustomobject]@{ Path = $legacyPath; Label = 'Legacy Launcher'; Mods = 0 })
         }
         $first = $true
-        foreach ($c in ($cands | Select-Object -First 6)) {
+        foreach ($c in ($cands | Select-Object -First 8)) {
             [void](Add-PathChip $c $first)
             $first = $false
             Invoke-Wait 70
