@@ -1,0 +1,51 @@
+[
+  {
+    "file": "alexsmobsfabric-26.2-1.2.0.jar",
+    "role": "alexsmobs",
+    "sha256": "c564078cf44864069c6b0926f2c4ddb958f90b2e0cc2870e78748700ddbc29d0",
+    "candidate_sha256": "4877accb806f80611e011c947ef367f88f0f563316fa8a563bfe8d4e4da2415a",
+    "changed_entries": 42
+  },
+  {
+    "file": "mob-ai-tweaks-1.11.0-beta.jar",
+    "role": "mob-ai-tweaks",
+    "sha256": "9301de80ba237272f97522fb29203619958dfcec761961d0ad9d5e3bdaa730ea",
+    "candidate_sha256": "d7778aaa2e3e5a0e017179d13d88c50c37b86a0b72c85dafeba806bf320a6858",
+    "changed_entries": 13
+  },
+  {
+    "file": "MoreVillagersRe-26.1.x-fabric-1.26.7.1.jar",
+    "role": "morevillagers",
+    "sha256": "8382e08b11e32c2171a671226e2a1ad6635ce8fc627281d4693a14a463f1e197",
+    "candidate_sha256": "2c0119fad1ed5516490eb9fa6dd8b2c1dffe781f152ab63cbffa62efd99db7fe",
+    "changed_entries": 10
+  },
+  {
+    "file": "cubeanimals-2.1.1-26.2.jar",
+    "role": "cubeanimals",
+    "sha256": "c6210678f71c43331c89129cbe2cbb8015a3765f32629b464a82d0340be05a3b",
+    "candidate_sha256": "8d62425151c7482c2e1ab58de00ff47d51ec5a3fd169b27ea111ccc10a8d5029",
+    "changed_entries": 4
+  },
+  {
+    "file": "jobsplustools-fabric-21.1.0.jar",
+    "role": "jobsplustools",
+    "sha256": "9f6fcae29997c88f3a86774863835d3a0905009e4688aefb613808f69a37bb23",
+    "candidate_sha256": "6d237d1255776847d8b7a751b14d9414395a5509f69cbc133afa8825f801232e",
+    "changed_entries": 7
+  },
+  {
+    "file": "farmingforblockheads-fabric-26.2-26.2.0.5.jar",
+    "role": "farmingforblockheads",
+    "sha256": "229b93949076c604391b252f457e54753e42acf90274ad6edda5ba20f725052b",
+    "candidate_sha256": "ba622dfecd3359380564ad7f77aa238171fa2482f9f38994fd46f9b9d160d66d",
+    "changed_entries": 2
+  },
+  {
+    "file": "fdm-26.9-fabric-26.2.jar",
+    "role": "fdm",
+    "sha256": "9c925e5364258ecb386fda7aea6e2f92520cab6bb3f2418d0e4d65d027b27591",
+    "candidate_sha256": "fdb7cfbc5e368d82096a085aa2b9033087e3df3790ce6b77e29abfb945719547",
+    "changed_entries": 2
+  }
+]
